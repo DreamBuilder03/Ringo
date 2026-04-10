@@ -2,7 +2,6 @@
 
 import { format } from 'date-fns';
 import { cn, formatCurrency, formatDuration, getCallOutcomeLabel, getCallOutcomeColor } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
 import type { Call } from '@/types/database';
 
 interface CallLogTableProps {

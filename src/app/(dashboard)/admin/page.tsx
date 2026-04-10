@@ -1,8 +1,7 @@
 'use client';
 
-import { useState } from 'react';
 import Link from 'next/link';
-import { Building2, Phone, DollarSign, Clock, Plus, ChevronRight } from 'lucide-react';
+import { Building2, Phone, DollarSign, Plus, ChevronRight } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

@@ -1,4 +1,4 @@
-import { TrendingUp, DollarSign } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
 import { formatCurrency } from '@/lib/utils';
 
 interface RoiSummaryProps {

@@ -1,4 +1,4 @@
-import type { Call, Restaurant, RestaurantWithStats } from '@/types/database';
+import type { Call, RestaurantWithStats } from '@/types/database';
 
 export const mockCalls: Call[] = [
   {
