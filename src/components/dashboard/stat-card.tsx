@@ -1,5 +1,8 @@
+'use client';
+
 import { type LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useEffect, useState } from 'react';
 
 interface StatCardProps {
   title: string;
@@ -7,35 +10,141 @@ interface StatCardProps {
   subtitle?: string;
   icon: LucideIcon;
   trend?: { value: number; positive: boolean };
+  accentColor?: 'teal' | 'amber' | 'purple' | 'emerald';
+  sparklineData?: number[];
   className?: string;
 }
 
-export function StatCard({ title, value, subtitle, icon: Icon, trend, className }: StatCardProps) {
+const accentColors = {
+  teal: {
+    bg: 'bg-ringo-teal/10',
+    text: 'text-ringo-teal',
+    gradient: 'from-ringo-teal/20 to-transparent',
+    spark: '#1D9E75',
+  },
+  amber: {
+    bg: 'bg-ringo-amber/10',
+    text: 'text-ringo-amber',
+    gradient: 'from-ringo-amber/20 to-transparent',
+    spark: '#EF9F27',
+  },
+  purple: {
+    bg: 'bg-ringo-purple-light/10',
+    text: 'text-ringo-purple-light',
+    gradient: 'from-ringo-purple-light/20 to-transparent',
+    spark: '#6C63FF',
+  },
+  emerald: {
+    bg: 'bg-emerald-400/10',
+    text: 'text-emerald-400',
+    gradient: 'from-emerald-400/20 to-transparent',
+    spark: '#34D399',
+  },
+};
+
+function MiniSparkline({ data, color }: { data: number[]; color: string }) {
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const range = max - min || 1;
+  const height = 32;
+  const width = 80;
+  const step = width / (data.length - 1);
+
+  const points = data.map((val, i) => {
+    const x = i * step;
+    const y = height - ((val - min) / range) * height;
+    return `${x},${y}`;
+  }).join(' ');
+
+  const areaPoints = `0,${height} ${points} ${width},${height}`;
+
   return (
-    <div className={cn('rounded-xl border border-ringo-border bg-ringo-card p-6', className)}>
-      <div className="flex items-start justify-between">
-        <div className="space-y-1">
-          <p className="text-sm text-ringo-muted">{title}</p>
-          <p className="text-2xl font-semibold text-foreground">{value}</p>
-          {subtitle && <p className="text-xs text-ringo-muted">{subtitle}</p>}
+    <svg width={width} height={height} className="opacity-60">
+      <defs>
+        <linearGradient id={`gradient-${color}`} x1="0%" y1="0%" x2="0%" y2="100%">
+          <stop offset="0%" stopColor={color} stopOpacity="0.3" />
+          <stop offset="100%" stopColor={color} stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <polygon
+        points={areaPoints}
+        fill={`url(#gradient-${color})`}
+      />
+      <polyline
+        points={points}
+        fill="none"
+        stroke={color}
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+export function StatCard({
+  title,
+  value,
+  subtitle,
+  icon: Icon,
+  trend,
+  accentColor = 'teal',
+  sparklineData,
+  className,
+}: StatCardProps) {
+  const colors = accentColors[accentColor];
+  const [animated, setAnimated] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setAnimated(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div
+      className={cn(
+        'relative group rounded-2xl border border-ringo-border bg-ringo-card p-5 overflow-hidden transition-all duration-300 hover:border-ringo-border/80 hover:shadow-lg hover:shadow-black/10',
+        className
+      )}
+    >
+      {/* Gradient accent */}
+      <div className={cn('absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl rounded-full blur-3xl opacity-30 -translate-y-8 translate-x-8', colors.gradient)} />
+
+      <div className="relative flex items-start justify-between">
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wider text-ringo-muted">{title}</p>
+          <p className={cn(
+            'text-3xl font-bold text-foreground transition-all duration-700',
+            animated ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+          )}>
+            {value}
+          </p>
+          <div className="flex items-center gap-2">
+            {trend && (
+              <span
+                className={cn(
+                  'inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-bold',
+                  trend.positive
+                    ? 'bg-emerald-400/10 text-emerald-400'
+                    : 'bg-red-400/10 text-red-400'
+                )}
+              >
+                {trend.positive ? '↑' : '↓'} {Math.abs(trend.value)}%
+              </span>
+            )}
+            {subtitle && <p className="text-[11px] text-ringo-muted">{subtitle}</p>}
+          </div>
         </div>
-        <div className="rounded-lg bg-ringo-teal/10 p-2.5">
-          <Icon className="h-5 w-5 text-ringo-teal" />
+
+        <div className="flex flex-col items-end gap-2">
+          <div className={cn('rounded-xl p-2.5 transition-all duration-300 group-hover:scale-110', colors.bg)}>
+            <Icon className={cn('h-5 w-5', colors.text)} />
+          </div>
+          {sparklineData && (
+            <MiniSparkline data={sparklineData} color={colors.spark} />
+          )}
         </div>
       </div>
-      {trend && (
-        <div className="mt-3 flex items-center gap-1">
-          <span
-            className={cn(
-              'text-xs font-medium',
-              trend.positive ? 'text-emerald-400' : 'text-red-400'
-            )}
-          >
-            {trend.positive ? '+' : ''}{trend.value}%
-          </span>
-          <span className="text-xs text-ringo-muted">vs last week</span>
-        </div>
-      )}
     </div>
   );
 }
