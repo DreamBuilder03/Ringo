@@ -5,9 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card } from '@/components/ui/card';
-import { PRICING_TIERS, POS_OPTIONS } from '@/lib/constants';
-import { formatCurrency } from '@/lib/utils';
+import { POS_OPTIONS } from '@/lib/constants';
 import {
   Check,
   ArrowRight,
@@ -22,15 +20,23 @@ import {
   Clock,
   TrendingUp,
   Headphones,
+  Bot,
+  Star,
+  Sparkles,
+  PhoneCall,
+  MessageSquare,
+  BarChart3,
+  Target,
+  Users,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const steps = [
-  { label: 'Create Account', icon: UserPlus },
-  { label: 'Restaurant Info', icon: Utensils },
-  { label: 'POS System', icon: Phone },
-  { label: 'Choose Plan', icon: CreditCard },
-  { label: 'All Set', icon: PartyPopper },
+  { label: 'Account', icon: UserPlus },
+  { label: 'Restaurant', icon: Utensils },
+  { label: 'POS', icon: Phone },
+  { label: 'Plan', icon: CreditCard },
+  { label: 'Ready', icon: PartyPopper },
 ];
 
 export default function OnboardingPage() {
@@ -59,22 +65,35 @@ export default function OnboardingPage() {
     setLoading(true);
     setError('');
 
-    const { error: authError } = await supabase.auth.signUp({
-      email: form.email,
-      password: form.password,
-      options: {
-        data: { full_name: form.fullName },
-      },
-    });
+    try {
+      const { data, error: authError } = await supabase.auth.signUp({
+        email: form.email,
+        password: form.password,
+        options: {
+          data: { full_name: form.fullName },
+        },
+      });
 
-    if (authError) {
-      setError(authError.message);
+      if (authError) {
+        setError(authError.message);
+        setLoading(false);
+        return;
+      }
+
+      // If email confirmation is disabled, user is auto-logged in
+      // If enabled, we still proceed but they'll need to confirm
+      if (data?.user) {
+        setLoading(false);
+        setStep(1);
+      } else {
+        // Email confirmation may be required
+        setError('Please check your email to confirm your account, then try again.');
+        setLoading(false);
+      }
+    } catch (err) {
+      setError('Something went wrong. Please try again.');
       setLoading(false);
-      return;
     }
-
-    setLoading(false);
-    setStep(1);
   }
 
   async function handleComplete() {
@@ -85,7 +104,6 @@ export default function OnboardingPage() {
       const { data: { user } } = await supabase.auth.getUser();
 
       if (user) {
-        // Create the restaurant record
         const { error: restaurantError } = await supabase
           .from('restaurants')
           .insert({
@@ -101,7 +119,6 @@ export default function OnboardingPage() {
           console.error('Restaurant creation error:', restaurantError);
         }
 
-        // Update profile with name
         await supabase
           .from('profiles')
           .update({ full_name: form.fullName })
@@ -115,314 +132,364 @@ export default function OnboardingPage() {
     setStep(4);
   }
 
-  return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
-      <div className="w-full max-w-lg">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="font-serif text-4xl text-ringo-teal mb-2">Ringo</h1>
-          <p className="text-ringo-muted">Set up your AI phone agent in under 2 minutes</p>
-        </div>
+  const plans = [
+    {
+      tier: 'starter',
+      name: 'Starter',
+      price: '$299',
+      desc: 'Voice AI only',
+      features: ['Voice AI Agent', '100 calls/day', 'Basic analytics'],
+      popular: false,
+    },
+    {
+      tier: 'growth',
+      name: 'Growth',
+      price: '$599',
+      desc: 'Voice + Chat AI',
+      features: ['Voice + Chat AI', '250 calls/day', 'Smart upselling', 'Custom voice'],
+      popular: true,
+    },
+    {
+      tier: 'pro',
+      name: 'Enterprise',
+      price: 'Custom',
+      desc: 'Multi-location',
+      features: ['Unlimited calls', 'Dedicated manager', 'Custom integrations'],
+      popular: false,
+    },
+  ];
 
-        {/* Step Indicator */}
-        <div className="flex items-center justify-center gap-1 mb-8">
-          {steps.map((s, i) => (
-            <div key={i} className="flex items-center gap-1">
-              <div
-                className={cn(
-                  'flex items-center justify-center h-9 w-9 rounded-full text-xs font-medium transition-all duration-300',
-                  i < step
-                    ? 'bg-ringo-teal text-white shadow-lg shadow-ringo-teal/20'
-                    : i === step
-                    ? 'bg-ringo-teal/20 text-ringo-teal border-2 border-ringo-teal'
-                    : 'bg-ringo-border/50 text-ringo-muted'
-                )}
-              >
-                {i < step ? <Check className="h-4 w-4" /> : <s.icon className="h-4 w-4" />}
-              </div>
-              {i < steps.length - 1 && (
+  return (
+    <div className="min-h-screen bg-[#0D0D12] text-white">
+      {/* Grid background */}
+      <div className="fixed inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:60px_60px] pointer-events-none" />
+
+      {/* Gradient blobs */}
+      <div className="fixed top-20 left-1/4 w-[400px] h-[400px] bg-ringo-teal/8 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed bottom-20 right-1/4 w-[300px] h-[300px] bg-purple-500/5 rounded-full blur-[120px] pointer-events-none" />
+
+      <main className="relative flex flex-col items-center justify-center min-h-screen px-4 py-12">
+        <div className="w-full max-w-xl">
+          {/* Logo */}
+          <div className="text-center mb-8">
+            <h1 className="font-serif text-3xl text-ringo-teal mb-2">Ringo</h1>
+            <p className="text-sm text-white/40">Set up your AI phone agent in under 2 minutes</p>
+          </div>
+
+          {/* Step Progress */}
+          <div className="flex items-center justify-center gap-1.5 mb-10">
+            {steps.map((s, i) => (
+              <div key={i} className="flex items-center gap-1.5">
                 <div
                   className={cn(
-                    'w-6 sm:w-10 h-0.5 rounded-full transition-colors duration-300',
-                    i < step ? 'bg-ringo-teal' : 'bg-ringo-border/50'
+                    'flex items-center justify-center h-10 w-10 rounded-xl text-xs font-bold transition-all duration-500',
+                    i < step
+                      ? 'bg-ringo-teal text-white shadow-lg shadow-ringo-teal/20'
+                      : i === step
+                      ? 'bg-ringo-teal/10 text-ringo-teal border-2 border-ringo-teal/50'
+                      : 'bg-white/[0.04] text-white/20 border border-white/[0.06]'
                   )}
-                />
-              )}
-            </div>
-          ))}
-        </div>
-
-        {/* Step Content */}
-        <Card className="animate-fade-in">
-          {/* Step 0: Create Account */}
-          {step === 0 && (
-            <div className="space-y-4">
-              <div>
-                <h2 className="text-xl font-semibold text-foreground">Create your account</h2>
-                <p className="text-sm text-ringo-muted mt-1">
-                  This will be your login for the Ringo dashboard
-                </p>
-              </div>
-              <Input
-                id="fullName"
-                label="Your Full Name"
-                placeholder="John Smith"
-                value={form.fullName}
-                onChange={(e) => updateField('fullName', e.target.value)}
-                required
-              />
-              <Input
-                id="email"
-                label="Email Address"
-                type="email"
-                placeholder="john@myrestaurant.com"
-                value={form.email}
-                onChange={(e) => updateField('email', e.target.value)}
-                required
-              />
-              <Input
-                id="password"
-                label="Password"
-                type="password"
-                placeholder="Min 6 characters"
-                value={form.password}
-                onChange={(e) => updateField('password', e.target.value)}
-                minLength={6}
-                required
-              />
-
-              {error && (
-                <div className="rounded-lg bg-red-400/10 border border-red-400/20 px-4 py-2.5 text-sm text-red-400">
-                  {error}
-                </div>
-              )}
-
-              <Button
-                className="w-full"
-                size="lg"
-                onClick={handleCreateAccount}
-                loading={loading}
-                disabled={!form.fullName || !form.email || form.password.length < 6}
-              >
-                Create Account <ArrowRight className="h-4 w-4" />
-              </Button>
-
-              <p className="text-center text-xs text-ringo-muted">
-                Already have an account?{' '}
-                <button
-                  onClick={() => router.push('/login')}
-                  className="text-ringo-teal hover:text-ringo-teal-light transition-colors"
                 >
-                  Sign in
-                </button>
-              </p>
-            </div>
-          )}
-
-          {/* Step 1: Restaurant Info */}
-          {step === 1 && (
-            <div className="space-y-4">
-              <div>
-                <h2 className="text-xl font-semibold text-foreground">Restaurant details</h2>
-                <p className="text-sm text-ringo-muted mt-1">
-                  Tell us about your restaurant so Ringo can answer calls perfectly
-                </p>
-              </div>
-              <Input
-                id="restaurantName"
-                label="Restaurant Name"
-                placeholder="Mario's Pizza"
-                value={form.restaurantName}
-                onChange={(e) => updateField('restaurantName', e.target.value)}
-                required
-              />
-              <Input
-                id="address"
-                label="Address"
-                placeholder="123 Main St, Austin, TX 78701"
-                value={form.address}
-                onChange={(e) => updateField('address', e.target.value)}
-                required
-              />
-              <Input
-                id="phone"
-                label="Restaurant Phone Number"
-                placeholder="(512) 555-1234"
-                type="tel"
-                value={form.phone}
-                onChange={(e) => updateField('phone', e.target.value)}
-                required
-              />
-
-              <div className="flex gap-3">
-                <Button variant="secondary" onClick={() => setStep(0)} className="flex-1">
-                  <ArrowLeft className="h-4 w-4" /> Back
-                </Button>
-                <Button
-                  onClick={() => setStep(2)}
-                  className="flex-1"
-                  disabled={!form.restaurantName || !form.address || !form.phone}
-                >
-                  Continue <ArrowRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 2: POS System */}
-          {step === 2 && (
-            <div className="space-y-4">
-              <div>
-                <h2 className="text-xl font-semibold text-foreground">Your POS system</h2>
-                <p className="text-sm text-ringo-muted mt-1">
-                  Ringo pushes orders directly to your POS — no manual entry
-                </p>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                {POS_OPTIONS.map((pos) => (
-                  <button
-                    key={pos.value}
-                    onClick={() => updateField('posType', pos.value)}
-                    className={cn(
-                      'rounded-xl border p-5 text-left transition-all duration-200',
-                      form.posType === pos.value
-                        ? 'border-ringo-teal bg-ringo-teal/5 shadow-lg shadow-ringo-teal/10'
-                        : 'border-ringo-border hover:border-ringo-muted hover:bg-ringo-card'
-                    )}
-                  >
-                    <p className="text-sm font-semibold text-foreground">{pos.label}</p>
-                    {pos.value !== 'none' && (
-                      <p className="text-xs text-ringo-muted mt-1">Auto-sync orders</p>
-                    )}
-                  </button>
-                ))}
-              </div>
-              <div className="flex gap-3">
-                <Button variant="secondary" onClick={() => setStep(1)} className="flex-1">
-                  <ArrowLeft className="h-4 w-4" /> Back
-                </Button>
-                <Button onClick={() => setStep(3)} className="flex-1">
-                  Continue <ArrowRight className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Plan Selection */}
-          {step === 3 && (
-            <div className="space-y-4">
-              <div>
-                <h2 className="text-xl font-semibold text-foreground">Choose your plan</h2>
-                <p className="text-sm text-ringo-muted mt-1">
-                  All plans include a 14-day free trial. Cancel anytime.
-                </p>
-              </div>
-              <div className="space-y-3">
-                {PRICING_TIERS.map((tier, i) => (
-                  <button
-                    key={tier.tier}
-                    onClick={() => updateField('planTier', tier.tier)}
-                    className={cn(
-                      'w-full rounded-xl border p-5 text-left transition-all duration-200 relative',
-                      form.planTier === tier.tier
-                        ? 'border-ringo-teal bg-ringo-teal/5 shadow-lg shadow-ringo-teal/10'
-                        : 'border-ringo-border hover:border-ringo-muted'
-                    )}
-                  >
-                    {i === 1 && (
-                      <span className="absolute -top-2.5 right-4 rounded-full bg-ringo-amber px-2.5 py-0.5 text-xs font-bold text-black">
-                        MOST POPULAR
-                      </span>
-                    )}
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-base font-semibold text-foreground">{tier.name}</p>
-                        <p className="text-xs text-ringo-muted mt-0.5">{tier.callsPerDay}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xl font-bold text-foreground">
-                          {formatCurrency(tier.price)}
-                        </p>
-                        <p className="text-xs text-ringo-muted">/month</p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              {error && (
-                <div className="rounded-lg bg-red-400/10 border border-red-400/20 px-4 py-2.5 text-sm text-red-400">
-                  {error}
+                  {i < step ? <Check className="h-4 w-4" /> : <s.icon className="h-4 w-4" />}
                 </div>
-              )}
-
-              <div className="flex gap-3">
-                <Button variant="secondary" onClick={() => setStep(2)} className="flex-1">
-                  <ArrowLeft className="h-4 w-4" /> Back
-                </Button>
-                <Button onClick={handleComplete} loading={loading} className="flex-1">
-                  Start Free Trial <ArrowRight className="h-4 w-4" />
-                </Button>
+                {i < steps.length - 1 && (
+                  <div className={cn(
+                    'w-8 sm:w-12 h-0.5 rounded-full transition-all duration-500',
+                    i < step ? 'bg-ringo-teal' : 'bg-white/[0.06]'
+                  )} />
+                )}
               </div>
-
-              <p className="text-center text-xs text-ringo-muted">
-                14-day free trial &middot; No credit card required
-              </p>
-            </div>
-          )}
-
-          {/* Step 4: Confirmation */}
-          {step === 4 && (
-            <div className="text-center py-8 space-y-6">
-              <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-ringo-teal to-ringo-teal-light flex items-center justify-center shadow-xl shadow-ringo-teal/30">
-                <PartyPopper className="h-10 w-10 text-white" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-foreground">
-                  You&apos;re all set, {form.fullName.split(' ')[0]}!
-                </h2>
-                <p className="text-sm text-ringo-muted mt-2 max-w-sm mx-auto">
-                  Ringo is setting up your AI phone agent for <strong className="text-foreground">{form.restaurantName}</strong>.
-                  You&apos;ll be ready to take calls within minutes.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-3 gap-3 text-center">
-                <div className="rounded-lg bg-ringo-card border border-ringo-border p-3">
-                  <Zap className="h-5 w-5 text-ringo-teal mx-auto mb-1" />
-                  <p className="text-xs text-ringo-muted">Instant setup</p>
-                </div>
-                <div className="rounded-lg bg-ringo-card border border-ringo-border p-3">
-                  <Clock className="h-5 w-5 text-ringo-amber mx-auto mb-1" />
-                  <p className="text-xs text-ringo-muted">24/7 answering</p>
-                </div>
-                <div className="rounded-lg bg-ringo-card border border-ringo-border p-3">
-                  <TrendingUp className="h-5 w-5 text-ringo-purple-light mx-auto mb-1" />
-                  <p className="text-xs text-ringo-muted">Smart upsells</p>
-                </div>
-              </div>
-
-              <Button size="lg" onClick={() => router.push('/dashboard')} className="w-full">
-                Go to Your Dashboard <ArrowRight className="h-4 w-4" />
-              </Button>
-            </div>
-          )}
-        </Card>
-
-        {/* Trust bar */}
-        {step < 4 && (
-          <div className="flex items-center justify-center gap-4 mt-6 text-xs text-ringo-muted">
-            <div className="flex items-center gap-1">
-              <Shield className="h-3 w-3" />
-              <span>256-bit encryption</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <Headphones className="h-3 w-3" />
-              <span>24/7 support</span>
-            </div>
+            ))}
           </div>
-        )}
-      </div>
-    </main>
+
+          {/* Step Content Card */}
+          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] backdrop-blur-sm p-8 shadow-2xl shadow-black/20 animate-fade-in">
+
+            {/* Step 0: Account */}
+            {step === 0 && (
+              <div className="space-y-5">
+                <div className="text-center mb-2">
+                  <div className="mx-auto h-14 w-14 rounded-2xl bg-ringo-teal/10 flex items-center justify-center mb-4">
+                    <UserPlus className="h-7 w-7 text-ringo-teal" />
+                  </div>
+                  <h2 className="text-xl font-bold text-white">Create your account</h2>
+                  <p className="text-sm text-white/40 mt-1">This will be your Ringo dashboard login</p>
+                </div>
+                <Input
+                  id="fullName"
+                  label="Full Name"
+                  placeholder="John Smith"
+                  value={form.fullName}
+                  onChange={(e) => updateField('fullName', e.target.value)}
+                  required
+                />
+                <Input
+                  id="email"
+                  label="Work Email"
+                  type="email"
+                  placeholder="john@myrestaurant.com"
+                  value={form.email}
+                  onChange={(e) => updateField('email', e.target.value)}
+                  required
+                />
+                <Input
+                  id="password"
+                  label="Password"
+                  type="password"
+                  placeholder="Min 6 characters"
+                  value={form.password}
+                  onChange={(e) => updateField('password', e.target.value)}
+                  minLength={6}
+                  required
+                />
+
+                {error && (
+                  <div className="rounded-xl bg-red-400/10 border border-red-400/20 px-4 py-3 text-sm text-red-400">
+                    {error}
+                  </div>
+                )}
+
+                <Button
+                  className="w-full"
+                  size="lg"
+                  onClick={handleCreateAccount}
+                  loading={loading}
+                  disabled={!form.fullName || !form.email || form.password.length < 6}
+                >
+                  Create Account <ArrowRight className="h-4 w-4" />
+                </Button>
+
+                <p className="text-center text-xs text-white/30">
+                  Already have an account?{' '}
+                  <button onClick={() => router.push('/login')} className="text-ringo-teal hover:text-ringo-teal-light transition-colors">
+                    Sign in
+                  </button>
+                </p>
+              </div>
+            )}
+
+            {/* Step 1: Restaurant */}
+            {step === 1 && (
+              <div className="space-y-5">
+                <div className="text-center mb-2">
+                  <div className="mx-auto h-14 w-14 rounded-2xl bg-ringo-amber/10 flex items-center justify-center mb-4">
+                    <Utensils className="h-7 w-7 text-ringo-amber" />
+                  </div>
+                  <h2 className="text-xl font-bold text-white">Your restaurant</h2>
+                  <p className="text-sm text-white/40 mt-1">Ringo will use this to answer calls accurately</p>
+                </div>
+                <Input
+                  id="restaurantName"
+                  label="Restaurant Name"
+                  placeholder="Mario's Pizza"
+                  value={form.restaurantName}
+                  onChange={(e) => updateField('restaurantName', e.target.value)}
+                  required
+                />
+                <Input
+                  id="address"
+                  label="Address"
+                  placeholder="123 Main St, Austin, TX 78701"
+                  value={form.address}
+                  onChange={(e) => updateField('address', e.target.value)}
+                  required
+                />
+                <Input
+                  id="phone"
+                  label="Restaurant Phone"
+                  placeholder="(512) 555-1234"
+                  type="tel"
+                  value={form.phone}
+                  onChange={(e) => updateField('phone', e.target.value)}
+                  required
+                />
+
+                <div className="flex gap-3 pt-2">
+                  <Button variant="ghost" onClick={() => setStep(0)} className="flex-1 border border-white/[0.08]">
+                    <ArrowLeft className="h-4 w-4" /> Back
+                  </Button>
+                  <Button
+                    onClick={() => setStep(2)}
+                    className="flex-1"
+                    disabled={!form.restaurantName || !form.address || !form.phone}
+                  >
+                    Continue <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: POS */}
+            {step === 2 && (
+              <div className="space-y-5">
+                <div className="text-center mb-2">
+                  <div className="mx-auto h-14 w-14 rounded-2xl bg-violet-400/10 flex items-center justify-center mb-4">
+                    <Phone className="h-7 w-7 text-violet-400" />
+                  </div>
+                  <h2 className="text-xl font-bold text-white">Connect your POS</h2>
+                  <p className="text-sm text-white/40 mt-1">Orders go straight to your kitchen — zero manual entry</p>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  {POS_OPTIONS.map((pos) => (
+                    <button
+                      key={pos.value}
+                      onClick={() => updateField('posType', pos.value)}
+                      className={cn(
+                        'rounded-xl border p-4 text-left transition-all duration-200',
+                        form.posType === pos.value
+                          ? 'border-ringo-teal/50 bg-ringo-teal/[0.05] shadow-lg shadow-ringo-teal/10'
+                          : 'border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12] hover:bg-white/[0.04]'
+                      )}
+                    >
+                      <p className="text-sm font-bold text-white">{pos.label}</p>
+                      {pos.value !== 'none' && (
+                        <p className="text-[10px] text-white/30 mt-0.5">Auto-sync orders</p>
+                      )}
+                      {form.posType === pos.value && (
+                        <Check className="h-3.5 w-3.5 text-ringo-teal mt-1" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-3 pt-2">
+                  <Button variant="ghost" onClick={() => setStep(1)} className="flex-1 border border-white/[0.08]">
+                    <ArrowLeft className="h-4 w-4" /> Back
+                  </Button>
+                  <Button onClick={() => setStep(3)} className="flex-1">
+                    Continue <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Plan */}
+            {step === 3 && (
+              <div className="space-y-5">
+                <div className="text-center mb-2">
+                  <div className="mx-auto h-14 w-14 rounded-2xl bg-ringo-teal/10 flex items-center justify-center mb-4">
+                    <Sparkles className="h-7 w-7 text-ringo-teal" />
+                  </div>
+                  <h2 className="text-xl font-bold text-white">Choose your plan</h2>
+                  <p className="text-sm text-white/40 mt-1">14-day free trial on all plans. No credit card needed.</p>
+                </div>
+
+                <div className="space-y-3">
+                  {plans.map((plan) => (
+                    <button
+                      key={plan.tier}
+                      onClick={() => updateField('planTier', plan.tier)}
+                      className={cn(
+                        'w-full rounded-xl border p-5 text-left transition-all duration-200 relative',
+                        form.planTier === plan.tier
+                          ? 'border-ringo-teal/50 bg-ringo-teal/[0.05] shadow-lg shadow-ringo-teal/10'
+                          : 'border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12]'
+                      )}
+                    >
+                      {plan.popular && (
+                        <span className="absolute -top-2.5 right-4 rounded-full bg-ringo-teal px-3 py-0.5 text-[10px] font-bold text-white shadow-lg shadow-ringo-teal/30">
+                          RECOMMENDED
+                        </span>
+                      )}
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <p className="text-base font-bold text-white">{plan.name}</p>
+                          <p className="text-xs text-white/30">{plan.desc}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xl font-bold text-white">{plan.price}</p>
+                          {plan.price !== 'Custom' && <p className="text-[10px] text-white/30">/month</p>}
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {plan.features.map((f) => (
+                          <span key={f} className="text-[10px] font-medium text-white/40 bg-white/[0.04] rounded-full px-2.5 py-0.5">
+                            {f}
+                          </span>
+                        ))}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {error && (
+                  <div className="rounded-xl bg-red-400/10 border border-red-400/20 px-4 py-3 text-sm text-red-400">
+                    {error}
+                  </div>
+                )}
+
+                <div className="flex gap-3 pt-2">
+                  <Button variant="ghost" onClick={() => setStep(2)} className="flex-1 border border-white/[0.08]">
+                    <ArrowLeft className="h-4 w-4" /> Back
+                  </Button>
+                  <Button onClick={handleComplete} loading={loading} className="flex-1">
+                    Start Free Trial <Sparkles className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 4: Complete */}
+            {step === 4 && (
+              <div className="text-center py-6 space-y-6">
+                <div className="relative mx-auto w-24 h-24">
+                  <div className="absolute inset-0 bg-ringo-teal/20 rounded-full blur-xl" />
+                  <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-ringo-teal to-emerald-400 flex items-center justify-center shadow-2xl shadow-ringo-teal/30">
+                    <Check className="h-12 w-12 text-white" />
+                  </div>
+                </div>
+
+                <div>
+                  <h2 className="text-2xl font-bold text-white">
+                    Welcome aboard, {form.fullName.split(' ')[0]}!
+                  </h2>
+                  <p className="text-sm text-white/40 mt-2 max-w-sm mx-auto">
+                    Your AI agent for <strong className="text-white">{form.restaurantName}</strong> is being set up. You&apos;ll be live in minutes.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { icon: Zap, label: 'Instant setup', color: 'text-ringo-teal', bg: 'bg-ringo-teal/10' },
+                    { icon: PhoneCall, label: '24/7 answering', color: 'text-ringo-amber', bg: 'bg-ringo-amber/10' },
+                    { icon: TrendingUp, label: 'Smart upsells', color: 'text-violet-400', bg: 'bg-violet-400/10' },
+                  ].map((item) => (
+                    <div key={item.label} className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-3">
+                      <item.icon className={cn('h-5 w-5 mx-auto mb-1.5', item.color)} />
+                      <p className="text-[10px] font-semibold text-white/40">{item.label}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <Button
+                  size="lg"
+                  onClick={() => router.push('/dashboard')}
+                  className="w-full shadow-xl shadow-ringo-teal/20"
+                >
+                  Go to Your Dashboard <ArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Trust bar */}
+          {step < 4 && (
+            <div className="flex items-center justify-center gap-6 mt-8 text-[10px] text-white/20 font-semibold">
+              <div className="flex items-center gap-1.5">
+                <Shield className="h-3 w-3" />
+                <span>256-bit encryption</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Headphones className="h-3 w-3" />
+                <span>24/7 support</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Clock className="h-3 w-3" />
+                <span>5 min setup</span>
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
   );
 }
