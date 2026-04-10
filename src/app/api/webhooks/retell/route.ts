@@ -93,26 +93,105 @@ export async function POST(request: Request) {
             })
             .eq('retell_call_id', event.call.call_id);
 
+          // Get the call record for linking
+          const { data: call } = await supabase
+            .from('calls')
+            .select('id')
+            .eq('retell_call_id', event.call.call_id)
+            .single();
+
           // Insert order items if provided
           const orderItems = analysisData.order_items;
-          if (Array.isArray(orderItems) && orderItems.length > 0) {
-            const { data: call } = await supabase
-              .from('calls')
-              .select('id')
-              .eq('retell_call_id', event.call.call_id)
+          if (Array.isArray(orderItems) && orderItems.length > 0 && call) {
+            const items = orderItems.map((item: Record<string, unknown>) => ({
+              call_id: call.id,
+              restaurant_id: restaurant.id,
+              item_name: String(item.name || ''),
+              quantity: Number(item.quantity) || 1,
+              unit_price: Number(item.price) || 0,
+              is_upsell: Boolean(item.is_upsell),
+            }));
+
+            await supabase.from('order_items').insert(items);
+          }
+
+          // ── Pay-before-prep: Create order + send SMS payment link ──
+          const customerPhone = String(analysisData.customer_phone || event.call.from_number || '');
+          if (outcome === 'order_placed' && orderTotal > 0 && customerPhone) {
+            // Build order items for the orders table
+            const orderItemsData = Array.isArray(orderItems)
+              ? orderItems.map((item: Record<string, unknown>) => ({
+                  name: String(item.name || ''),
+                  quantity: Number(item.quantity) || 1,
+                  price: Number(item.price) || 0,
+                  is_upsell: Boolean(item.is_upsell),
+                }))
+              : [];
+
+            const tax = Number(analysisData.tax) || Math.round(orderTotal * 0.08 * 100) / 100;
+            const total = orderTotal + tax;
+
+            // Create pending order
+            const { data: newOrder, error: orderError } = await supabase
+              .from('orders')
+              .insert({
+                restaurant_id: restaurant.id,
+                call_id: call?.id || null,
+                customer_phone: customerPhone,
+                items: orderItemsData,
+                subtotal: orderTotal,
+                tax,
+                total,
+                status: 'pending',
+              })
+              .select()
               .single();
 
-            if (call) {
-              const items = orderItems.map((item: Record<string, unknown>) => ({
-                call_id: call.id,
-                restaurant_id: restaurant.id,
-                item_name: String(item.name || ''),
-                quantity: Number(item.quantity) || 1,
-                unit_price: Number(item.price) || 0,
-                is_upsell: Boolean(item.is_upsell),
-              }));
+            if (!orderError && newOrder) {
+              console.log(`[${new Date().toISOString()}] Order created from call: ${newOrder.id}`);
 
-              await supabase.from('order_items').insert(items);
+              // Get restaurant name for the SMS
+              const { data: restaurantData } = await supabase
+                .from('restaurants')
+                .select('name')
+                .eq('id', restaurant.id)
+                .single();
+
+              const restaurantName = restaurantData?.name || 'the restaurant';
+              const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://useringo.ai';
+              const paymentLink = `${baseUrl}/pay/${newOrder.id}`;
+
+              // Send SMS with payment link
+              const smsMessage = `Hi! Your order from ${restaurantName} is ready to pay. Total: $${total.toFixed(2)}. Pay here to start preparation: ${paymentLink}`;
+
+              try {
+                const smsBaseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://useringo.ai';
+                await fetch(`${smsBaseUrl}/api/sms`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    to: customerPhone,
+                    message: smsMessage,
+                    type: 'payment_link',
+                  }),
+                });
+
+                // Mark that the payment link was sent
+                await supabase
+                  .from('orders')
+                  .update({
+                    status: 'payment_sent',
+                    payment_link_sent_at: new Date().toISOString(),
+                  })
+                  .eq('id', newOrder.id);
+
+                console.log(`[${new Date().toISOString()}] Payment SMS sent to ${customerPhone} for order ${newOrder.id}`);
+              } catch (smsErr) {
+                console.error(`[${new Date().toISOString()}] SMS send failed:`, smsErr);
+                // Order is still created, SMS just didn't go through
+              }
+            } else {
+              console.error(`[${new Date().toISOString()}] Order creation failed:`, orderError);
             }
           }
         }

@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select } from '@/components/ui/select';
@@ -8,14 +11,17 @@ import { Card } from '@/components/ui/card';
 import { POS_OPTIONS } from '@/lib/constants';
 
 export default function AddRestaurantPage() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
   const [form, setForm] = useState({
     name: '',
     address: '',
     phone: '',
     posType: 'none',
     retellAgentId: '',
+    ownerEmail: '',
   });
 
   function updateField(field: string, value: string) {
@@ -25,19 +31,45 @@ export default function AddRestaurantPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
+    setError('');
 
-    // TODO: Replace with actual Supabase insert
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const res = await fetch('/api/admin/restaurants', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          address: form.address,
+          phone: form.phone,
+          pos_type: form.posType,
+          retell_agent_id: form.retellAgentId || null,
+          owner_email: form.ownerEmail || null,
+        }),
+      });
 
-    setLoading(false);
-    setSuccess(true);
-    setForm({ name: '', address: '', phone: '', posType: 'none', retellAgentId: '' });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to create restaurant');
+      }
 
-    setTimeout(() => setSuccess(false), 3000);
+      setSuccess(true);
+      setForm({ name: '', address: '', phone: '', posType: 'none', retellAgentId: '', ownerEmail: '' });
+
+      // Redirect to admin page after brief success message
+      setTimeout(() => router.push('/admin'), 2000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <div className="max-w-2xl animate-fade-in">
+      <Link href="/admin" className="inline-flex items-center gap-1.5 text-sm text-ringo-muted hover:text-foreground transition-colors mb-4">
+        <ArrowLeft className="h-4 w-4" /> Back to Admin
+      </Link>
+
       <h1 className="text-2xl font-semibold text-foreground mb-2">Add New Restaurant</h1>
       <p className="text-sm text-ringo-muted mb-6">
         Register a new restaurant location for Ringo AI ordering
@@ -56,7 +88,7 @@ export default function AddRestaurantPage() {
           <Input
             id="address"
             label="Address"
-            placeholder="123 Main St, Austin, TX 78701"
+            placeholder="123 Main St, Modesto, CA 95354"
             value={form.address}
             onChange={(e) => updateField('address', e.target.value)}
             required
@@ -64,11 +96,19 @@ export default function AddRestaurantPage() {
           <Input
             id="phone"
             label="Phone Number"
-            placeholder="(512) 555-1234"
+            placeholder="(209) 555-1234"
             type="tel"
             value={form.phone}
             onChange={(e) => updateField('phone', e.target.value)}
             required
+          />
+          <Input
+            id="ownerEmail"
+            label="Owner Email (optional)"
+            placeholder="owner@restaurant.com"
+            type="email"
+            value={form.ownerEmail}
+            onChange={(e) => updateField('ownerEmail', e.target.value)}
           />
           <Select
             id="posType"
@@ -87,7 +127,13 @@ export default function AddRestaurantPage() {
 
           {success && (
             <div className="rounded-lg bg-emerald-400/10 border border-emerald-400/20 px-4 py-2 text-sm text-emerald-400">
-              Restaurant added successfully!
+              Restaurant added successfully! Redirecting...
+            </div>
+          )}
+
+          {error && (
+            <div className="rounded-lg bg-red-400/10 border border-red-400/20 px-4 py-2 text-sm text-red-400">
+              {error}
             </div>
           )}
 

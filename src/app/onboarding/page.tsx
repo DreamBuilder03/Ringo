@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { POS_OPTIONS } from '@/lib/constants';
+import { POS_OPTIONS, PRICING_TIERS } from '@/lib/constants';
 import {
   Check,
   ArrowRight,
@@ -103,33 +103,77 @@ export default function OnboardingPage() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
 
-      if (user) {
-        const { error: restaurantError } = await supabase
-          .from('restaurants')
-          .insert({
-            name: form.restaurantName,
-            address: form.address,
-            phone: form.phone,
-            pos_type: form.posType,
-            plan_tier: form.planTier,
-            owner_user_id: user.id,
-          });
-
-        if (restaurantError) {
-          console.error('Restaurant creation error:', restaurantError);
-        }
-
-        await supabase
-          .from('profiles')
-          .update({ full_name: form.fullName })
-          .eq('id', user.id);
+      if (!user) {
+        setError('Please sign in to continue.');
+        setLoading(false);
+        return;
       }
+
+      // Create restaurant in Supabase
+      const { data: restaurant, error: restaurantError } = await supabase
+        .from('restaurants')
+        .insert({
+          name: form.restaurantName,
+          address: form.address,
+          phone: form.phone,
+          pos_type: form.posType,
+          plan_tier: form.planTier,
+          owner_user_id: user.id,
+        })
+        .select()
+        .single();
+
+      if (restaurantError) {
+        console.error('Restaurant creation error:', restaurantError);
+        setError('Failed to create restaurant. Please try again.');
+        setLoading(false);
+        return;
+      }
+
+      // Update profile name
+      await supabase
+        .from('profiles')
+        .update({ full_name: form.fullName })
+        .eq('id', user.id);
+
+      // If Enterprise, skip Stripe (contact sales flow)
+      if (form.planTier === 'pro') {
+        setLoading(false);
+        setStep(4);
+        return;
+      }
+
+      // For paid plans, redirect to Stripe Checkout
+      const selectedPlan = PRICING_TIERS.find((p) => p.tier === form.planTier);
+      if (selectedPlan?.stripePriceId) {
+        const res = await fetch('/api/checkout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            restaurantId: restaurant.id,
+            priceId: selectedPlan.stripePriceId,
+            planTier: form.planTier,
+          }),
+        });
+
+        if (res.ok) {
+          const { url } = await res.json();
+          if (url) {
+            window.location.href = url;
+            return;
+          }
+        }
+        // If Stripe checkout fails, still proceed to dashboard
+        console.warn('Stripe checkout creation failed, proceeding without payment');
+      }
+
+      setLoading(false);
+      setStep(4);
     } catch (err) {
       console.error('Onboarding error:', err);
+      setError('Something went wrong. Please try again.');
+      setLoading(false);
     }
-
-    setLoading(false);
-    setStep(4);
   }
 
   const plans = [
@@ -351,12 +395,16 @@ export default function OnboardingPage() {
                     </button>
                   ))}
                 </div>
+                <p className="text-[10px] text-white/20 text-center">
+                  Don&apos;t worry — you can connect your POS later from Settings.
+                </p>
+
                 <div className="flex gap-3 pt-2">
                   <Button variant="ghost" onClick={() => setStep(1)} className="flex-1 border border-white/[0.08]">
                     <ArrowLeft className="h-4 w-4" /> Back
                   </Button>
                   <Button onClick={() => setStep(3)} className="flex-1">
-                    Continue <ArrowRight className="h-4 w-4" />
+                    {form.posType === 'none' ? 'Skip' : 'Continue'} <ArrowRight className="h-4 w-4" />
                   </Button>
                 </div>
               </div>

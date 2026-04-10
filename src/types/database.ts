@@ -70,6 +70,33 @@ export interface RestaurantWithStats extends Restaurant {
   health_status: HealthStatus;
 }
 
+export type OrderStatus = 'pending' | 'payment_sent' | 'paid' | 'preparing' | 'ready' | 'completed' | 'cancelled';
+
+export interface Order {
+  id: string;
+  restaurant_id: string;
+  call_id: string | null;
+  customer_phone: string;
+  items: OrderItemData[];
+  subtotal: number;
+  tax: number;
+  total: number;
+  status: OrderStatus;
+  payment_intent_id: string | null;
+  payment_link_sent_at: string | null;
+  paid_at: string | null;
+  pos_order_id: string | null;
+  pos_pushed_at: string | null;
+  created_at: string;
+}
+
+export interface OrderItemData {
+  name: string;
+  quantity: number;
+  price: number;
+  is_upsell: boolean;
+}
+
 export interface PricingTier {
   name: string;
   tier: PlanTier;
