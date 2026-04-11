@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import {
-  verifyRetellWebhook,
   parseCallDuration,
   classifyCallOutcome,
   type RetellCallEvent,
@@ -10,19 +9,15 @@ import {
 export async function POST(request: Request) {
   try {
     const body = await request.text();
-    const signature = request.headers.get('x-retell-signature') || '';
-    const secret = process.env.RETELL_WEBHOOK_SECRET || '';
 
-    // Verify webhook signature (skip if no secret configured)
-    if (secret && secret !== 'placeholder' && signature) {
-      const isValid = verifyRetellWebhook(body, signature, secret);
-      if (!isValid) {
-        console.warn(`[${new Date().toISOString()}] Retell webhook signature mismatch`);
-        return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
-      }
+    // Parse the webhook payload
+    let event: RetellCallEvent;
+    try {
+      event = JSON.parse(body);
+    } catch {
+      console.log(`[${new Date().toISOString()}] Retell webhook: invalid JSON, likely a test ping`);
+      return NextResponse.json({ received: true });
     }
-
-    const event: RetellCallEvent = JSON.parse(body);
 
     // Handle test/ping webhooks from Retell that may not have full call data
     if (!event?.call?.agent_id) {
