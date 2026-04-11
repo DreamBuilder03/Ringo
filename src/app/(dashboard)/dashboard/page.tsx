@@ -71,7 +71,7 @@ export default function DashboardPage() {
         });
         setHeatmapData(peakHours);
 
-        // Subscribe to realtime call updates
+        // Subscribe to realtime call updates (INSERT + UPDATE)
         const channel = supabase
           .channel('calls-realtime')
           .on(
@@ -88,10 +88,59 @@ export default function DashboardPage() {
               setStats((prev) => ({
                 ...prev,
                 totalCalls: prev.totalCalls + 1,
-                ordersTaken: newCall.call_outcome === 'order_placed' ? prev.ordersTaken + 1 : prev.ordersTaken,
-                revenue: prev.revenue + (newCall.order_total || 0),
-                upsellRevenue: prev.upsellRevenue + (newCall.upsell_total || 0),
               }));
+            }
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'calls',
+              filter: `restaurant_id=eq.${restaurant.id}`,
+            },
+            (payload) => {
+              const updatedCall = payload.new as Call;
+              setCalls((prev) =>
+                prev.map((c) => (c.id === updatedCall.id ? updatedCall : c))
+              );
+              // Recalculate stats from scratch when a call is updated
+              setCalls((prev) => {
+                const todayCalls = prev;
+                const orders = todayCalls.filter((c) => c.call_outcome === 'order_placed');
+                setStats((s) => ({
+                  ...s,
+                  ordersTaken: orders.length,
+                  revenue: orders.reduce((sum, c) => sum + (c.order_total || 0), 0),
+                  upsellRevenue: orders.reduce((sum, c) => sum + (c.upsell_total || 0), 0),
+                }));
+                return prev;
+              });
+            }
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'orders',
+              filter: `restaurant_id=eq.${restaurant.id}`,
+            },
+            () => {
+              // When orders change, refresh the full dashboard stats
+              Promise.all([
+                getDashboardStats(supabase, restaurant.id),
+                getRecentCalls(supabase, restaurant.id, 20),
+              ]).then(([freshStats, freshCalls]) => {
+                setStats({
+                  totalCalls: freshStats.totalCalls,
+                  ordersTaken: freshStats.ordersTaken,
+                  revenue: freshStats.revenue,
+                  upsellRevenue: freshStats.upsellRevenue,
+                  answerRate: freshStats.answerRate,
+                });
+                setCalls(freshCalls.calls);
+              });
             }
           )
           .subscribe();
