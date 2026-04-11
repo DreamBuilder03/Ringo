@@ -9,7 +9,10 @@ interface RetellRequest {
     [key: string]: any;
   };
   args: {
-    customer_phone: string;
+    customer_phone?: string;
+    phone?: string;
+    items?: Array<{ name: string; price: number; quantity: number }>;
+    total_amount?: number;
   };
 }
 
@@ -21,11 +24,13 @@ interface PaymentLinkResponse {
   errors?: Array<{ code: string; detail: string }>;
 }
 
+const TAX_RATE = 0.0875; // 8.75%
+
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as RetellRequest;
     const { call, args } = body;
-    const { customer_phone } = args;
+    const customer_phone = args.customer_phone || args.phone;
 
     if (!call?.agent_id || !call?.call_id) {
       return NextResponse.json(
@@ -68,24 +73,61 @@ export async function POST(request: NextRequest) {
 
     const internalCallId = callRecord?.id || null;
 
-    // Fetch the pending order
-    let order = null;
+    // Try to fetch an existing pending/building order first
+    let order: { id: string; items: any; subtotal: number; tax: number; total: number } | null = null;
     if (internalCallId) {
       const { data } = await supabase
         .from('orders')
         .select('id, items, subtotal, tax, total')
         .eq('call_id', internalCallId)
-        .eq('status', 'pending')
+        .in('status', ['pending', 'building'])
         .single();
       order = data;
     }
 
-    const orderFetchError = order ? null : new Error('Order not found');
+    // If no existing order, create one from the args the agent sent
+    if (!order && args.items && args.items.length > 0) {
+      const items = args.items;
+      const subtotal = args.total_amount
+        ? parseFloat((args.total_amount / (1 + TAX_RATE)).toFixed(2))
+        : items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+      const tax = parseFloat((subtotal * TAX_RATE).toFixed(2));
+      const total = args.total_amount
+        ? args.total_amount
+        : parseFloat((subtotal + tax).toFixed(2));
 
-    if (orderFetchError || !order) {
-      console.error(`[${new Date().toISOString()}] Order fetch failed:`, orderFetchError);
+      const { data: newOrder, error: insertError } = await supabase
+        .from('orders')
+        .insert({
+          call_id: internalCallId,
+          restaurant_id: restaurant.id,
+          customer_phone: customer_phone,
+          items: items,
+          subtotal,
+          tax,
+          total,
+          status: 'pending',
+        })
+        .select('id, items, subtotal, tax, total')
+        .single();
+
+      if (insertError || !newOrder) {
+        console.error(`[${new Date().toISOString()}] Order creation failed:`, insertError);
+        return NextResponse.json(
+          { result: 'Error: Unable to create order. Please try again.' },
+          { status: 500 }
+        );
+      }
+
+      order = newOrder;
+      console.log(`[${new Date().toISOString()}] Created order ${newOrder.id} from agent args`);
+    }
+
+    // If still no order, we can't proceed
+    if (!order) {
+      console.error(`[${new Date().toISOString()}] No order found and no items provided`);
       return NextResponse.json(
-        { result: 'Error: No pending order found. Please confirm your order first.' },
+        { result: 'Error: No order found. Please confirm your order first.' },
         { status: 404 }
       );
     }
