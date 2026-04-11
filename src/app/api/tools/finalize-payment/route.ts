@@ -161,7 +161,11 @@ export async function POST(request: NextRequest) {
       payment_note: `ringo_order:${order.id}`,
     };
 
-    const squareResponse = await fetch('https://connect.squareup.com/v2/online-checkout/payment-links', {
+    const squareBaseUrl = process.env.SQUARE_ENVIRONMENT === 'production'
+      ? 'https://connect.squareup.com'
+      : 'https://connect.squareupsandbox.com';
+
+    const squareResponse = await fetch(`${squareBaseUrl}/v2/online-checkout/payment-links`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${squareAccessToken}`,

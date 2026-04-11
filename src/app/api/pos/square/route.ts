@@ -78,7 +78,11 @@ export async function POST(request: Request) {
     }));
 
     // Create order in Square
-    const squareResponse = await fetch('https://connect.squareup.com/v2/orders', {
+    const squareBaseUrl = process.env.SQUARE_ENVIRONMENT === 'production'
+      ? 'https://connect.squareup.com'
+      : 'https://connect.squareupsandbox.com';
+
+    const squareResponse = await fetch(`${squareBaseUrl}/v2/orders`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${squareAccessToken}`,
