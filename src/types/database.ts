@@ -15,6 +15,8 @@ export interface Restaurant {
   stripe_subscription_id: string | null;
   stripe_customer_id: string | null;
   plan_tier: PlanTier | null;
+  square_access_token: string | null;
+  square_location_id: string | null;
   created_at: string;
   owner_user_id: string;
 }
@@ -70,7 +72,7 @@ export interface RestaurantWithStats extends Restaurant {
   health_status: HealthStatus;
 }
 
-export type OrderStatus = 'pending' | 'payment_sent' | 'paid' | 'preparing' | 'ready' | 'completed' | 'cancelled';
+export type OrderStatus = 'building' | 'pending' | 'payment_sent' | 'paid' | 'preparing' | 'ready' | 'completed' | 'cancelled';
 
 export interface Order {
   id: string;
@@ -95,6 +97,23 @@ export interface OrderItemData {
   quantity: number;
   price: number;
   is_upsell: boolean;
+}
+
+export interface MenuItem {
+  id: string;
+  restaurant_id: string;
+  name: string;
+  category: string | null;
+  price: number;
+  description: string | null;
+  modifiers: MenuModifier[] | null;
+  available: boolean;
+  created_at: string;
+}
+
+export interface MenuModifier {
+  name: string;
+  price: number;
 }
 
 export interface PricingTier {

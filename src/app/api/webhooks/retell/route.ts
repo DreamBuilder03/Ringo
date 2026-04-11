@@ -77,36 +77,67 @@ export async function POST(request: Request) {
       }
 
       case 'call_analyzed': {
+        // With Option B, orders are created during the call by the /api/tools/* routes.
+        // This handler now only syncs call-level analytics (totals, outcome, transcript)
+        // and backfills order_items for the analytics dashboard.
+
         const analysisData = event.call.call_analysis?.custom_analysis_data;
-        if (analysisData) {
-          const orderTotal = Number(analysisData.order_total) || 0;
-          const upsellTotal = Number(analysisData.upsell_total) || 0;
-          const outcome = classifyCallOutcome(
-            event.call.transcript,
-            analysisData as Record<string, unknown>
-          );
 
-          await supabase
-            .from('calls')
-            .update({
-              order_total: orderTotal,
-              upsell_total: upsellTotal,
-              call_outcome: outcome,
-              transcript: event.call.transcript || undefined,
-            })
-            .eq('retell_call_id', event.call.call_id);
+        // Get the call record
+        const { data: call } = await supabase
+          .from('calls')
+          .select('id')
+          .eq('retell_call_id', event.call.call_id)
+          .single();
 
-          // Get the call record for linking
-          const { data: call } = await supabase
-            .from('calls')
-            .select('id')
-            .eq('retell_call_id', event.call.call_id)
+        // Check if a tool-created order already exists for this call
+        let orderFromTools = null;
+        if (call) {
+          const { data: existingOrder } = await supabase
+            .from('orders')
+            .select('subtotal, total, items')
+            .eq('call_id', call.id)
+            .neq('status', 'building') // only confirmed/paid orders
             .single();
+          orderFromTools = existingOrder;
+        }
 
-          // Insert order items if provided
-          const orderItems = analysisData.order_items;
-          if (Array.isArray(orderItems) && orderItems.length > 0 && call) {
-            const items = orderItems.map((item: Record<string, unknown>) => ({
+        // Determine totals — prefer the tool-created order data over analysis
+        const orderTotal = orderFromTools
+          ? orderFromTools.subtotal
+          : Number(analysisData?.order_total) || 0;
+        const upsellTotal = Number(analysisData?.upsell_total) || 0;
+
+        const outcome = orderFromTools
+          ? 'order_placed' as const
+          : classifyCallOutcome(
+              event.call.transcript,
+              analysisData as Record<string, unknown> | undefined
+            );
+
+        await supabase
+          .from('calls')
+          .update({
+            order_total: orderTotal,
+            upsell_total: upsellTotal,
+            call_outcome: outcome,
+            transcript: event.call.transcript || undefined,
+          })
+          .eq('retell_call_id', event.call.call_id);
+
+        // Backfill order_items for analytics if they came from analysis data
+        // (tool routes store items in the orders.items JSONB; this populates the
+        //  separate order_items table used by the analytics dashboard)
+        if (call && orderFromTools?.items && Array.isArray(orderFromTools.items)) {
+          const existingItems = await supabase
+            .from('order_items')
+            .select('id')
+            .eq('call_id', call.id)
+            .limit(1);
+
+          // Only insert if no order_items exist yet for this call
+          if (!existingItems.data?.length) {
+            const items = (orderFromTools.items as Array<Record<string, unknown>>).map((item) => ({
               call_id: call.id,
               restaurant_id: restaurant.id,
               item_name: String(item.name || ''),
@@ -115,89 +146,13 @@ export async function POST(request: Request) {
               is_upsell: Boolean(item.is_upsell),
             }));
 
-            await supabase.from('order_items').insert(items);
-          }
-
-          // ── Pay-before-prep: Create order + send SMS payment link ──
-          const customerPhone = String(analysisData.customer_phone || event.call.from_number || '');
-          if (outcome === 'order_placed' && orderTotal > 0 && customerPhone) {
-            // Build order items for the orders table
-            const orderItemsData = Array.isArray(orderItems)
-              ? orderItems.map((item: Record<string, unknown>) => ({
-                  name: String(item.name || ''),
-                  quantity: Number(item.quantity) || 1,
-                  price: Number(item.price) || 0,
-                  is_upsell: Boolean(item.is_upsell),
-                }))
-              : [];
-
-            const tax = Number(analysisData.tax) || Math.round(orderTotal * 0.08 * 100) / 100;
-            const total = orderTotal + tax;
-
-            // Create pending order
-            const { data: newOrder, error: orderError } = await supabase
-              .from('orders')
-              .insert({
-                restaurant_id: restaurant.id,
-                call_id: call?.id || null,
-                customer_phone: customerPhone,
-                items: orderItemsData,
-                subtotal: orderTotal,
-                tax,
-                total,
-                status: 'pending',
-              })
-              .select()
-              .single();
-
-            if (!orderError && newOrder) {
-              console.log(`[${new Date().toISOString()}] Order created from call: ${newOrder.id}`);
-
-              // Get restaurant name for the SMS
-              const { data: restaurantData } = await supabase
-                .from('restaurants')
-                .select('name')
-                .eq('id', restaurant.id)
-                .single();
-
-              const restaurantName = restaurantData?.name || 'the restaurant';
-              const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://useringo.ai';
-              const paymentLink = `${baseUrl}/pay/${newOrder.id}`;
-
-              // Send SMS with payment link
-              const smsMessage = `Hi! Your order from ${restaurantName} is ready to pay. Total: $${total.toFixed(2)}. Pay here to start preparation: ${paymentLink}`;
-
-              try {
-                const smsBaseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://useringo.ai';
-                await fetch(`${smsBaseUrl}/api/sms`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    to: customerPhone,
-                    message: smsMessage,
-                    type: 'payment_link',
-                  }),
-                });
-
-                // Mark that the payment link was sent
-                await supabase
-                  .from('orders')
-                  .update({
-                    status: 'payment_sent',
-                    payment_link_sent_at: new Date().toISOString(),
-                  })
-                  .eq('id', newOrder.id);
-
-                console.log(`[${new Date().toISOString()}] Payment SMS sent to ${customerPhone} for order ${newOrder.id}`);
-              } catch (smsErr) {
-                console.error(`[${new Date().toISOString()}] SMS send failed:`, smsErr);
-                // Order is still created, SMS just didn't go through
-              }
-            } else {
-              console.error(`[${new Date().toISOString()}] Order creation failed:`, orderError);
+            if (items.length > 0) {
+              await supabase.from('order_items').insert(items);
             }
           }
         }
+
+        console.log(`[${new Date().toISOString()}] call_analyzed processed: call=${event.call.call_id}, outcome=${outcome}, total=${orderTotal}`);
         break;
       }
     }
