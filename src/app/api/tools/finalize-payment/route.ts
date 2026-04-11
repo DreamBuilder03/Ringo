@@ -59,13 +59,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch the pending order
-    const { data: order, error: orderFetchError } = await supabase
-      .from('orders')
-      .select('id, items, subtotal, tax, total')
-      .eq('call_id', call.call_id)
-      .eq('status', 'pending')
+    // Look up internal call ID from Retell call ID
+    const { data: callRecord } = await supabase
+      .from('calls')
+      .select('id')
+      .eq('retell_call_id', call.call_id)
       .single();
+
+    const internalCallId = callRecord?.id || null;
+
+    // Fetch the pending order
+    let order = null;
+    if (internalCallId) {
+      const { data } = await supabase
+        .from('orders')
+        .select('id, items, subtotal, tax, total')
+        .eq('call_id', internalCallId)
+        .eq('status', 'pending')
+        .single();
+      order = data;
+    }
+
+    const orderFetchError = order ? null : new Error('Order not found');
 
     if (orderFetchError || !order) {
       console.error(`[${new Date().toISOString()}] Order fetch failed:`, orderFetchError);

@@ -89,6 +89,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Look up internal call ID from Retell call ID
+    const { data: callRecord } = await supabase
+      .from('calls')
+      .select('id')
+      .eq('retell_call_id', call.call_id)
+      .single();
+
+    const internalCallId = callRecord?.id || null;
+
     // Look up menu item
     const { data: menuItems, error: itemError } = await supabase
       .from('menu_items')
@@ -107,13 +116,17 @@ export async function POST(request: NextRequest) {
 
     const menuItem: MenuItem = menuItems[0];
 
-    // Check if an order already exists for this call
-    const { data: existingOrder, error: orderFetchError } = await supabase
-      .from('orders')
-      .select('id, items, subtotal, tax, total')
-      .eq('call_id', call.call_id)
-      .eq('status', 'building')
-      .single();
+    // If we have an internal call ID, look for existing building order
+    let existingOrder = null;
+    if (internalCallId) {
+      const { data } = await supabase
+        .from('orders')
+        .select('id, items, subtotal, tax, total')
+        .eq('call_id', internalCallId)
+        .eq('status', 'building')
+        .single();
+      existingOrder = data;
+    }
 
     let currentItems: OrderItem[] = [];
 
@@ -133,29 +146,48 @@ export async function POST(request: NextRequest) {
     currentItems.push(newOrderItem);
     const totals = calculateTotals(currentItems);
 
-    // Upsert the order
-    const { error: upsertError } = await supabase.from('orders').upsert(
-      {
-        call_id: call.call_id,
-        restaurant_id: restaurant.id,
-        customer_phone: customer_phone || null,
-        items: currentItems,
-        subtotal: totals.subtotal,
-        tax: totals.tax,
-        total: totals.total,
-        status: 'building',
-      },
-      {
-        onConflict: 'call_id',
-      }
-    );
+    // Insert or update order
+    if (existingOrder) {
+      // Update existing order
+      const { error: updateError } = await supabase
+        .from('orders')
+        .update({
+          items: currentItems,
+          subtotal: totals.subtotal,
+          tax: totals.tax,
+          total: totals.total,
+        })
+        .eq('id', existingOrder.id);
 
-    if (upsertError) {
-      console.error(`[${new Date().toISOString()}] Order upsert failed:`, upsertError);
-      return NextResponse.json(
-        { result: 'Error: Unable to add item to order. Please try again.' },
-        { status: 500 }
-      );
+      if (updateError) {
+        console.error(`[${new Date().toISOString()}] Order update failed:`, updateError);
+        return NextResponse.json(
+          { result: 'Error: Unable to add item to order. Please try again.' },
+          { status: 500 }
+        );
+      }
+    } else {
+      // Create new order
+      const { error: insertError } = await supabase
+        .from('orders')
+        .insert({
+          call_id: internalCallId,
+          restaurant_id: restaurant.id,
+          customer_phone: customer_phone || call.from_number || '',
+          items: currentItems,
+          subtotal: totals.subtotal,
+          tax: totals.tax,
+          total: totals.total,
+          status: 'building',
+        });
+
+      if (insertError) {
+        console.error(`[${new Date().toISOString()}] Order insert failed:`, insertError);
+        return NextResponse.json(
+          { result: 'Error: Unable to add item to order. Please try again.' },
+          { status: 500 }
+        );
+      }
     }
 
     return NextResponse.json({

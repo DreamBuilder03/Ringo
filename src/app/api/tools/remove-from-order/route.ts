@@ -84,13 +84,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch the building order
-    const { data: order, error: orderFetchError } = await supabase
-      .from('orders')
-      .select('id, items')
-      .eq('call_id', call.call_id)
-      .eq('status', 'building')
+    // Look up internal call ID from Retell call ID
+    const { data: callRecord } = await supabase
+      .from('calls')
+      .select('id')
+      .eq('retell_call_id', call.call_id)
       .single();
+
+    const internalCallId = callRecord?.id || null;
+
+    // Fetch the building order
+    let order = null;
+    if (internalCallId) {
+      const { data } = await supabase
+        .from('orders')
+        .select('id, items')
+        .eq('call_id', internalCallId)
+        .eq('status', 'building')
+        .single();
+      order = data;
+    }
+
+    const orderFetchError = order ? null : new Error('Order not found');
 
     if (orderFetchError || !order) {
       console.error(`[${new Date().toISOString()}] Order fetch failed:`, orderFetchError);
