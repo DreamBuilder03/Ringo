@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import {
@@ -125,7 +126,13 @@ export function Sidebar({ role }: SidebarProps) {
         {/* Logo + Agent Status */}
         <div className="p-6 border-b border-ringo-border">
           <div className="flex items-center justify-between">
-            <h1 className="font-serif text-2xl text-ringo-teal tracking-tight">Ringo</h1>
+            <Image
+              src="/ringo-logo.svg"
+              alt="Ringo"
+              width={120}
+              height={40}
+              className="h-10 w-auto"
+            />
             {role === 'admin' && (
               <span className="text-[10px] font-bold uppercase tracking-widest text-ringo-amber bg-ringo-amber/10 px-2 py-0.5 rounded-full">
                 Admin
@@ -134,7 +141,7 @@ export function Sidebar({ role }: SidebarProps) {
           </div>
 
           {/* Live Agent Status */}
-          <div className="mt-4 rounded-xl bg-gradient-to-r from-ringo-teal/10 to-emerald-500/5 border border-ringo-teal/20 p-3">
+          <div className="mt-4 rounded-xl bg-gradient-to-r from-ringo-teal/10 to-green-100/30 border border-ringo-teal/20 p-3">
             <div className="flex items-center gap-2.5">
               <div className="relative">
                 <div className="h-8 w-8 rounded-lg bg-ringo-teal/20 flex items-center justify-center">
@@ -142,7 +149,7 @@ export function Sidebar({ role }: SidebarProps) {
                 </div>
                 <div className={cn(
                   'absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-ringo-darker transition-all duration-1000',
-                  agentPulse ? 'bg-emerald-400 shadow-lg shadow-emerald-400/50' : 'bg-emerald-400'
+                  agentPulse ? 'bg-green-500 shadow-lg shadow-green-500/50' : 'bg-green-500'
                 )} />
               </div>
               <div className="flex-1 min-w-0">
@@ -205,13 +212,13 @@ export function Sidebar({ role }: SidebarProps) {
                 {todayCalls} / {callLimit >= 9999 ? '∞' : callLimit}
               </span>
             </div>
-            <div className="h-1.5 rounded-full bg-ringo-border/50 overflow-hidden">
+            <div className="h-1.5 rounded-full bg-ringo-border/30 overflow-hidden">
               <div
                 className={cn(
                   'h-full rounded-full transition-all duration-500',
                   todayCalls / callLimit > 0.9
-                    ? 'bg-gradient-to-r from-red-400 to-red-500'
-                    : 'bg-gradient-to-r from-ringo-teal to-emerald-400'
+                    ? 'bg-gradient-to-r from-red-600 to-red-700'
+                    : 'bg-gradient-to-r from-ringo-teal to-green-500'
                 )}
                 style={{ width: `${Math.min((todayCalls / callLimit) * 100, 100)}%` }}
               />

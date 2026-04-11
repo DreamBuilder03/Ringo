@@ -5,10 +5,10 @@ export const BRAND = {
   tagline: 'The phone rings. Ringo handles it.',
   domain: 'useringo.ai',
   colors: {
-    dark: '#0D0D12',
-    teal: '#1D9E75',
-    amber: '#EF9F27',
-    purple: '#3C3489',
+    dark: '#FFF8F0',
+    teal: '#921920',
+    amber: '#0C1A7D',
+    purple: '#1428A0',
   },
 } as const;
 

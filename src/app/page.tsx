@@ -83,7 +83,7 @@ function PhoneMockup() {
   return (
     <div className="relative">
       {/* Glow effect */}
-      <div className="absolute inset-0 bg-ringo-teal/20 blur-[100px] rounded-full" />
+      <div className="absolute inset-0 bg-ringo-teal/15 blur-[100px] rounded-full" />
 
       {/* Phone frame */}
       <div className="relative w-[300px] h-[620px] bg-[#0a0a0f] rounded-[3rem] border-[6px] border-gray-800 shadow-2xl shadow-black/50 overflow-hidden">
@@ -96,13 +96,13 @@ function PhoneMockup() {
           <div className="flex items-center gap-1">
             <Wifi className="h-3 w-3 text-white/70" />
             <div className="w-6 h-2.5 rounded-sm border border-white/40 p-[1px]">
-              <div className="h-full w-[80%] rounded-sm bg-emerald-400" />
+              <div className="h-full w-[80%] rounded-sm bg-green-500" />
             </div>
           </div>
         </div>
 
         {/* Screen content */}
-        <div className="relative h-full bg-gradient-to-b from-[#0D0D12] to-[#111118] px-4 pt-2 overflow-hidden">
+        <div className="relative h-full bg-gradient-to-b from-ringo-darker to-[#0F0F14] px-4 pt-2 overflow-hidden">
           {/* Dashboard Screen */}
           <div className={cn(
             'absolute inset-x-4 top-14 transition-all duration-700',
@@ -113,9 +113,9 @@ function PhoneMockup() {
                 <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider">Dashboard</p>
                 <p className="text-lg font-bold text-white">Mario&apos;s Pizza</p>
               </div>
-              <div className="flex items-center gap-1 bg-emerald-400/10 rounded-full px-2 py-0.5">
-                <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[8px] font-bold text-emerald-400">LIVE</span>
+              <div className="flex items-center gap-1 bg-green-100 rounded-full px-2 py-0.5">
+                <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                <span className="text-[8px] font-bold text-green-600">LIVE</span>
               </div>
             </div>
 
@@ -124,12 +124,12 @@ function PhoneMockup() {
               <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-3">
                 <p className="text-[8px] text-white/40 font-bold uppercase">Calls Today</p>
                 <p className="text-xl font-bold text-white mt-0.5">24</p>
-                <span className="text-[8px] font-bold text-emerald-400">↑ 12%</span>
+                <span className="text-[8px] font-bold text-green-600">↑ 12%</span>
               </div>
               <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-3">
                 <p className="text-[8px] text-white/40 font-bold uppercase">Revenue</p>
                 <p className="text-xl font-bold text-white mt-0.5">$842</p>
-                <span className="text-[8px] font-bold text-emerald-400">↑ 15%</span>
+                <span className="text-[8px] font-bold text-green-600">↑ 15%</span>
               </div>
             </div>
 
@@ -151,9 +151,9 @@ function PhoneMockup() {
             <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-3">
               <p className="text-[8px] text-white/40 font-bold uppercase mb-2">Recent Calls</p>
               {[
-                { time: '2:14 PM', outcome: 'Order', amount: '$31.97', color: 'text-emerald-400' },
-                { time: '1:32 PM', outcome: 'Inquiry', amount: '—', color: 'text-blue-400' },
-                { time: '12:45 PM', outcome: 'Order', amount: '$52.47', color: 'text-emerald-400' },
+                { time: '2:14 PM', outcome: 'Order', amount: '$31.97', color: 'text-green-500' },
+                { time: '1:32 PM', outcome: 'Inquiry', amount: '—', color: 'text-blue-600' },
+                { time: '12:45 PM', outcome: 'Order', amount: '$52.47', color: 'text-green-500' },
               ].map((call, i) => (
                 <div key={i} className="flex items-center justify-between py-1.5 border-b border-white/[0.04] last:border-0">
                   <div className="flex items-center gap-2">
@@ -177,10 +177,10 @@ function PhoneMockup() {
             activeScreen === 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
           )}>
             <div className="text-center pt-8">
-              <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-ringo-teal to-emerald-400 flex items-center justify-center mb-4 shadow-lg shadow-ringo-teal/30 animate-pulse">
+              <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-ringo-teal to-green-500 flex items-center justify-center mb-4 shadow-lg shadow-ringo-teal/30 animate-pulse">
                 <Phone className="h-8 w-8 text-white" />
               </div>
-              <p className="text-[10px] text-emerald-400 font-bold uppercase tracking-widest mb-1">LIVE CALL</p>
+              <p className="text-[10px] text-green-600 font-bold uppercase tracking-widest mb-1">LIVE CALL</p>
               <p className="text-lg font-bold text-white">Ringo is ordering...</p>
               <p className="text-xs text-white/40 mt-1">Duration: 2:34</p>
             </div>
@@ -232,7 +232,7 @@ function PhoneMockup() {
               <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-3">
                 <div className="flex justify-between items-center mb-1">
                   <p className="text-[10px] font-bold text-white/40 uppercase">Total Revenue</p>
-                  <span className="text-[8px] font-bold text-emerald-400 bg-emerald-400/10 px-1.5 rounded-full">↑ 23%</span>
+                  <span className="text-[8px] font-bold text-green-600 bg-green-100 px-1.5 rounded-full">↑ 23%</span>
                 </div>
                 <p className="text-2xl font-bold text-ringo-teal">$14,790</p>
               </div>
@@ -240,7 +240,7 @@ function PhoneMockup() {
               <div className="grid grid-cols-2 gap-2">
                 <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-3">
                   <p className="text-[8px] text-white/40 font-bold uppercase">Answer Rate</p>
-                  <p className="text-lg font-bold text-emerald-400 mt-0.5">99.2%</p>
+                  <p className="text-lg font-bold text-green-600 mt-0.5">99.2%</p>
                 </div>
                 <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-3">
                   <p className="text-[8px] text-white/40 font-bold uppercase">Upsell Rate</p>
@@ -261,7 +261,7 @@ function PhoneMockup() {
                       <p className="text-[9px] font-medium text-white/70">{item.name}</p>
                       <div className="h-1 rounded-full bg-white/[0.06] mt-0.5 overflow-hidden">
                         <div
-                          className="h-full rounded-full bg-gradient-to-r from-ringo-teal to-emerald-400"
+                          className="h-full rounded-full bg-gradient-to-r from-ringo-teal to-green-500"
                           style={{ width: `${item.pct}%` }}
                         />
                       </div>
@@ -347,14 +347,14 @@ function LiveChatDemo() {
         {/* Chat header */}
         <div className="flex items-center gap-3 px-5 py-4 border-b border-white/[0.06] bg-white/[0.02]">
           <div className="relative">
-            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-ringo-teal to-emerald-400 flex items-center justify-center">
+            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-ringo-teal to-green-500 flex items-center justify-center">
               <Bot className="h-5 w-5 text-white" />
             </div>
-            <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-emerald-400 border-2 border-[#0D0D12]" />
+            <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-green-500 border-2 border-ringo-dark" />
           </div>
           <div>
             <p className="text-sm font-bold text-white">Ringo Chat Agent</p>
-            <p className="text-[10px] text-emerald-400 font-semibold">Online — avg reply 1.2s</p>
+            <p className="text-[10px] text-green-600 font-semibold">Online — avg reply 1.2s</p>
           </div>
         </div>
 
@@ -487,15 +487,15 @@ function FAQ() {
 /* ────────────────────────── MAIN PAGE ────────────────────────── */
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-[#0D0D12] text-white overflow-hidden">
+    <div className="min-h-screen bg-ringo-darker text-white overflow-hidden">
       {/* Grid background pattern */}
-      <div className="fixed inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:60px_60px] pointer-events-none" />
+      <div className="fixed inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:60px_60px] pointer-events-none" />
 
       {/* ───── Navigation ───── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06] bg-[#0D0D12]/80 backdrop-blur-xl">
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06] bg-ringo-darker/80 backdrop-blur-xl">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
           <div className="flex items-center gap-8">
-            <Link href="/" className="font-serif text-2xl text-ringo-teal tracking-tight">Ringo</Link>
+            <span className="text-ringo-teal font-bold text-lg">Ringo</span>
             <div className="hidden md:flex items-center gap-6">
               <a href="#features" className="text-sm text-white/50 hover:text-white transition-colors">Features</a>
               <a href="#demo" className="text-sm text-white/50 hover:text-white transition-colors">Demo</a>
@@ -540,7 +540,7 @@ export default function HomePage() {
               <h1 className="text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight">
                 Every call answered.
                 <br />
-                <span className="bg-gradient-to-r from-ringo-teal to-emerald-400 bg-clip-text text-transparent">
+                <span className="bg-gradient-to-r from-ringo-teal to-green-600 bg-clip-text text-transparent">
                   Every order captured.
                 </span>
               </h1>
@@ -622,7 +622,7 @@ export default function HomePage() {
             {/* Voice AI Card */}
             <div className="group rounded-3xl border border-white/[0.06] bg-white/[0.02] p-8 hover:border-ringo-teal/20 hover:bg-ringo-teal/[0.02] transition-all duration-300">
               <div className="flex items-center gap-4 mb-6">
-                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-ringo-teal to-emerald-500 flex items-center justify-center shadow-lg shadow-ringo-teal/20">
+                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-ringo-teal to-green-600 flex items-center justify-center shadow-lg shadow-ringo-teal/20">
                   <PhoneCall className="h-7 w-7 text-white" />
                 </div>
                 <div>
@@ -698,15 +698,15 @@ export default function HomePage() {
                 icon: Target,
                 title: '99.2% Order Accuracy',
                 desc: 'No hallucinated menu items. Ringo only suggests what\'s actually on your menu, with precise pricing.',
-                color: 'text-emerald-400',
-                bg: 'bg-emerald-400/10',
+                color: 'text-green-600',
+                bg: 'bg-green-100',
               },
               {
                 icon: TrendingUp,
                 title: '22-31% Ticket Increase',
                 desc: 'Dynamic upselling engine suggests the right add-ons at the right time in every conversation.',
                 color: 'text-ringo-amber',
-                bg: 'bg-ringo-amber/10',
+                bg: 'bg-ringo-amber/15',
               },
               {
                 icon: Clock,
@@ -719,22 +719,22 @@ export default function HomePage() {
                 icon: Zap,
                 title: '5-Minute Setup',
                 desc: 'Go live in minutes, not weeks. No complex integrations or training. Your AI agent is ready when you are.',
-                color: 'text-violet-400',
-                bg: 'bg-violet-400/10',
+                color: 'text-purple-600',
+                bg: 'bg-purple-100',
               },
               {
                 icon: Shield,
                 title: 'No Ticket Until Payment',
                 desc: 'Orders only hit your POS after payment is confirmed. No more fake orders or no-shows clogging your kitchen.',
-                color: 'text-rose-400',
-                bg: 'bg-rose-400/10',
+                color: 'text-red-600',
+                bg: 'bg-red-100',
               },
               {
                 icon: BarChart3,
                 title: 'Deep Analytics',
                 desc: 'Every call transcribed and analyzed. See revenue by hour, top items, upsell rates, and more in real-time.',
-                color: 'text-blue-400',
-                bg: 'bg-blue-400/10',
+                color: 'text-blue-600',
+                bg: 'bg-blue-100',
               },
             ].map((feature) => (
               <div
@@ -757,7 +757,7 @@ export default function HomePage() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-ringo-teal/5 rounded-full blur-[150px] pointer-events-none" />
         <div className="relative max-w-7xl mx-auto px-6">
           <div className="text-center mb-12">
-            <span className="inline-flex items-center gap-2 rounded-full bg-emerald-400/10 border border-emerald-400/20 px-4 py-1.5 text-xs font-bold text-emerald-400 uppercase tracking-wider mb-6">
+            <span className="inline-flex items-center gap-2 rounded-full bg-green-100 border border-green-300 px-4 py-1.5 text-xs font-bold text-green-700 uppercase tracking-wider mb-6">
               <MessageSquare className="h-3 w-3" /> Live Demo
             </span>
             <h2 className="text-4xl lg:text-5xl font-bold">Try Ringo right now</h2>
@@ -986,7 +986,7 @@ export default function HomePage() {
           <h2 className="text-4xl lg:text-5xl font-bold mb-6">
             Stop missing calls.
             <br />
-            <span className="bg-gradient-to-r from-ringo-teal to-emerald-400 bg-clip-text text-transparent">Start making money.</span>
+            <span className="bg-gradient-to-r from-ringo-teal to-green-600 bg-clip-text text-transparent">Start making money.</span>
           </h2>
           <p className="text-lg text-white/40 mb-8 max-w-lg mx-auto">
             Join hundreds of restaurants already using Ringo. 14-day free trial, no credit card, setup in 5 minutes.
@@ -1005,7 +1005,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="flex items-center gap-3">
-              <span className="font-serif text-xl text-ringo-teal">Ringo</span>
+              <span className="text-xl font-bold text-ringo-teal">Ringo</span>
               <span className="text-xs text-white/25">The phone rings. Ringo handles it.</span>
             </div>
             <div className="flex items-center gap-6">

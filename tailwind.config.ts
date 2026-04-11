@@ -9,19 +9,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#0D0D12",
-        foreground: "#F5F5F7",
+        background: "#FFF8F0",
+        foreground: "#1A1A2E",
         ringo: {
-          dark: "#0D0D12",
-          darker: "#08080C",
-          card: "#141420",
-          border: "#1E1E2E",
-          teal: "#1D9E75",
-          "teal-light": "#25C992",
-          amber: "#EF9F27",
-          purple: "#3C3489",
-          "purple-light": "#5248B5",
-          muted: "#8888A0",
+          dark: "#FFF8F0",
+          darker: "#0D0D12",
+          card: "#FFFFFF",
+          border: "#E8DDD0",
+          teal: "#921920",
+          "teal-light": "#B22028",
+          amber: "#0C1A7D",
+          purple: "#1428A0",
+          "purple-light": "#1E34B8",
+          muted: "#6B5E50",
         },
       },
       fontFamily: {

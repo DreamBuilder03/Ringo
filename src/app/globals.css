@@ -5,8 +5,8 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=DM+Serif+Display&display=swap');
 
 :root {
-  --background: #0D0D12;
-  --foreground: #F5F5F7;
+  --background: #FFF8F0;
+  --foreground: #1A1A2E;
 }
 
 body {
@@ -20,16 +20,16 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #141420;
+  background: #FFF8F0;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #2a2a3e;
+  background: #D4C8B8;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #3a3a4e;
+  background: #C4B8A8;
 }
 
 @layer utilities {
@@ -40,5 +40,5 @@ body {
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #2a2a3e #141420;
+  scrollbar-color: #D4C8B8 #FFF8F0;
 }

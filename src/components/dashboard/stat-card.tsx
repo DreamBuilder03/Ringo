@@ -20,25 +20,25 @@ const accentColors = {
     bg: 'bg-ringo-teal/10',
     text: 'text-ringo-teal',
     gradient: 'from-ringo-teal/20 to-transparent',
-    spark: '#1D9E75',
+    spark: '#921920',
   },
   amber: {
     bg: 'bg-ringo-amber/10',
     text: 'text-ringo-amber',
     gradient: 'from-ringo-amber/20 to-transparent',
-    spark: '#EF9F27',
+    spark: '#0C1A7D',
   },
   purple: {
     bg: 'bg-ringo-purple-light/10',
     text: 'text-ringo-purple-light',
     gradient: 'from-ringo-purple-light/20 to-transparent',
-    spark: '#6C63FF',
+    spark: '#1E34B8',
   },
   emerald: {
-    bg: 'bg-emerald-400/10',
-    text: 'text-emerald-400',
-    gradient: 'from-emerald-400/20 to-transparent',
-    spark: '#34D399',
+    bg: 'bg-emerald-100',
+    text: 'text-emerald-700',
+    gradient: 'from-emerald-100 to-transparent',
+    spark: '#059669',
   },
 };
 

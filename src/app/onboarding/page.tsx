@@ -204,19 +204,19 @@ export default function OnboardingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#0D0D12] text-white">
+    <div className="min-h-screen bg-ringo-dark text-foreground">
       {/* Grid background */}
       <div className="fixed inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:60px_60px] pointer-events-none" />
 
       {/* Gradient blobs */}
-      <div className="fixed top-20 left-1/4 w-[400px] h-[400px] bg-ringo-teal/8 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed top-20 left-1/4 w-[400px] h-[400px] bg-ringo-teal/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="fixed bottom-20 right-1/4 w-[300px] h-[300px] bg-purple-500/5 rounded-full blur-[120px] pointer-events-none" />
 
       <main className="relative flex flex-col items-center justify-center min-h-screen px-4 py-12">
         <div className="w-full max-w-xl">
           {/* Logo */}
           <div className="text-center mb-8">
-            <h1 className="font-serif text-3xl text-ringo-teal mb-2">Ringo</h1>
+            <h1 className="text-3xl font-bold text-ringo-teal mb-2">Ringo</h1>
             <p className="text-sm text-white/40">Set up your AI phone agent in under 2 minutes</p>
           </div>
 
@@ -480,8 +480,8 @@ export default function OnboardingPage() {
             {step === 4 && (
               <div className="text-center py-6 space-y-6">
                 <div className="relative mx-auto w-24 h-24">
-                  <div className="absolute inset-0 bg-ringo-teal/20 rounded-full blur-xl" />
-                  <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-ringo-teal to-emerald-400 flex items-center justify-center shadow-2xl shadow-ringo-teal/30">
+                  <div className="absolute inset-0 bg-ringo-teal/15 rounded-full blur-xl" />
+                  <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-ringo-teal to-green-500 flex items-center justify-center shadow-2xl shadow-ringo-teal/30">
                     <Check className="h-12 w-12 text-white" />
                   </div>
                 </div>

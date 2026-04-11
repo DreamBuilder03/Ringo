@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -37,21 +38,27 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0D0D12] text-white">
+    <div className="min-h-screen bg-ringo-dark">
       {/* Grid background */}
-      <div className="fixed inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:60px_60px] pointer-events-none" />
+      <div className="fixed inset-0 bg-[linear-gradient(rgba(29,158,117,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(29,158,117,0.05)_1px,transparent_1px)] bg-[size:60px_60px] pointer-events-none" />
 
       {/* Gradient blob */}
-      <div className="fixed top-1/4 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-ringo-teal/8 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed top-1/4 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-ringo-teal/5 rounded-full blur-[120px] pointer-events-none" />
 
       <main className="relative flex min-h-screen items-center justify-center px-4">
         <div className="w-full max-w-sm space-y-8">
           <div className="text-center">
-            <Link href="/" className="font-serif text-3xl text-ringo-teal">Ringo</Link>
-            <p className="text-sm text-white/40 mt-2">Sign in to your dashboard</p>
+            <Image
+              src="/ringo-logo.svg"
+              alt="Ringo"
+              width={160}
+              height={50}
+              className="h-12 w-auto mx-auto"
+            />
+            <p className="text-sm text-ringo-muted mt-2">Sign in to your dashboard</p>
           </div>
 
-          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] backdrop-blur-sm p-8 shadow-2xl shadow-black/20">
+          <div className="rounded-2xl border border-ringo-border bg-ringo-card backdrop-blur-sm p-8 shadow-lg shadow-black/5">
             <form onSubmit={handleLogin} className="space-y-5">
               <Input
                 id="email"
@@ -73,25 +80,25 @@ export default function LoginPage() {
               />
 
               {error && (
-                <div className="rounded-xl bg-red-400/10 border border-red-400/20 px-4 py-3 text-sm text-red-400">
+                <div className="rounded-xl bg-red-100 border border-red-300 px-4 py-3 text-sm text-red-700">
                   {error}
                 </div>
               )}
 
-              <Button type="submit" loading={loading} className="w-full shadow-lg shadow-ringo-teal/20" size="lg">
+              <Button type="submit" loading={loading} className="w-full" size="lg">
                 Sign In <ArrowRight className="h-4 w-4" />
               </Button>
             </form>
           </div>
 
-          <p className="text-center text-sm text-white/30">
+          <p className="text-center text-sm text-ringo-muted/70">
             New to Ringo?{' '}
             <Link href="/onboarding" className="text-ringo-teal hover:text-ringo-teal-light transition-colors font-semibold">
               Start free trial
             </Link>
           </p>
 
-          <div className="flex items-center justify-center gap-1.5 text-[10px] text-white/15 font-semibold">
+          <div className="flex items-center justify-center gap-1.5 text-[10px] text-ringo-muted/50 font-semibold">
             <Shield className="h-3 w-3" />
             <span>Protected by 256-bit SSL encryption</span>
           </div>

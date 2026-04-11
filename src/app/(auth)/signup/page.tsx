@@ -43,7 +43,7 @@ export default function SignupPage() {
     <main className="flex min-h-screen items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center">
-          <h1 className="font-serif text-4xl text-ringo-teal mb-2">Ringo</h1>
+          <h1 className="text-4xl font-bold text-ringo-teal mb-2">Ringo</h1>
           <p className="text-ringo-muted text-sm">Create your account</p>
         </div>
 
