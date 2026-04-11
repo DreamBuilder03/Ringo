@@ -5,13 +5,19 @@ export function verifyRetellWebhook(
   signature: string,
   secret: string
 ): boolean {
-  const hmac = crypto.createHmac('sha256', secret);
-  hmac.update(payload);
-  const expectedSignature = hmac.digest('hex');
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(expectedSignature)
-  );
+  try {
+    if (!signature) return false;
+    const hmac = crypto.createHmac('sha256', secret);
+    hmac.update(payload);
+    const expectedSignature = hmac.digest('hex');
+    // timingSafeEqual requires same length buffers
+    const sigBuf = Buffer.from(signature);
+    const expectedBuf = Buffer.from(expectedSignature);
+    if (sigBuf.length !== expectedBuf.length) return false;
+    return crypto.timingSafeEqual(sigBuf, expectedBuf);
+  } catch {
+    return false;
+  }
 }
 
 export interface RetellCallEvent {
