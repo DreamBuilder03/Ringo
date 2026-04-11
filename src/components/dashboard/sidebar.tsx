@@ -20,7 +20,14 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
+import { getUserRestaurant } from '@/lib/queries';
 import type { UserRole } from '@/types/database';
+
+const PLAN_CALL_LIMITS: Record<string, number> = {
+  starter: 100,
+  growth: 250,
+  pro: 9999,
+};
 
 interface SidebarProps {
   role: UserRole;
@@ -43,12 +50,41 @@ export function Sidebar({ role }: SidebarProps) {
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [agentPulse, setAgentPulse] = useState(true);
+  const [todayCalls, setTodayCalls] = useState(0);
+  const [callLimit, setCallLimit] = useState(100);
 
   // Simulated agent pulse animation
   useEffect(() => {
     const interval = setInterval(() => {
       setAgentPulse((prev) => !prev);
     }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Fetch today's call count and plan limit
+  useEffect(() => {
+    async function fetchCallStats() {
+      const supabase = createClient();
+      const restaurant = await getUserRestaurant(supabase);
+      if (!restaurant) return;
+
+      const limit = PLAN_CALL_LIMITS[restaurant.plan_tier || 'starter'] || 100;
+      setCallLimit(limit);
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const { count } = await supabase
+        .from('calls')
+        .select('id', { count: 'exact', head: true })
+        .eq('restaurant_id', restaurant.id)
+        .gte('created_at', today.toISOString());
+
+      setTodayCalls(count || 0);
+    }
+    fetchCallStats();
+
+    // Refresh every 60 seconds
+    const interval = setInterval(fetchCallStats, 60000);
     return () => clearInterval(interval);
   }, []);
 
@@ -165,10 +201,20 @@ export function Sidebar({ role }: SidebarProps) {
           <div className="rounded-xl bg-ringo-card/50 border border-ringo-border p-3">
             <div className="flex items-center justify-between mb-2">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-ringo-muted">Today&apos;s Calls</p>
-              <span className="text-xs font-bold text-ringo-teal">24 / 50</span>
+              <span className="text-xs font-bold text-ringo-teal">
+                {todayCalls} / {callLimit >= 9999 ? '∞' : callLimit}
+              </span>
             </div>
             <div className="h-1.5 rounded-full bg-ringo-border/50 overflow-hidden">
-              <div className="h-full w-[48%] rounded-full bg-gradient-to-r from-ringo-teal to-emerald-400 transition-all duration-500" />
+              <div
+                className={cn(
+                  'h-full rounded-full transition-all duration-500',
+                  todayCalls / callLimit > 0.9
+                    ? 'bg-gradient-to-r from-red-400 to-red-500'
+                    : 'bg-gradient-to-r from-ringo-teal to-emerald-400'
+                )}
+                style={{ width: `${Math.min((todayCalls / callLimit) * 100, 100)}%` }}
+              />
             </div>
           </div>
 
