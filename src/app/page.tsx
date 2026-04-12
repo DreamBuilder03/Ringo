@@ -345,7 +345,7 @@ function DashboardPreview() {
             <div className="hidden md:block w-52 border-r border-white/[0.06] p-4 space-y-1">
               <div className="flex items-center gap-2 mb-6">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/ringo-logo.png" alt="Ringo" className="h-7 w-auto" />
+                <img src="/ringo-logo.png" alt="Ringo" className="h-7 w-auto brightness-0 invert" />
               </div>
               {[
                 { icon: Activity, label: "Dashboard", active: true },
@@ -569,7 +569,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/ringo-logo.png" alt="Ringo" className="h-9 w-auto" />
+            <img src="/ringo-logo.png" alt="Ringo" className="h-9 w-auto brightness-0 invert" />
           </Link>
 
           <div className="hidden md:flex items-center gap-7">
@@ -1044,7 +1044,7 @@ export default function HomePage() {
             <div className="col-span-2 md:col-span-1">
               <div className="mb-4">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/ringo-logo.png" alt="Ringo" className="h-8 w-auto" />
+                <img src="/ringo-logo.png" alt="Ringo" className="h-8 w-auto brightness-0 invert" />
               </div>
               <p className="text-white/40 text-sm leading-relaxed mb-3">
                 AI voice ordering for restaurants. Built in Modesto, CA.

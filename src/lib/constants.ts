@@ -6,7 +6,7 @@ export const BRAND = {
   domain: 'useringo.ai',
   colors: {
     dark: '#FFF8F0',
-    teal: '#921920',
+    teal: '#C9A84C',
     amber: '#0C1A7D',
     purple: '#1428A0',
   },
