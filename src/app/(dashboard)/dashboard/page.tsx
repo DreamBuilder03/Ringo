@@ -189,8 +189,8 @@ export default function DashboardPage() {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-2xl font-bold text-foreground">Dashboard</h1>
-            <div className="flex items-center gap-1.5 rounded-full bg-emerald-400/10 border border-emerald-400/20 px-2.5 py-1">
+            <h1 className="text-2xl font-bold text-foreground tracking-tight">Dashboard</h1>
+            <div className="flex items-center gap-1.5 rounded-full bg-emerald-400/10 border border-emerald-400/20 px-2.5 py-1 shadow-sm shadow-emerald-400/10">
               <div className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
               <span className="text-[10px] font-bold text-emerald-400">LIVE</span>
             </div>
@@ -200,12 +200,12 @@ export default function DashboardPage() {
 
         {hasData && (
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 rounded-xl bg-ringo-card border border-ringo-border px-3 py-2">
+            <div className="flex items-center gap-1.5 rounded-xl bg-ringo-card/80 backdrop-blur-sm border border-ringo-border px-3 py-2 shadow-sm ring-1 ring-black/[0.02]">
               <Target className="h-3.5 w-3.5 text-ringo-teal" />
               <span className="text-xs font-semibold text-foreground">{stats.answerRate}%</span>
               <span className="text-[10px] text-ringo-muted">answer rate</span>
             </div>
-            <div className="flex items-center gap-1.5 rounded-xl bg-ringo-card border border-ringo-border px-3 py-2">
+            <div className="flex items-center gap-1.5 rounded-xl bg-ringo-card/80 backdrop-blur-sm border border-ringo-border px-3 py-2 shadow-sm ring-1 ring-black/[0.02]">
               <Activity className="h-3.5 w-3.5 text-ringo-amber" />
               <span className="text-xs font-semibold text-foreground">{stats.ordersTaken}/{stats.totalCalls}</span>
               <span className="text-[10px] text-ringo-muted">converted</span>
@@ -258,16 +258,16 @@ export default function DashboardPage() {
         <div className="xl:col-span-3">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
-              <h2 className="text-lg font-bold text-foreground">Recent Calls</h2>
+              <h2 className="text-lg font-bold text-foreground tracking-tight">Recent Calls</h2>
               {hasData && (
-                <span className="text-xs font-semibold text-ringo-muted bg-ringo-card border border-ringo-border rounded-full px-2.5 py-0.5">
+                <span className="text-xs font-semibold text-ringo-muted bg-ringo-card/80 backdrop-blur-sm border border-ringo-border rounded-full px-2.5 py-0.5 shadow-sm">
                   {calls.length} today
                 </span>
               )}
             </div>
             {hasData && (
-              <a href="/dashboard/calls" className="text-xs font-semibold text-ringo-teal hover:text-ringo-teal-light transition-colors flex items-center gap-1">
-                View all <ArrowUpRight className="h-3 w-3" />
+              <a href="/dashboard/calls" className="text-xs font-semibold text-ringo-teal hover:text-ringo-teal-light transition-colors flex items-center gap-1 group">
+                View all <ArrowUpRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </a>
             )}
           </div>
@@ -281,9 +281,11 @@ export default function DashboardPage() {
 
       {/* AI Insights Card */}
       {hasData && (
-        <div className="rounded-2xl border border-ringo-purple/20 bg-gradient-to-r from-ringo-purple/[0.08] via-ringo-card to-ringo-card p-6">
-          <div className="flex items-start gap-4">
-            <div className="rounded-xl bg-ringo-purple-light/15 p-3 flex-shrink-0">
+        <div className="rounded-2xl border border-ringo-purple/20 bg-ringo-card/80 backdrop-blur-sm p-6 ring-1 ring-ringo-purple/5 shadow-sm relative overflow-hidden">
+          {/* Decorative gradient */}
+          <div className="absolute top-0 left-0 w-48 h-48 bg-gradient-to-br from-ringo-purple/10 to-transparent rounded-full blur-3xl -translate-x-12 -translate-y-12 pointer-events-none" />
+          <div className="relative flex items-start gap-4">
+            <div className="rounded-xl bg-ringo-purple-light/15 p-3 flex-shrink-0 shadow-sm shadow-ringo-purple-light/10">
               <Zap className="h-6 w-6 text-ringo-purple-light" />
             </div>
             <div>

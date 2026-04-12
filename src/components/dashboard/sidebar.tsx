@@ -119,10 +119,18 @@ export function Sidebar({ role }: SidebarProps) {
       {/* Sidebar */}
       <aside
         className={cn(
-          'fixed left-0 top-0 z-40 h-screen w-[280px] border-r border-ringo-border bg-ringo-darker flex flex-col transition-transform duration-300 ease-out',
+          'fixed left-0 top-0 z-40 h-screen w-[280px] border-r border-ringo-border bg-ringo-darker flex flex-col transition-transform duration-300 ease-out overflow-hidden',
           mobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
+        {/* Sidebar texture overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-[0.03] z-0"
+          style={{
+            backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.4) 1px, transparent 1px)`,
+            backgroundSize: '20px 20px',
+          }}
+        />
         {/* Logo + Agent Status */}
         <div className="p-6 border-b border-ringo-border">
           <div className="flex items-center justify-between">

@@ -20,24 +20,36 @@ const accentColors = {
     bg: 'bg-ringo-teal/10',
     text: 'text-ringo-teal',
     gradient: 'from-ringo-teal/20 to-transparent',
+    glow: 'shadow-ringo-teal/10',
+    border: 'hover:border-ringo-teal/30',
+    ring: 'ring-ringo-teal/5',
     spark: '#921920',
   },
   amber: {
     bg: 'bg-ringo-amber/10',
     text: 'text-ringo-amber',
     gradient: 'from-ringo-amber/20 to-transparent',
+    glow: 'shadow-ringo-amber/10',
+    border: 'hover:border-ringo-amber/30',
+    ring: 'ring-ringo-amber/5',
     spark: '#0C1A7D',
   },
   purple: {
     bg: 'bg-ringo-purple-light/10',
     text: 'text-ringo-purple-light',
     gradient: 'from-ringo-purple-light/20 to-transparent',
+    glow: 'shadow-ringo-purple-light/10',
+    border: 'hover:border-ringo-purple-light/30',
+    ring: 'ring-ringo-purple-light/5',
     spark: '#1E34B8',
   },
   emerald: {
     bg: 'bg-emerald-100',
     text: 'text-emerald-700',
     gradient: 'from-emerald-100 to-transparent',
+    glow: 'shadow-emerald-200/20',
+    border: 'hover:border-emerald-300/40',
+    ring: 'ring-emerald-200/10',
     spark: '#059669',
   },
 };
@@ -103,16 +115,24 @@ export function StatCard({
   return (
     <div
       className={cn(
-        'relative group rounded-2xl border border-ringo-border bg-ringo-card p-5 overflow-hidden transition-all duration-300 hover:border-ringo-border/80 hover:shadow-lg hover:shadow-black/10',
+        'relative group rounded-2xl border border-ringo-border bg-ringo-card/80 backdrop-blur-sm p-5 overflow-hidden',
+        'transition-all duration-300',
+        'hover:shadow-xl hover:shadow-black/[0.08] hover:-translate-y-0.5',
+        'ring-1',
+        colors.ring,
+        colors.border,
         className
       )}
     >
-      {/* Gradient accent */}
-      <div className={cn('absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl rounded-full blur-3xl opacity-30 -translate-y-8 translate-x-8', colors.gradient)} />
+      {/* Gradient accent - top right */}
+      <div className={cn('absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl rounded-full blur-3xl opacity-20 -translate-y-10 translate-x-10 group-hover:opacity-40 transition-opacity duration-500', colors.gradient)} />
+
+      {/* Subtle inner shine */}
+      <div className="absolute inset-0 bg-gradient-to-b from-white/60 to-transparent opacity-50 pointer-events-none rounded-2xl" />
 
       <div className="relative flex items-start justify-between">
         <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-wider text-ringo-muted">{title}</p>
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-ringo-muted">{title}</p>
           <p className={cn(
             'text-3xl font-bold text-foreground transition-all duration-700',
             animated ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
@@ -137,7 +157,11 @@ export function StatCard({
         </div>
 
         <div className="flex flex-col items-end gap-2">
-          <div className={cn('rounded-xl p-2.5 transition-all duration-300 group-hover:scale-110', colors.bg)}>
+          <div className={cn(
+            'rounded-xl p-2.5 transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg',
+            colors.bg,
+            colors.glow
+          )}>
             <Icon className={cn('h-5 w-5', colors.text)} />
           </div>
           {sparklineData && (

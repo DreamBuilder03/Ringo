@@ -308,16 +308,42 @@ function SelfServeDemo() {
   const [restaurantName, setRestaurantName] = useState('');
   const [email, setEmail] = useState('');
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (restaurantName && email) {
+    if (!restaurantName || !email) {
+      setError('Please fill in all fields');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/demo-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ restaurantName, email }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || 'Failed to submit demo request');
+      }
+
       setSubmitted(true);
       setTimeout(() => {
         setRestaurantName('');
         setEmail('');
         setSubmitted(false);
       }, 4000);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+      console.error('Demo request error:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -361,7 +387,8 @@ function SelfServeDemo() {
                   value={restaurantName}
                   onChange={(e) => setRestaurantName(e.target.value)}
                   placeholder="Your restaurant name"
-                  className="w-full px-4 py-3 rounded-lg border border-[#E8DDD0] bg-white focus:outline-none focus:border-[#921920] focus:ring-2 focus:ring-[#921920]/10 transition-all"
+                  className="w-full px-4 py-3 rounded-lg border border-[#E8DDD0] bg-white focus:outline-none focus:border-[#921920] focus:ring-2 focus:ring-[#921920]/10 transition-all disabled:opacity-50"
+                  disabled={loading}
                   required
                 />
               </div>
@@ -374,20 +401,33 @@ function SelfServeDemo() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your@email.com"
-                  className="w-full px-4 py-3 rounded-lg border border-[#E8DDD0] bg-white focus:outline-none focus:border-[#921920] focus:ring-2 focus:ring-[#921920]/10 transition-all"
+                  className="w-full px-4 py-3 rounded-lg border border-[#E8DDD0] bg-white focus:outline-none focus:border-[#921920] focus:ring-2 focus:ring-[#921920]/10 transition-all disabled:opacity-50"
+                  disabled={loading}
                   required
                 />
               </div>
             </div>
 
+            {error && (
+              <div className="p-3 rounded-lg bg-red-50 border border-red-200">
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            )}
+
             <button
               type="submit"
-              className="w-full px-6 py-3 rounded-lg bg-gradient-to-r from-[#0C1A7D] to-[#921920] text-white font-semibold hover:shadow-lg hover:shadow-[#0C1A7D]/30 transition-all duration-300 hover:scale-[1.02]"
+              disabled={loading || submitted}
+              className="w-full px-6 py-3 rounded-lg bg-gradient-to-r from-[#0C1A7D] to-[#921920] text-white font-semibold hover:shadow-lg hover:shadow-[#0C1A7D]/30 transition-all duration-300 hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {submitted ? (
                 <span className="flex items-center justify-center gap-2">
                   <Check className="h-4 w-4" />
                   Demo Scheduled!
+                </span>
+              ) : loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Submitting...
                 </span>
               ) : (
                 <span className="flex items-center justify-center gap-2">

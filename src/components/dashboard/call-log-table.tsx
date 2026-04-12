@@ -49,7 +49,7 @@ const outcomeConfig = {
 export function CallLogTable({ calls, onSelectCall, compact }: CallLogTableProps) {
   if (calls.length === 0) {
     return (
-      <div className="rounded-2xl border border-ringo-border bg-ringo-card p-12 text-center">
+      <div className="rounded-2xl border border-ringo-border bg-ringo-card/80 backdrop-blur-sm p-12 text-center ring-1 ring-black/[0.02]">
         <div className="mx-auto w-12 h-12 rounded-full bg-ringo-border/30 flex items-center justify-center mb-3">
           <Phone className="h-5 w-5 text-ringo-muted" />
         </div>
@@ -60,7 +60,7 @@ export function CallLogTable({ calls, onSelectCall, compact }: CallLogTableProps
   }
 
   return (
-    <div className="rounded-2xl border border-ringo-border bg-ringo-card overflow-hidden">
+    <div className="rounded-2xl border border-ringo-border bg-ringo-card/80 backdrop-blur-sm overflow-hidden ring-1 ring-black/[0.02] shadow-sm">
       {/* Table header - hidden on mobile */}
       <div className="hidden md:grid grid-cols-12 gap-4 px-5 py-3 border-b border-ringo-border bg-ringo-darker/50">
         <div className="col-span-3 text-[10px] font-bold uppercase tracking-widest text-ringo-muted">
