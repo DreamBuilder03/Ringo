@@ -15,6 +15,8 @@ import {
   Zap,
   Check,
   Phone,
+  AlertCircle,
+  X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
@@ -25,7 +27,6 @@ const posIntegrations = [
   { id: 'square', name: 'Square', description: 'Auto-sync menus and push orders directly to Square POS.' },
   { id: 'toast', name: 'Toast', description: 'Connect Toast POS for seamless menu and order management.' },
   { id: 'clover', name: 'Clover', description: 'Sync your Clover POS for automatic order routing.' },
-  { id: 'spoton', name: 'SpotOn', description: 'Connect SpotOn POS for order sync.' },
 ];
 
 const settingSections = [
@@ -41,27 +42,209 @@ const planNames: Record<string, { name: string; price: string }> = {
   pro: { name: 'Enterprise', price: 'Custom' },
 };
 
+interface AlertState {
+  type: 'success' | 'error';
+  message: string;
+}
+
 export default function SettingsPage() {
   const [connecting, setConnecting] = useState<string | null>(null);
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
   const [loading, setLoading] = useState(true);
+  const [alert, setAlert] = useState<AlertState | null>(null);
+  const [managingBilling, setManagingBilling] = useState(false);
+  const [toastCredentials, setToastCredentials] = useState({
+    toast_restaurant_guid: '',
+    toast_api_key: '',
+  });
+  const [savingToast, setSavingToast] = useState(false);
+  const [toastConnected, setToastConnected] = useState(false);
 
   useEffect(() => {
     async function load() {
       const supabase = createClient();
       const r = await getUserRestaurant(supabase);
       setRestaurant(r);
+      setToastConnected(r?.pos_type === 'toast' && r?.pos_connected);
       setLoading(false);
     }
     load();
   }, []);
 
-  async function handleConnect(posId: string) {
-    setConnecting(posId);
-    // TODO: Redirect to real OAuth flow
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setConnecting(null);
-  }
+  // Check URL params for connection success/error
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const success = params.get('success');
+    const error = params.get('error');
+
+    if (success === 'square_connected') {
+      setAlert({
+        type: 'success',
+        message: 'Square POS connected successfully!',
+      });
+      setTimeout(() => setRestaurant((r) => r ? { ...r, pos_type: 'square', pos_connected: true } : null), 500);
+      window.history.replaceState({}, '', '/settings');
+    } else if (success === 'clover_connected') {
+      setAlert({
+        type: 'success',
+        message: 'Clover POS connected successfully!',
+      });
+      setTimeout(() => setRestaurant((r) => r ? { ...r, pos_type: 'clover', pos_connected: true } : null), 500);
+      window.history.replaceState({}, '', '/settings');
+    } else if (error === 'square_failed') {
+      setAlert({
+        type: 'error',
+        message: 'Failed to connect Square. Please try again.',
+      });
+      window.history.replaceState({}, '', '/settings');
+    } else if (error === 'clover_failed') {
+      setAlert({
+        type: 'error',
+        message: 'Failed to connect Clover. Please try again.',
+      });
+      window.history.replaceState({}, '', '/settings');
+    } else if (error === 'missing_params') {
+      setAlert({
+        type: 'error',
+        message: 'Missing required parameters. Please try again.',
+      });
+      window.history.replaceState({}, '', '/settings');
+    }
+  }, []);
+
+  const handleSquareConnect = async () => {
+    if (!restaurant) return;
+    setConnecting('square');
+    try {
+      window.location.href = `/api/pos/square/authorize?restaurant_id=${restaurant.id}`;
+    } catch (error) {
+      console.error('Square connect error:', error);
+      setAlert({
+        type: 'error',
+        message: 'Failed to initiate Square connection.',
+      });
+      setConnecting(null);
+    }
+  };
+
+  const handleCloverConnect = async () => {
+    if (!restaurant) return;
+    setConnecting('clover');
+    try {
+      window.location.href = `/api/pos/clover/authorize?restaurant_id=${restaurant.id}`;
+    } catch (error) {
+      console.error('Clover connect error:', error);
+      setAlert({
+        type: 'error',
+        message: 'Failed to initiate Clover connection.',
+      });
+      setConnecting(null);
+    }
+  };
+
+  const handleToastConnect = async () => {
+    if (!restaurant || !toastCredentials.toast_restaurant_guid || !toastCredentials.toast_api_key) {
+      setAlert({
+        type: 'error',
+        message: 'Please fill in all Toast credentials.',
+      });
+      return;
+    }
+
+    setSavingToast(true);
+    try {
+      const response = await fetch('/api/pos/toast/authorize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          restaurant_id: restaurant.id,
+          toast_restaurant_guid: toastCredentials.toast_restaurant_guid,
+          toast_api_key: toastCredentials.toast_api_key,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save Toast credentials');
+      }
+
+      setAlert({
+        type: 'success',
+        message: 'Toast POS connected successfully!',
+      });
+      setRestaurant((r) => r ? { ...r, pos_type: 'toast', pos_connected: true } : null);
+      setToastConnected(true);
+      setToastCredentials({ toast_restaurant_guid: '', toast_api_key: '' });
+    } catch (error) {
+      console.error('Toast connect error:', error);
+      setAlert({
+        type: 'error',
+        message: 'Failed to connect Toast. Please check your credentials.',
+      });
+    } finally {
+      setSavingToast(false);
+    }
+  };
+
+  const handleDisconnectPOS = async () => {
+    if (!restaurant) return;
+    try {
+      const supabase = createClient();
+      const { error } = await supabase
+        .from('restaurants')
+        .update({ pos_type: 'none', pos_connected: false })
+        .eq('id', restaurant.id);
+
+      if (error) throw error;
+
+      setAlert({
+        type: 'success',
+        message: 'POS disconnected successfully.',
+      });
+      setRestaurant((r) => r ? { ...r, pos_type: 'none', pos_connected: false } : null);
+      setToastConnected(false);
+      setToastCredentials({ toast_restaurant_guid: '', toast_api_key: '' });
+    } catch (error) {
+      console.error('Disconnect error:', error);
+      setAlert({
+        type: 'error',
+        message: 'Failed to disconnect POS.',
+      });
+    }
+  };
+
+  const handleBillingPortal = async () => {
+    if (!restaurant?.stripe_customer_id) {
+      setAlert({
+        type: 'error',
+        message: 'No billing account found.',
+      });
+      return;
+    }
+
+    setManagingBilling(true);
+    try {
+      const response = await fetch('/api/billing/portal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ restaurant_id: restaurant.id }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create billing portal session');
+      }
+
+      const { url } = await response.json();
+      window.location.href = url;
+    } catch (error) {
+      console.error('Billing portal error:', error);
+      setAlert({
+        type: 'error',
+        message: 'Failed to open billing portal.',
+      });
+    } finally {
+      setManagingBilling(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -86,6 +269,33 @@ export default function SettingsPage() {
         </p>
       </div>
 
+      {/* Alert Banner */}
+      {alert && (
+        <div
+          className={cn(
+            'rounded-2xl border p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-2',
+            alert.type === 'success'
+              ? 'border-emerald-400/20 bg-emerald-400/[0.03]'
+              : 'border-red-400/20 bg-red-400/[0.03]'
+          )}
+        >
+          {alert.type === 'success' ? (
+            <Check className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+          ) : (
+            <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+          )}
+          <p className={cn('text-sm font-medium flex-1', alert.type === 'success' ? 'text-emerald-400' : 'text-red-400')}>
+            {alert.message}
+          </p>
+          <button
+            onClick={() => setAlert(null)}
+            className="text-ringo-muted hover:text-foreground transition-colors flex-shrink-0"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
       {/* Current Plan */}
       <div className="rounded-2xl border border-ringo-teal/20 bg-gradient-to-r from-ringo-teal/[0.08] via-ringo-card to-ringo-card p-6">
         <div className="flex items-center justify-between">
@@ -104,7 +314,12 @@ export default function SettingsPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="secondary" size="sm">
+            <Button
+              variant="secondary"
+              size="sm"
+              loading={managingBilling}
+              onClick={handleBillingPortal}
+            >
               <CreditCard className="h-3.5 w-3.5" /> Manage Billing
             </Button>
           </div>
@@ -128,11 +343,15 @@ export default function SettingsPage() {
                 )}
               >
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 flex-1">
                     <div className={cn('rounded-xl p-3', connected ? 'bg-emerald-400/10' : 'bg-ringo-border/30')}>
-                      {connected ? <Wifi className="h-5 w-5 text-emerald-400" /> : <WifiOff className="h-5 w-5 text-ringo-muted" />}
+                      {connected ? (
+                        <Wifi className="h-5 w-5 text-emerald-400" />
+                      ) : (
+                        <WifiOff className="h-5 w-5 text-ringo-muted" />
+                      )}
                     </div>
-                    <div>
+                    <div className="flex-1">
                       <div className="flex items-center gap-2.5">
                         <p className="text-sm font-bold text-foreground">{pos.name}</p>
                         {connected && (
@@ -144,15 +363,84 @@ export default function SettingsPage() {
                       <p className="text-xs text-ringo-muted mt-0.5">{pos.description}</p>
                     </div>
                   </div>
-                  <Button
-                    variant={connected ? 'ghost' : 'secondary'}
-                    size="sm"
-                    loading={connecting === pos.id}
-                    onClick={() => handleConnect(pos.id)}
-                  >
-                    {connected ? <>Manage <ExternalLink className="h-3 w-3" /></> : 'Connect'}
-                  </Button>
+                  {connected ? (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleDisconnectPOS}
+                      className="text-red-400/60 hover:text-red-400"
+                    >
+                      Disconnect
+                    </Button>
+                  ) : pos.id === 'square' ? (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      loading={connecting === 'square'}
+                      onClick={handleSquareConnect}
+                    >
+                      Connect <ExternalLink className="h-3 w-3" />
+                    </Button>
+                  ) : pos.id === 'clover' ? (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      loading={connecting === 'clover'}
+                      onClick={handleCloverConnect}
+                    >
+                      Connect <ExternalLink className="h-3 w-3" />
+                    </Button>
+                  ) : null}
                 </div>
+
+                {/* Toast API Key Form */}
+                {pos.id === 'toast' && !connected && (
+                  <div className="mt-4 pt-4 border-t border-ringo-border/50 space-y-3">
+                    <div>
+                      <label className="text-xs font-semibold text-foreground block mb-1.5">
+                        Toast Restaurant GUID
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g., 12345678-1234-1234-1234-123456789012"
+                        value={toastCredentials.toast_restaurant_guid}
+                        onChange={(e) =>
+                          setToastCredentials((prev) => ({
+                            ...prev,
+                            toast_restaurant_guid: e.target.value,
+                          }))
+                        }
+                        className="w-full rounded-lg border border-ringo-border bg-ringo-card px-3 py-2 text-sm text-foreground placeholder-ringo-muted focus:outline-none focus:ring-2 focus:ring-ringo-teal/50"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-foreground block mb-1.5">
+                        Toast API Key
+                      </label>
+                      <input
+                        type="password"
+                        placeholder="Your Toast API key"
+                        value={toastCredentials.toast_api_key}
+                        onChange={(e) =>
+                          setToastCredentials((prev) => ({
+                            ...prev,
+                            toast_api_key: e.target.value,
+                          }))
+                        }
+                        className="w-full rounded-lg border border-ringo-border bg-ringo-card px-3 py-2 text-sm text-foreground placeholder-ringo-muted focus:outline-none focus:ring-2 focus:ring-ringo-teal/50"
+                      />
+                    </div>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      loading={savingToast}
+                      onClick={handleToastConnect}
+                      className="w-full"
+                    >
+                      Save Toast Credentials
+                    </Button>
+                  </div>
+                )}
               </div>
             );
           })}
@@ -191,8 +479,16 @@ export default function SettingsPage() {
         <h3 className="text-sm font-bold text-red-400 mb-1">Danger Zone</h3>
         <p className="text-xs text-ringo-muted mb-4">These actions are permanent and cannot be undone.</p>
         <div className="flex gap-3">
-          <Button variant="danger" size="sm">Pause AI Agent</Button>
-          <Button variant="ghost" size="sm" className="text-red-400/60 hover:text-red-400">Delete Account</Button>
+          <Button variant="danger" size="sm">
+            Pause AI Agent
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-red-400/60 hover:text-red-400"
+          >
+            Delete Account
+          </Button>
         </div>
       </div>
     </div>

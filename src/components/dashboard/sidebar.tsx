@@ -18,6 +18,7 @@ import {
   Zap,
   ChevronRight,
   Headphones,
+  UtensilsCrossed,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
@@ -37,6 +38,7 @@ interface SidebarProps {
 const restaurantLinks = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, description: 'Overview & stats' },
   { href: '/dashboard/calls', label: 'Call Log', icon: Phone, description: 'All call history' },
+  { href: '/dashboard/menu', label: 'Menu', icon: UtensilsCrossed, description: 'Manage menu items' },
   { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3, description: 'Deep insights' },
   { href: '/settings', label: 'Settings', icon: Settings, description: 'POS & billing' },
 ];
