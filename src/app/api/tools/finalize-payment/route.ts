@@ -24,7 +24,7 @@ interface PaymentLinkResponse {
   errors?: Array<{ code: string; detail: string }>;
 }
 
-const TAX_RATE = 0.0875; // 8.75%
+const DEFAULT_TAX_RATE = 0.0875; // 8.75% fallback
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     // Look up restaurant by agent_id
     const { data: restaurant, error: restaurantError } = await supabase
       .from('restaurants')
-      .select('id, name, pos_type, pos_connected, square_access_token, square_location_id')
+      .select('id, name, pos_type, pos_connected, square_access_token, square_location_id, tax_rate')
       .eq('retell_agent_id', call.agent_id)
       .single();
 
@@ -88,10 +88,11 @@ export async function POST(request: NextRequest) {
     // If no existing order, create one from the args the agent sent
     if (!order && args.items && args.items.length > 0) {
       const items = args.items;
+      const taxRate = restaurant.tax_rate ?? DEFAULT_TAX_RATE;
       const subtotal = args.total_amount
-        ? parseFloat((args.total_amount / (1 + TAX_RATE)).toFixed(2))
+        ? parseFloat((args.total_amount / (1 + taxRate)).toFixed(2))
         : items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      const tax = parseFloat((subtotal * TAX_RATE).toFixed(2));
+      const tax = parseFloat((subtotal * taxRate).toFixed(2));
       const total = args.total_amount
         ? args.total_amount
         : parseFloat((subtotal + tax).toFixed(2));

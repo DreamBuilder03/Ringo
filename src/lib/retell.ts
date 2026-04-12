@@ -29,6 +29,7 @@ export interface RetellCallEvent {
     start_timestamp: number;
     end_timestamp?: number;
     transcript?: string;
+    recording_url?: string;
     call_analysis?: {
       call_summary?: string;
       custom_analysis_data?: Record<string, unknown>;

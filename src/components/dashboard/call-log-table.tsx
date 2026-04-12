@@ -2,7 +2,7 @@
 
 import { format } from 'date-fns';
 import { cn, formatCurrency, formatDuration, getCallOutcomeLabel } from '@/lib/utils';
-import { Phone, PhoneOff, ShoppingCart, HelpCircle, ArrowUpRight, ChevronRight } from 'lucide-react';
+import { Phone, PhoneOff, ShoppingCart, HelpCircle, ArrowUpRight, ChevronRight, Play } from 'lucide-react';
 import type { Call } from '@/types/database';
 
 interface CallLogTableProps {
@@ -120,14 +120,27 @@ export function CallLogTable({ calls, onSelectCall, compact }: CallLogTableProps
                     </p>
                   </div>
                 </div>
-                <div className="text-right flex-shrink-0">
-                  {call.order_total > 0 ? (
-                    <p className="text-sm font-bold text-foreground">{formatCurrency(call.order_total)}</p>
-                  ) : (
-                    <p className="text-sm text-ringo-muted/40">—</p>
-                  )}
-                  {call.upsell_total > 0 && (
-                    <p className="text-[10px] font-semibold text-ringo-amber">+{formatCurrency(call.upsell_total)}</p>
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="text-right">
+                    {call.order_total > 0 ? (
+                      <p className="text-sm font-bold text-foreground">{formatCurrency(call.order_total)}</p>
+                    ) : (
+                      <p className="text-sm text-ringo-muted/40">—</p>
+                    )}
+                    {call.upsell_total > 0 && (
+                      <p className="text-[10px] font-semibold text-ringo-amber">+{formatCurrency(call.upsell_total)}</p>
+                    )}
+                  </div>
+                  {call.recording_url && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(call.recording_url, '_blank');
+                      }}
+                      className="p-1.5 rounded-lg hover:bg-ringo-teal/[0.15] transition-colors"
+                    >
+                      <Play className="h-4 w-4 text-ringo-teal" />
+                    </button>
                   )}
                 </div>
               </div>
@@ -191,6 +204,17 @@ export function CallLogTable({ calls, onSelectCall, compact }: CallLogTableProps
                     <p className="text-sm font-semibold text-ringo-amber">{formatCurrency(call.upsell_total)}</p>
                   ) : (
                     <p className="text-sm text-ringo-muted/40">—</p>
+                  )}
+                  {call.recording_url && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        window.open(call.recording_url, '_blank');
+                      }}
+                      className="p-1.5 rounded-lg hover:bg-ringo-teal/[0.15] transition-colors"
+                    >
+                      <Play className="h-4 w-4 text-ringo-teal hover:text-ringo-teal-light" />
+                    </button>
                   )}
                   {onSelectCall && (
                     <ChevronRight className="h-3.5 w-3.5 text-ringo-muted/30" />

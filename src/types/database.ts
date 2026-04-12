@@ -17,6 +17,7 @@ export interface Restaurant {
   plan_tier: PlanTier | null;
   square_access_token: string | null;
   square_location_id: string | null;
+  tax_rate: number;
   created_at: string;
   owner_user_id: string;
 }
@@ -29,6 +30,7 @@ export interface Call {
   end_time: string | null;
   duration_seconds: number | null;
   transcript: string | null;
+  recording_url: string | null;
   call_outcome: CallOutcome;
   order_total: number;
   upsell_total: number;

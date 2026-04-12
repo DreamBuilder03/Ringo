@@ -70,6 +70,7 @@ export async function POST(request: Request) {
               : null,
             duration_seconds: duration,
             transcript: event.call.transcript || null,
+            recording_url: event.call.recording_url || null,
             call_outcome: outcome,
           })
           .eq('retell_call_id', event.call.call_id);
@@ -132,6 +133,7 @@ export async function POST(request: Request) {
             upsell_total: upsellTotal,
             call_outcome: outcome,
             transcript: event.call.transcript || undefined,
+            recording_url: event.call.recording_url || null,
           })
           .eq('retell_call_id', event.call.call_id);
 

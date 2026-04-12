@@ -20,11 +20,11 @@ interface OrderItem {
   is_upsell?: boolean;
 }
 
-const TAX_RATE = 0.0875; // 8.75%
+const DEFAULT_TAX_RATE = 0.0875; // 8.75% fallback
 
-function calculateTotals(items: OrderItem[]) {
+function calculateTotals(items: OrderItem[], taxRate: number = DEFAULT_TAX_RATE) {
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  const tax = subtotal * TAX_RATE;
+  const tax = subtotal * taxRate;
   const total = subtotal + tax;
 
   return {
@@ -72,7 +72,7 @@ export async function POST(request: NextRequest) {
     // Look up restaurant by agent_id
     const { data: restaurant, error: restaurantError } = await supabase
       .from('restaurants')
-      .select('id, name')
+      .select('id, name, tax_rate')
       .eq('retell_agent_id', call.agent_id)
       .single();
 
@@ -128,7 +128,8 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    const totals = calculateTotals(updatedItems);
+    const taxRate = restaurant.tax_rate ?? DEFAULT_TAX_RATE;
+    const totals = calculateTotals(updatedItems, taxRate);
 
     // Update the order
     const { error: updateError } = await supabase
