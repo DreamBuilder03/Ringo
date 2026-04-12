@@ -13,6 +13,7 @@ interface RetellRequest {
     quantity: number;
     modifiers?: string[];
     customer_phone?: string;
+    is_upsell?: boolean;
   };
 }
 
@@ -140,7 +141,7 @@ export async function POST(request: NextRequest) {
       name: menuItem.name,
       quantity,
       price: menuItem.price,
-      is_upsell: false,
+      is_upsell: args.is_upsell === true,
     };
 
     currentItems.push(newOrderItem);

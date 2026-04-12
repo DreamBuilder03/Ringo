@@ -106,7 +106,17 @@ export async function POST(request: Request) {
         const orderTotal = orderFromTools
           ? orderFromTools.subtotal
           : Number(analysisData?.order_total) || 0;
-        const upsellTotal = Number(analysisData?.upsell_total) || 0;
+        // Calculate upsell_total from actual order items (preferred) or fall back to analysis data
+        let upsellTotal = 0;
+        if (orderFromTools?.items && Array.isArray(orderFromTools.items)) {
+          upsellTotal = (orderFromTools.items as Array<Record<string, unknown>>)
+            .filter((item) => item.is_upsell === true)
+            .reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 1), 0);
+          upsellTotal = parseFloat(upsellTotal.toFixed(2));
+        }
+        if (upsellTotal === 0) {
+          upsellTotal = Number(analysisData?.upsell_total) || 0;
+        }
 
         const outcome = orderFromTools
           ? 'order_placed' as const

@@ -68,956 +68,1004 @@ function AnimatedCounter({ target, prefix = '', suffix = '' }: { target: number;
   return <span ref={ref}>{prefix}{count.toLocaleString()}{suffix}</span>;
 }
 
-/* ────────────────────────── Phone Mockup ────────────────────────── */
-function PhoneMockup() {
-  const [activeScreen, setActiveScreen] = useState(0);
-  const [callActive, setCallActive] = useState(true);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setActiveScreen((prev) => (prev + 1) % 3);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, []);
+/* ────────────────────────── POS Partner Marquee ────────────────────────── */
+function POSMarquee() {
+  const partners = [
+    { name: 'Square', color: '#036EFF' },
+    { name: 'Toast', color: '#FF6B2D' },
+    { name: 'Clover', color: '#1DB46D' },
+    { name: 'SpotOn', color: '#0066CC' },
+    { name: 'Oracle Aloha', color: '#F80000' },
+    { name: 'Olo', color: '#0066FF' },
+    { name: 'OpenTable', color: '#DA3743' },
+    { name: 'SkyTab', color: '#4A90E2' },
+    { name: 'Lightspeed', color: '#FF5A2D' },
+    { name: 'TouchBistro', color: '#FF7C00' },
+  ];
 
   return (
-    <div className="relative">
-      {/* Glow effect */}
-      <div className="absolute inset-0 bg-ringo-teal/15 blur-[100px] rounded-full" />
+    <div className="relative w-full overflow-hidden bg-gradient-to-r from-[#FFF8F0] via-white to-[#FFF8F0] py-12 border-y border-[#E8DDD0]">
+      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGRlZnM+PHBhdHRlcm4gaWQ9ImEiIHBhdHRlcm5Vbml0cz0idXNlclNwYWNlT25Vc2UiIHdpZHRoPSI2MCIgaGVpZ2h0PSI2MCI+PHBhdGggZD0iTTAgMGg2MHY2MEgweiIgZmlsbD0ibm9uZSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNhKSIvPjwvc3ZnPg==')] opacity-30" />
 
-      {/* Phone frame */}
-      <div className="relative w-[300px] h-[620px] bg-[#0a0a0f] rounded-[3rem] border-[6px] border-gray-800 shadow-2xl shadow-black/50 overflow-hidden">
-        {/* Notch */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[120px] h-[30px] bg-[#0a0a0f] rounded-b-2xl z-20" />
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <p className="text-center text-sm font-semibold text-[#6B5E50] mb-8 uppercase tracking-widest">
+          Integrated with leading POS systems
+        </p>
 
-        {/* Status bar */}
-        <div className="relative z-10 flex items-center justify-between px-8 pt-3 pb-2">
-          <span className="text-[10px] font-semibold text-white/70">9:41</span>
-          <div className="flex items-center gap-1">
-            <Wifi className="h-3 w-3 text-white/70" />
-            <div className="w-6 h-2.5 rounded-sm border border-white/40 p-[1px]">
-              <div className="h-full w-[80%] rounded-sm bg-green-500" />
-            </div>
+        <div className="flex overflow-hidden">
+          <div className="flex gap-8 min-w-full animate-marquee">
+            {[...partners, ...partners].map((partner, idx) => (
+              <div
+                key={idx}
+                className="flex-shrink-0 flex items-center justify-center"
+              >
+                <div
+                  className="px-4 py-2.5 rounded-full border border-[#E8DDD0] bg-white/60 backdrop-blur-sm hover:bg-white hover:border-[#921920]/30 transition-all duration-300 cursor-default"
+                  style={{
+                    boxShadow: `0 0 20px ${partner.color}15`,
+                  }}
+                >
+                  <span
+                    className="text-sm font-semibold whitespace-nowrap"
+                    style={{ color: partner.color }}
+                  >
+                    {partner.name}
+                  </span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
+      </div>
 
-        {/* Screen content */}
-        <div className="relative h-full bg-gradient-to-b from-ringo-darker to-[#0F0F14] px-4 pt-2 overflow-hidden">
-          {/* Dashboard Screen */}
-          <div className={cn(
-            'absolute inset-x-4 top-14 transition-all duration-700',
-            activeScreen === 0 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-          )}>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider">Dashboard</p>
-                <p className="text-lg font-bold text-white">Mario&apos;s Pizza</p>
+      <style jsx>{`
+        @keyframes marquee {
+          0% {
+            transform: translateX(0);
+          }
+          100% {
+            transform: translateX(-50%);
+          }
+        }
+        .animate-marquee {
+          animation: marquee 30s linear infinite;
+        }
+      `}</style>
+    </div>
+  );
+}
+
+/* ────────────────────────── Live Demo Section ────────────────────────── */
+function LiveDemoSection() {
+  const [isHovered, setIsHovered] = useState(false);
+  const [callStatus, setCallStatus] = useState<'idle' | 'ringing' | 'active'>('idle');
+
+  const startDemoCall = () => {
+    setCallStatus('ringing');
+    setTimeout(() => setCallStatus('active'), 2500);
+  };
+
+  const endCall = () => {
+    setCallStatus('idle');
+  };
+
+  return (
+    <section className="relative py-20 overflow-hidden bg-gradient-to-b from-[#FFF8F0] to-white">
+      {/* Decorative elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-20 right-0 w-96 h-96 bg-gradient-to-br from-[#921920]/10 to-[#0C1A7D]/10 blur-[120px] rounded-full" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-[#0C1A7D]/10 to-[#921920]/10 blur-[120px] rounded-full" />
+      </div>
+
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* Left: Demo Phone */}
+          <div className="flex justify-center lg:justify-start">
+            <div className="relative">
+              {/* Phone frame with glass effect */}
+              <div className="relative w-[320px] h-[640px] rounded-[40px] border-8 border-white/40 bg-white/30 backdrop-blur-xl shadow-2xl overflow-hidden">
+                {/* Notch */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-40 h-7 bg-black/80 rounded-b-3xl z-30" />
+
+                {/* Status bar */}
+                <div className="relative z-20 flex items-center justify-between px-6 pt-2 pb-1 bg-gradient-to-b from-gray-900 to-gray-800">
+                  <span className="text-xs font-semibold text-white/80">9:41</span>
+                  <div className="flex gap-1">
+                    <Wifi className="h-3 w-3 text-white/60" />
+                    <div className="text-xs font-semibold text-white/60">●●●●●</div>
+                  </div>
+                </div>
+
+                {/* Call screen */}
+                <div className="relative h-full bg-gradient-to-b from-gray-900 via-gray-800 to-black flex flex-col items-center justify-center gap-6 px-4">
+                  {callStatus === 'idle' ? (
+                    <>
+                      <div className="text-center">
+                        <p className="text-white/70 text-xs uppercase tracking-widest mb-2">Ready to try?</p>
+                        <h3 className="text-white text-lg font-bold">Demo Call</h3>
+                      </div>
+                      <button
+                        onClick={startDemoCall}
+                        className="h-14 w-14 rounded-full bg-gradient-to-br from-[#921920] to-[#6B1217] flex items-center justify-center hover:shadow-lg hover:shadow-[#921920]/50 transition-all duration-300 hover:scale-105"
+                      >
+                        <PhoneCall className="h-6 w-6 text-white" />
+                      </button>
+                      <p className="text-white/50 text-xs">Tap to call demo</p>
+                    </>
+                  ) : callStatus === 'ringing' ? (
+                    <>
+                      <div className="relative w-16 h-16">
+                        <div className="absolute inset-0 border-2 border-white/30 rounded-full animate-pulse" />
+                        <div className="absolute inset-2 border-2 border-white/20 rounded-full animate-pulse" style={{ animationDelay: '0.2s' }} />
+                        <PhoneCall className="absolute inset-0 m-auto h-6 w-6 text-white" />
+                      </div>
+                      <p className="text-white text-sm font-medium">Ringo AI</p>
+                      <p className="text-white/60 text-xs">Incoming call...</p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="relative w-12 h-12">
+                        <div className="absolute inset-0 border-2 border-[#921920] rounded-full animate-pulse" />
+                        <Mic className="absolute inset-0 m-auto h-5 w-5 text-white" />
+                      </div>
+                      <p className="text-white text-sm font-medium">Ringo AI</p>
+                      <p className="text-white/60 text-xs">Call active • Listening...</p>
+                      <div className="w-32 h-8 flex items-end justify-center gap-1">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                          <div
+                            key={i}
+                            className="w-1 bg-gradient-to-t from-[#921920] to-[#0C1A7D] rounded-full"
+                            style={{
+                              height: `${20 + Math.random() * 24}px`,
+                              animation: `pulse 0.5s ease-in-out infinite`,
+                              animationDelay: `${i * 0.1}s`,
+                            }}
+                          />
+                        ))}
+                      </div>
+                      <button
+                        onClick={endCall}
+                        className="h-12 w-12 rounded-full bg-red-500/80 flex items-center justify-center hover:bg-red-600 transition-colors mt-2"
+                      >
+                        <X className="h-5 w-5 text-white" />
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
-              <div className="flex items-center gap-1 bg-green-100 rounded-full px-2 py-0.5">
-                <div className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
-                <span className="text-[8px] font-bold text-green-600">LIVE</span>
+
+              {/* Floating glow */}
+              <div
+                className={cn(
+                  'absolute inset-0 rounded-[40px] -z-10 transition-all duration-500',
+                  callStatus === 'active'
+                    ? 'shadow-2xl shadow-[#921920]/50 blur-xl'
+                    : 'shadow-xl shadow-black/20 blur-lg'
+                )}
+              />
+            </div>
+          </div>
+
+          {/* Right: Content */}
+          <div className="space-y-8">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#921920]/10 border border-[#921920]/20 mb-4">
+                <Volume2 className="h-4 w-4 text-[#921920]" />
+                <span className="text-sm font-semibold text-[#921920]">Live Demo</span>
               </div>
+              <h2 className="text-4xl md:text-5xl font-bold text-[#1A1A2E] leading-tight mb-4">
+                Hear Ringo in Action
+              </h2>
+              <p className="text-lg text-[#6B5E50] leading-relaxed">
+                Experience how our AI naturally handles restaurant orders, answers questions, and provides a seamless ordering experience. Try a real demo call right now.
+              </p>
             </div>
 
-            {/* Mini stat cards */}
-            <div className="grid grid-cols-2 gap-2 mb-3">
-              <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-3">
-                <p className="text-[8px] text-white/40 font-bold uppercase">Calls Today</p>
-                <p className="text-xl font-bold text-white mt-0.5">24</p>
-                <span className="text-[8px] font-bold text-green-600">↑ 12%</span>
-              </div>
-              <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-3">
-                <p className="text-[8px] text-white/40 font-bold uppercase">Revenue</p>
-                <p className="text-xl font-bold text-white mt-0.5">$842</p>
-                <span className="text-[8px] font-bold text-green-600">↑ 15%</span>
-              </div>
-            </div>
-
-            {/* Mini chart */}
-            <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-3 mb-3">
-              <p className="text-[8px] text-white/40 font-bold uppercase mb-2">Weekly Revenue</p>
-              <div className="flex items-end gap-1 h-12">
-                {[40, 65, 55, 80, 70, 90, 45].map((h, i) => (
-                  <div
-                    key={i}
-                    className="flex-1 rounded-t-sm bg-gradient-to-t from-ringo-teal/80 to-ringo-teal/30"
-                    style={{ height: `${h}%` }}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {/* Recent calls */}
-            <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-3">
-              <p className="text-[8px] text-white/40 font-bold uppercase mb-2">Recent Calls</p>
+            <div className="space-y-4">
               {[
-                { time: '2:14 PM', outcome: 'Order', amount: '$31.97', color: 'text-green-500' },
-                { time: '1:32 PM', outcome: 'Inquiry', amount: '—', color: 'text-blue-600' },
-                { time: '12:45 PM', outcome: 'Order', amount: '$52.47', color: 'text-green-500' },
-              ].map((call, i) => (
-                <div key={i} className="flex items-center justify-between py-1.5 border-b border-white/[0.04] last:border-0">
-                  <div className="flex items-center gap-2">
-                    <div className="h-5 w-5 rounded-md bg-white/[0.06] flex items-center justify-center">
-                      <Phone className="h-2.5 w-2.5 text-white/40" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-medium text-white">{call.time}</p>
-                      <p className={cn('text-[8px] font-semibold', call.color)}>{call.outcome}</p>
+                { icon: Mic, label: 'Natural voice interaction', desc: 'AI understands accents, dialects, and complex orders' },
+                { icon: Clock, label: 'Real-time processing', desc: 'Instant menu lookups and order validation' },
+                { icon: Phone, label: 'Crystal clear audio', desc: 'Professional call quality with noise filtering' },
+              ].map((item, idx) => (
+                <div key={idx} className="flex gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gradient-to-br from-[#921920] to-[#0C1A7D]">
+                      <item.icon className="h-5 w-5 text-white" />
                     </div>
                   </div>
-                  <p className="text-[10px] font-bold text-white">{call.amount}</p>
+                  <div>
+                    <h4 className="font-semibold text-[#1A1A2E]">{item.label}</h4>
+                    <p className="text-sm text-[#6B5E50]">{item.desc}</p>
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
 
-          {/* Live Call Screen */}
-          <div className={cn(
-            'absolute inset-x-4 top-14 transition-all duration-700',
-            activeScreen === 1 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-          )}>
-            <div className="text-center pt-8">
-              <div className="mx-auto w-20 h-20 rounded-full bg-gradient-to-br from-ringo-teal to-green-500 flex items-center justify-center mb-4 shadow-lg shadow-ringo-teal/30 animate-pulse">
-                <Phone className="h-8 w-8 text-white" />
-              </div>
-              <p className="text-[10px] text-green-600 font-bold uppercase tracking-widest mb-1">LIVE CALL</p>
-              <p className="text-lg font-bold text-white">Ringo is ordering...</p>
-              <p className="text-xs text-white/40 mt-1">Duration: 2:34</p>
-            </div>
-
-            {/* Live transcript */}
-            <div className="mt-6 space-y-2">
-              <div className="flex gap-2">
-                <div className="h-5 w-5 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
-                  <Users className="h-2.5 w-2.5 text-white/50" />
-                </div>
-                <div className="bg-white/[0.06] rounded-xl rounded-tl-sm px-3 py-2 max-w-[80%]">
-                  <p className="text-[10px] text-white/80">&quot;I&apos;d like a large pepperoni and garlic bread&quot;</p>
-                </div>
-              </div>
-              <div className="flex gap-2 flex-row-reverse">
-                <div className="h-5 w-5 rounded-full bg-ringo-teal/20 flex items-center justify-center flex-shrink-0">
-                  <Bot className="h-2.5 w-2.5 text-ringo-teal" />
-                </div>
-                <div className="bg-ringo-teal/10 border border-ringo-teal/20 rounded-xl rounded-tr-sm px-3 py-2 max-w-[80%]">
-                  <p className="text-[10px] text-white/80">&quot;Great! Would you like to add our family deal for just $7.99 more?&quot;</p>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <div className="h-5 w-5 rounded-full bg-white/10 flex items-center justify-center flex-shrink-0">
-                  <Users className="h-2.5 w-2.5 text-white/50" />
-                </div>
-                <div className="bg-white/[0.06] rounded-xl rounded-tl-sm px-3 py-2 max-w-[80%]">
-                  <p className="text-[10px] text-white/80">&quot;Sure, add it!&quot;</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Upsell indicator */}
-            <div className="mt-4 rounded-xl bg-ringo-amber/10 border border-ringo-amber/20 p-3 text-center">
-              <Sparkles className="h-4 w-4 text-ringo-amber mx-auto mb-1" />
-              <p className="text-[10px] font-bold text-ringo-amber">Upsell Captured: +$7.99</p>
-            </div>
-          </div>
-
-          {/* Analytics Screen */}
-          <div className={cn(
-            'absolute inset-x-4 top-14 transition-all duration-700',
-            activeScreen === 2 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-          )}>
-            <p className="text-[10px] text-white/40 font-semibold uppercase tracking-wider mb-1">Analytics</p>
-            <p className="text-lg font-bold text-white mb-4">This Month</p>
-
-            <div className="space-y-3">
-              <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-3">
-                <div className="flex justify-between items-center mb-1">
-                  <p className="text-[10px] font-bold text-white/40 uppercase">Total Revenue</p>
-                  <span className="text-[8px] font-bold text-green-600 bg-green-100 px-1.5 rounded-full">↑ 23%</span>
-                </div>
-                <p className="text-2xl font-bold text-ringo-teal">$14,790</p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-3">
-                  <p className="text-[8px] text-white/40 font-bold uppercase">Answer Rate</p>
-                  <p className="text-lg font-bold text-green-600 mt-0.5">99.2%</p>
-                </div>
-                <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-3">
-                  <p className="text-[8px] text-white/40 font-bold uppercase">Upsell Rate</p>
-                  <p className="text-lg font-bold text-ringo-amber mt-0.5">64%</p>
-                </div>
-              </div>
-
-              <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-3">
-                <p className="text-[8px] text-white/40 font-bold uppercase mb-2">Top Items</p>
-                {[
-                  { name: 'Pepperoni Pizza', pct: 85 },
-                  { name: 'Family Combo', pct: 68 },
-                  { name: 'Buffalo Wings', pct: 52 },
-                ].map((item, i) => (
-                  <div key={i} className="flex items-center gap-2 mb-1.5">
-                    <span className="text-[8px] font-bold text-white/30 w-3">{i + 1}</span>
-                    <div className="flex-1">
-                      <p className="text-[9px] font-medium text-white/70">{item.name}</p>
-                      <div className="h-1 rounded-full bg-white/[0.06] mt-0.5 overflow-hidden">
-                        <div
-                          className="h-full rounded-full bg-gradient-to-r from-ringo-teal to-green-500"
-                          style={{ width: `${item.pct}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="rounded-xl bg-white/[0.04] border border-white/[0.06] p-3">
-                <p className="text-[8px] text-white/40 font-bold uppercase">Total Calls</p>
-                <p className="text-lg font-bold text-white mt-0.5">342</p>
-                <p className="text-[8px] text-white/40">this month</p>
-              </div>
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <Link
+                href="/schedule-demo"
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-[#921920] to-[#6B1217] text-white font-semibold hover:shadow-lg hover:shadow-[#921920]/50 transition-all duration-300 hover:scale-105"
+              >
+                Schedule a Full Demo <ArrowRight className="h-4 w-4" />
+              </Link>
+              <button
+                onClick={startDemoCall}
+                className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg border border-[#921920] text-[#921920] font-semibold hover:bg-[#921920]/5 transition-all duration-300"
+              >
+                <Phone className="h-4 w-4" />
+                Call Demo Now
+              </button>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Screen indicator dots */}
-      <div className="flex justify-center gap-2 mt-6">
-        {['Dashboard', 'Live Call', 'Analytics'].map((label, i) => (
-          <button
-            key={label}
-            onClick={() => setActiveScreen(i)}
-            className={cn(
-              'px-3 py-1.5 rounded-full text-[10px] font-semibold transition-all duration-300',
-              activeScreen === i
-                ? 'bg-ringo-teal text-white'
-                : 'bg-white/[0.05] text-white/40 hover:text-white/60'
-            )}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-    </div>
+    </section>
   );
 }
 
-/* ────────────────────────── Chat Demo ────────────────────────── */
-function LiveChatDemo() {
-  const [messages, setMessages] = useState([
-    { role: 'agent', text: "Hi! Welcome to Mario's Pizza. How can I help you today?" },
-  ]);
-  const [inputValue, setInputValue] = useState('');
-  const [isTyping, setIsTyping] = useState(false);
+/* ────────────────────────── Self-Serve Demo Section ────────────────────────── */
+function SelfServeDemo() {
+  const [restaurantName, setRestaurantName] = useState('');
+  const [email, setEmail] = useState('');
+  const [submitted, setSubmitted] = useState(false);
 
-  const responses: Record<string, string> = {
-    'menu': "Our most popular items are the Large Pepperoni ($18.99), Family Combo ($44.99), and Buffalo Wings ($13.99). Would you like to order?",
-    'order': "I'd be happy to help you order! What would you like? Our Large Pepperoni is a customer favorite at $18.99.",
-    'hours': "We're open Monday-Saturday 11AM-10PM, and Sunday 12PM-9PM. Would you like to place an order?",
-    'delivery': "Yes, we deliver! There's a $2.99 delivery fee for orders under $25. Orders over $25 get free delivery. What can I get started for you?",
-    'special': "Today's special is our Family Combo Deal — 2 large pizzas, salad, and breadsticks for just $44.99! Want me to add that to your order?",
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (restaurantName && email) {
+      setSubmitted(true);
+      setTimeout(() => {
+        setRestaurantName('');
+        setEmail('');
+        setSubmitted(false);
+      }, 4000);
+    }
   };
 
-  function handleSend() {
-    if (!inputValue.trim()) return;
-
-    const userMsg = inputValue.trim();
-    setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
-    setInputValue('');
-    setIsTyping(true);
-
-    setTimeout(() => {
-      const lowerMsg = userMsg.toLowerCase();
-      let response = "Great question! I can help with orders, menu info, hours, delivery, or today's specials. What would you like to know?";
-
-      for (const [key, val] of Object.entries(responses)) {
-        if (lowerMsg.includes(key)) {
-          response = val;
-          break;
-        }
-      }
-
-      setMessages(prev => [...prev, { role: 'agent', text: response }]);
-      setIsTyping(false);
-    }, 1200);
-  }
-
   return (
-    <div className="w-full max-w-md mx-auto">
-      <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] backdrop-blur-sm overflow-hidden shadow-2xl shadow-black/20">
-        {/* Chat header */}
-        <div className="flex items-center gap-3 px-5 py-4 border-b border-white/[0.06] bg-white/[0.02]">
-          <div className="relative">
-            <div className="h-10 w-10 rounded-full bg-gradient-to-br from-ringo-teal to-green-500 flex items-center justify-center">
-              <Bot className="h-5 w-5 text-white" />
-            </div>
-            <div className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-green-500 border-2 border-ringo-dark" />
-          </div>
-          <div>
-            <p className="text-sm font-bold text-white">Ringo Chat Agent</p>
-            <p className="text-[10px] text-green-600 font-semibold">Online — avg reply 1.2s</p>
-          </div>
-        </div>
+    <section className="relative py-20 overflow-hidden bg-white">
+      {/* Decorative grid */}
+      <div className="absolute inset-0 opacity-5 pointer-events-none">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `linear-gradient(0deg, transparent 24%, rgba(147, 25, 32, .05) 25%, rgba(147, 25, 32, .05) 26%, transparent 27%, transparent 74%, rgba(147, 25, 32, .05) 75%, rgba(147, 25, 32, .05) 76%, transparent 77%, transparent),
+                             linear-gradient(90deg, transparent 24%, rgba(147, 25, 32, .05) 25%, rgba(147, 25, 32, .05) 26%, transparent 27%, transparent 74%, rgba(147, 25, 32, .05) 75%, rgba(147, 25, 32, .05) 76%, transparent 77%, transparent)`,
+            backgroundSize: '60px 60px',
+          }}
+        />
+      </div>
 
-        {/* Messages */}
-        <div className="h-[280px] overflow-y-auto p-4 space-y-3">
-          {messages.map((msg, i) => (
-            <div
-              key={i}
-              className={cn('flex gap-2', msg.role === 'user' ? 'flex-row-reverse' : 'flex-row')}
-            >
-              {msg.role === 'agent' && (
-                <div className="h-6 w-6 rounded-full bg-ringo-teal/20 flex items-center justify-center flex-shrink-0">
-                  <Bot className="h-3 w-3 text-ringo-teal" />
-                </div>
-              )}
-              <div
-                className={cn(
-                  'max-w-[80%] rounded-2xl px-4 py-2.5 text-sm',
-                  msg.role === 'user'
-                    ? 'bg-ringo-teal text-white rounded-tr-sm'
-                    : 'bg-white/[0.06] text-white/80 rounded-tl-sm'
-                )}
-              >
-                {msg.text}
-              </div>
+      <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <div className="rounded-2xl border border-[#E8DDD0] bg-gradient-to-br from-[#FFF8F0]/50 to-white/50 backdrop-blur-sm p-8 md:p-12 shadow-lg shadow-black/5">
+          <div className="mb-8">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0C1A7D]/10 border border-[#0C1A7D]/20 mb-4">
+              <Bot className="h-4 w-4 text-[#0C1A7D]" />
+              <span className="text-sm font-semibold text-[#0C1A7D]">Personalized Demo</span>
             </div>
-          ))}
-          {isTyping && (
-            <div className="flex gap-2">
-              <div className="h-6 w-6 rounded-full bg-ringo-teal/20 flex items-center justify-center flex-shrink-0">
-                <Bot className="h-3 w-3 text-ringo-teal" />
-              </div>
-              <div className="bg-white/[0.06] rounded-2xl rounded-tl-sm px-4 py-2.5">
-                <div className="flex gap-1">
-                  <div className="h-2 w-2 rounded-full bg-white/30 animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="h-2 w-2 rounded-full bg-white/30 animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="h-2 w-2 rounded-full bg-white/30 animate-bounce" style={{ animationDelay: '300ms' }} />
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
+            <h2 className="text-3xl md:text-4xl font-bold text-[#1A1A2E] mb-4">
+              Try Ringo with Your Restaurant
+            </h2>
+            <p className="text-lg text-[#6B5E50]">
+              Get a personalized voice demo customized for your restaurant's menu and ordering style.
+            </p>
+          </div>
 
-        {/* Quick replies */}
-        <div className="px-4 pb-2 flex flex-wrap gap-1.5">
-          {['Menu', 'Order', 'Hours', 'Delivery', 'Special'].map((q) => (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-[#1A1A2E] mb-2">
+                  Restaurant Name
+                </label>
+                <input
+                  type="text"
+                  value={restaurantName}
+                  onChange={(e) => setRestaurantName(e.target.value)}
+                  placeholder="Your restaurant name"
+                  className="w-full px-4 py-3 rounded-lg border border-[#E8DDD0] bg-white focus:outline-none focus:border-[#921920] focus:ring-2 focus:ring-[#921920]/10 transition-all"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#1A1A2E] mb-2">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your@email.com"
+                  className="w-full px-4 py-3 rounded-lg border border-[#E8DDD0] bg-white focus:outline-none focus:border-[#921920] focus:ring-2 focus:ring-[#921920]/10 transition-all"
+                  required
+                />
+              </div>
+            </div>
+
             <button
-              key={q}
-              onClick={() => { setInputValue(q); }}
-              className="px-3 py-1 rounded-full bg-white/[0.05] border border-white/[0.08] text-[10px] font-semibold text-white/50 hover:text-white/80 hover:border-white/15 transition-all"
+              type="submit"
+              className="w-full px-6 py-3 rounded-lg bg-gradient-to-r from-[#0C1A7D] to-[#921920] text-white font-semibold hover:shadow-lg hover:shadow-[#0C1A7D]/30 transition-all duration-300 hover:scale-[1.02]"
             >
-              {q}
+              {submitted ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Check className="h-4 w-4" />
+                  Demo Scheduled!
+                </span>
+              ) : (
+                <span className="flex items-center justify-center gap-2">
+                  Get Your Personalized Demo
+                  <ArrowRight className="h-4 w-4" />
+                </span>
+              )}
             </button>
-          ))}
-        </div>
 
-        {/* Input */}
-        <div className="flex items-center gap-2 px-4 py-3 border-t border-white/[0.06]">
-          <input
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Try: menu, order, hours..."
-            className="flex-1 bg-white/[0.04] border border-white/[0.08] rounded-xl px-4 py-2.5 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-ringo-teal/50"
-          />
-          <button
-            onClick={handleSend}
-            className="h-10 w-10 rounded-xl bg-ringo-teal flex items-center justify-center hover:bg-ringo-teal-light transition-colors"
-          >
-            <Send className="h-4 w-4 text-white" />
-          </button>
+            <p className="text-xs text-[#6B5E50] text-center">
+              We'll send you a personalized demo call and follow up within 24 hours.
+            </p>
+          </form>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
-/* ────────────────────────── FAQ Accordion ────────────────────────── */
-function FAQ() {
-  const [open, setOpen] = useState<number | null>(null);
-  const faqs = [
+/* ────────────────────────── Features Section ────────────────────────── */
+function FeaturesSection() {
+  const features = [
     {
-      q: 'How quickly can I get Ringo set up?',
-      a: 'Most restaurants are live within 5 minutes. Just create your account, connect your POS, and Ringo starts answering calls immediately. No complex setup or training required.',
+      icon: Zap,
+      title: 'Lightning-Fast Orders',
+      description: 'Process orders 10x faster than traditional phone lines with instant menu lookups.',
+      gradient: 'from-[#921920] to-orange-500',
     },
     {
-      q: 'What happens if Ringo can\'t handle a call?',
-      a: 'Ringo seamlessly transfers to your staff. But with 99.2% accuracy on orders and the ability to handle menu questions, hours, specials, and full ordering — transfers are rare.',
+      icon: Users,
+      title: 'Human-Friendly AI',
+      description: 'Natural conversations that handle accents, preferences, and complex requests.',
+      gradient: 'from-[#0C1A7D] to-blue-500',
     },
     {
-      q: 'Does Ringo work with my POS system?',
-      a: 'Ringo integrates with 30+ POS systems including Square, Toast, Clover, SpotOn, and more. Orders are pushed directly to your kitchen — no manual entry needed.',
+      icon: BarChart3,
+      title: 'Real-Time Insights',
+      description: 'Track call metrics, order patterns, and customer preferences instantly.',
+      gradient: 'from-emerald-500 to-teal-500',
     },
     {
-      q: 'How does the AI upselling work?',
-      a: 'Ringo naturally suggests add-ons and upgrades during every order based on your menu strategy. On average, restaurants see a 22-31% increase in ticket size from AI-powered upsells.',
+      icon: Shield,
+      title: 'Enterprise Security',
+      description: 'Bank-level encryption and compliance for customer data protection.',
+      gradient: 'from-purple-500 to-pink-500',
     },
     {
-      q: 'Is there a contract or setup fee?',
-      a: 'No contracts, no setup fees. Start with a 14-day free trial on any plan. Cancel anytime. We believe Ringo should prove its value before you pay a penny.',
+      icon: Clock,
+      title: '24/7 Availability',
+      description: 'Never miss an order. Ringo works around the clock for you.',
+      gradient: 'from-amber-500 to-orange-500',
     },
     {
-      q: 'Can Ringo handle multiple calls at once?',
-      a: 'Yes! Ringo can handle 50+ simultaneous calls without any degradation in quality. During your busiest rush, every single call gets answered.',
+      icon: Headphones,
+      title: 'Seamless Integration',
+      description: 'Connects with your POS system in minutes. No complex setup.',
+      gradient: 'from-cyan-500 to-blue-500',
     },
   ];
 
   return (
-    <div className="max-w-2xl mx-auto space-y-3">
-      {faqs.map((faq, i) => (
-        <button
-          key={i}
-          onClick={() => setOpen(open === i ? null : i)}
-          className="w-full text-left rounded-2xl border border-white/[0.06] bg-white/[0.02] hover:bg-white/[0.04] transition-all duration-200 overflow-hidden"
-        >
-          <div className="flex items-center justify-between px-6 py-5">
-            <span className="text-sm font-semibold text-white pr-4">{faq.q}</span>
-            <ChevronDown className={cn('h-4 w-4 text-white/30 transition-transform flex-shrink-0', open === i && 'rotate-180')} />
+    <section className="relative py-20 overflow-hidden bg-gradient-to-b from-white to-[#FFF8F0]">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#921920]/10 border border-[#921920]/20 mb-4">
+            <Sparkles className="h-4 w-4 text-[#921920]" />
+            <span className="text-sm font-semibold text-[#921920]">Features</span>
           </div>
-          <div className={cn('transition-all duration-300 overflow-hidden', open === i ? 'max-h-40 pb-5 px-6' : 'max-h-0')}>
-            <p className="text-sm text-white/50 leading-relaxed">{faq.a}</p>
-          </div>
-        </button>
-      ))}
-    </div>
+          <h2 className="text-4xl md:text-5xl font-bold text-[#1A1A2E] leading-tight mb-4">
+            Packed with Everything You Need
+          </h2>
+          <p className="text-xl text-[#6B5E50] max-w-2xl mx-auto">
+            Built for restaurant owners who want to scale without hiring.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {features.map((feature, idx) => (
+            <div
+              key={idx}
+              className="group relative rounded-2xl border border-[#E8DDD0] bg-white p-8 hover:border-[#921920]/30 transition-all duration-300 hover:shadow-xl hover:shadow-black/10 overflow-hidden"
+            >
+              {/* Gradient overlay on hover */}
+              <div
+                className={cn(
+                  'absolute inset-0 opacity-0 group-hover:opacity-5 transition-opacity duration-300 bg-gradient-to-br',
+                  feature.gradient
+                )}
+              />
+
+              <div className={cn('h-12 w-12 rounded-lg bg-gradient-to-br flex items-center justify-center mb-4', feature.gradient)}>
+                <feature.icon className="h-6 w-6 text-white" />
+              </div>
+
+              <h3 className="text-xl font-bold text-[#1A1A2E] mb-2">{feature.title}</h3>
+              <p className="text-[#6B5E50]">{feature.description}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
-/* ────────────────────────── MAIN PAGE ────────────────────────── */
-export default function HomePage() {
+/* ────────────────────────── Stats Section ────────────────────────── */
+function StatsSection() {
   return (
-    <div className="min-h-screen bg-ringo-darker text-white overflow-hidden">
-      {/* Grid background pattern */}
-      <div className="fixed inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:60px_60px] pointer-events-none" />
+    <section className="relative py-20 overflow-hidden bg-gradient-to-r from-[#921920] via-[#0C1A7D] to-[#921920]">
+      {/* Animated background */}
+      <div className="absolute inset-0 opacity-10 pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(255,255,255,0.3),rgba(255,255,255,0))]" />
+      </div>
 
-      {/* ───── Navigation ───── */}
-      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-white/[0.06] bg-ringo-darker/80 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-8">
-            <span className="text-ringo-teal font-bold text-lg">Ringo</span>
-            <div className="hidden md:flex items-center gap-6">
-              <a href="#features" className="text-sm text-white/50 hover:text-white transition-colors">Features</a>
-              <a href="#demo" className="text-sm text-white/50 hover:text-white transition-colors">Demo</a>
-              <a href="#pricing" className="text-sm text-white/50 hover:text-white transition-colors">Pricing</a>
-              <a href="#faq" className="text-sm text-white/50 hover:text-white transition-colors">FAQ</a>
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12 text-center">
+          {[
+            { label: 'Restaurants Trust Us', value: 500, suffix: '+' },
+            { label: 'Orders Processed', value: 5, suffix: 'M+' },
+            { label: 'Avg Response Time', value: 2, suffix: 's' },
+          ].map((stat, idx) => (
+            <div key={idx}>
+              <div className="text-5xl md:text-6xl font-bold text-white mb-2">
+                <AnimatedCounter target={stat.value} suffix={stat.suffix} />
+              </div>
+              <p className="text-white/80 text-lg">{stat.label}</p>
             </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="text-sm text-white/50 hover:text-white transition-colors hidden sm:block">
-              Login
-            </Link>
-            <Link
-              href="/onboarding"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-ringo-teal hover:bg-ringo-teal-light text-sm font-semibold text-white transition-all duration-200 shadow-lg shadow-ringo-teal/20"
-            >
-              Start Free Trial <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
+          ))}
         </div>
-      </nav>
+      </div>
+    </section>
+  );
+}
 
-      {/* ───── Hero Section ───── */}
-      <section className="relative pt-32 pb-20 lg:pt-40 lg:pb-32">
-        {/* Gradient blobs */}
-        <div className="absolute top-20 left-1/4 w-[500px] h-[500px] bg-ringo-teal/10 rounded-full blur-[150px] pointer-events-none" />
-        <div className="absolute top-40 right-1/4 w-[400px] h-[400px] bg-purple-500/10 rounded-full blur-[150px] pointer-events-none" />
+/* ────────────────────────── Pricing Section ────────────────────────── */
+function PricingSection() {
+  const plans = [
+    {
+      name: 'Starter',
+      price: '$99',
+      period: '/month',
+      description: 'Perfect for new restaurants',
+      features: [
+        '500 AI calls/month',
+        'Basic POS integration',
+        'Phone support',
+        'Simple analytics',
+        'Email notifications',
+      ],
+      cta: 'Get Started',
+      highlight: false,
+    },
+    {
+      name: 'Pro',
+      price: '$299',
+      period: '/month',
+      description: 'For growing restaurants',
+      features: [
+        'Unlimited AI calls',
+        'All POS systems supported',
+        'Priority phone support',
+        'Advanced analytics',
+        'Custom voice training',
+        'Webhook integrations',
+        'Team management',
+      ],
+      cta: 'Start Free Trial',
+      highlight: true,
+    },
+    {
+      name: 'Enterprise',
+      price: 'Custom',
+      period: 'pricing',
+      description: 'For large restaurant groups',
+      features: [
+        'Everything in Pro',
+        'Multi-location support',
+        'Dedicated account manager',
+        'Custom integrations',
+        'White-label options',
+        'SLA guarantees',
+        'Advanced security',
+      ],
+      cta: 'Contact Sales',
+      highlight: false,
+    },
+  ];
 
-        <div className="relative max-w-7xl mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            {/* Left - Text */}
-            <div className="max-w-xl">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/[0.05] border border-white/[0.08] px-4 py-2 mb-8">
-                <div className="flex -space-x-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-3 w-3 fill-ringo-amber text-ringo-amber" />
-                  ))}
-                </div>
-                <span className="text-xs font-semibold text-white/60">#1 AI Voice Agent for Restaurants</span>
-              </div>
-
-              <h1 className="text-5xl lg:text-6xl font-bold leading-[1.1] tracking-tight">
-                Every call answered.
-                <br />
-                <span className="bg-gradient-to-r from-ringo-teal to-green-600 bg-clip-text text-transparent">
-                  Every order captured.
-                </span>
-              </h1>
-
-              <p className="text-lg text-white/50 mt-6 leading-relaxed max-w-lg">
-                Ringo is the AI phone agent that takes orders, upsells, and pushes directly to your POS — 24/7, with 99.2% accuracy. Never miss a call again.
-              </p>
-
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-8">
-                <Link
-                  href="/onboarding"
-                  className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-ringo-teal hover:bg-ringo-teal-light text-base font-bold text-white transition-all duration-200 shadow-xl shadow-ringo-teal/25 hover:shadow-ringo-teal/40 hover:-translate-y-0.5"
-                >
-                  Try Ringo Free <Sparkles className="h-4 w-4" />
-                </Link>
-                <a
-                  href="#demo"
-                  className="inline-flex items-center gap-2 px-6 py-4 rounded-full border border-white/[0.1] text-base font-semibold text-white/70 hover:text-white hover:border-white/20 transition-all"
-                >
-                  <Play className="h-4 w-4" /> See Live Demo
-                </a>
-              </div>
-
-              {/* Trust metrics */}
-              <div className="flex items-center gap-8 mt-12 pt-8 border-t border-white/[0.06]">
-                <div>
-                  <p className="text-2xl font-bold text-white"><AnimatedCounter target={50000} suffix="+" /></p>
-                  <p className="text-xs text-white/40 font-semibold">calls/month</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-white"><AnimatedCounter target={99} suffix="%" /></p>
-                  <p className="text-xs text-white/40 font-semibold">answer rate</p>
-                </div>
-                <div>
-                  <p className="text-2xl font-bold text-white"><AnimatedCounter target={31} suffix="%" /></p>
-                  <p className="text-xs text-white/40 font-semibold">avg upsell lift</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Right - Phone Mockup */}
-            <div className="flex justify-center lg:justify-end">
-              <PhoneMockup />
-            </div>
+  return (
+    <section className="relative py-20 overflow-hidden bg-[#FFF8F0]">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#0C1A7D]/10 border border-[#0C1A7D]/20 mb-4">
+            <DollarSign className="h-4 w-4 text-[#0C1A7D]" />
+            <span className="text-sm font-semibold text-[#0C1A7D]">Pricing</span>
           </div>
-        </div>
-      </section>
-
-      {/* ───── Logos/Integrations Bar ───── */}
-      <section className="relative py-12 border-y border-white/[0.04]">
-        <div className="max-w-7xl mx-auto px-6">
-          <p className="text-center text-[10px] font-bold uppercase tracking-[0.2em] text-white/25 mb-6">
-            Integrates with your POS
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-8 md:gap-12 opacity-40">
-            {['Square', 'Toast', 'Clover', 'SpotOn', 'Aloha', 'Olo', 'OpenTable', 'SkyTab', 'Lightspeed', 'TouchBistro'].map((name) => (
-              <span key={name} className="text-sm font-bold text-white/60 tracking-wider">{name}</span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ───── Products Section ───── */}
-      <section className="relative py-24">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <span className="inline-flex items-center gap-2 rounded-full bg-ringo-teal/10 border border-ringo-teal/20 px-4 py-1.5 text-xs font-bold text-ringo-teal uppercase tracking-wider mb-6">
-              <Zap className="h-3 w-3" /> Two AI Agents, One Platform
-            </span>
-            <h2 className="text-4xl lg:text-5xl font-bold">
-              Voice AI + Chat AI
-            </h2>
-            <p className="text-lg text-white/40 mt-4 max-w-2xl mx-auto">
-              Cover every customer touchpoint. Ringo answers calls and chats so your team can focus on making great food.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Voice AI Card */}
-            <div className="group rounded-3xl border border-white/[0.06] bg-white/[0.02] p-8 hover:border-ringo-teal/20 hover:bg-ringo-teal/[0.02] transition-all duration-300">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-ringo-teal to-green-600 flex items-center justify-center shadow-lg shadow-ringo-teal/20">
-                  <PhoneCall className="h-7 w-7 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-white">Voice AI Agent</h3>
-                  <p className="text-sm text-white/40">Answers every call like your best employee</p>
-                </div>
-              </div>
-              <ul className="space-y-3 mb-6">
-                {[
-                  'Takes full phone orders with 99.2% accuracy',
-                  'Smart upselling that increases tickets 22-31%',
-                  'Handles 50+ simultaneous calls',
-                  'Pushes orders directly to your POS',
-                  'Natural, human-like voice conversations',
-                  'Handles inquiries, hours, specials & more',
-                ].map((f) => (
-                  <li key={f} className="flex items-start gap-2.5 text-sm text-white/50">
-                    <Check className="h-4 w-4 text-ringo-teal flex-shrink-0 mt-0.5" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <div className="inline-flex items-center gap-1.5 text-sm font-semibold text-ringo-teal group-hover:gap-3 transition-all">
-                Learn more <ArrowRight className="h-3.5 w-3.5" />
-              </div>
-            </div>
-
-            {/* Chat AI Card */}
-            <div className="group rounded-3xl border border-white/[0.06] bg-white/[0.02] p-8 hover:border-ringo-amber/20 hover:bg-ringo-amber/[0.02] transition-all duration-300">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-ringo-amber to-orange-500 flex items-center justify-center shadow-lg shadow-ringo-amber/20">
-                  <MessageSquare className="h-7 w-7 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-white">Chat AI Agent</h3>
-                  <p className="text-sm text-white/40">Instant text &amp; web chat ordering</p>
-                </div>
-              </div>
-              <ul className="space-y-3 mb-6">
-                {[
-                  'SMS &amp; web chat ordering in under 6 messages',
-                  'Same phone number for calls and texts',
-                  'Handles menu questions instantly',
-                  'Sends order confirmations via text',
-                  'Collects customer info for remarketing',
-                  'Works 24/7 with 1.2s average response time',
-                ].map((f) => (
-                  <li key={f} className="flex items-start gap-2.5 text-sm text-white/50">
-                    <Check className="h-4 w-4 text-ringo-amber flex-shrink-0 mt-0.5" />
-                    <span dangerouslySetInnerHTML={{ __html: f }} />
-                  </li>
-                ))}
-              </ul>
-              <div className="inline-flex items-center gap-1.5 text-sm font-semibold text-ringo-amber group-hover:gap-3 transition-all">
-                Learn more <ArrowRight className="h-3.5 w-3.5" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ───── Features Grid ───── */}
-      <section id="features" className="relative py-24 border-t border-white/[0.04]">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold">Why restaurants choose Ringo</h2>
-            <p className="text-lg text-white/40 mt-4">Built for the realities of restaurant operations</p>
-          </div>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              {
-                icon: Target,
-                title: '99.2% Order Accuracy',
-                desc: 'No hallucinated menu items. Ringo only suggests what\'s actually on your menu, with precise pricing.',
-                color: 'text-green-600',
-                bg: 'bg-green-100',
-              },
-              {
-                icon: TrendingUp,
-                title: '22-31% Ticket Increase',
-                desc: 'Dynamic upselling engine suggests the right add-ons at the right time in every conversation.',
-                color: 'text-ringo-amber',
-                bg: 'bg-ringo-amber/15',
-              },
-              {
-                icon: Clock,
-                title: '24/7 Never Misses a Call',
-                desc: 'Late night, lunch rush, holidays — Ringo answers every call instantly. No hold times ever.',
-                color: 'text-ringo-teal',
-                bg: 'bg-ringo-teal/10',
-              },
-              {
-                icon: Zap,
-                title: '5-Minute Setup',
-                desc: 'Go live in minutes, not weeks. No complex integrations or training. Your AI agent is ready when you are.',
-                color: 'text-purple-600',
-                bg: 'bg-purple-100',
-              },
-              {
-                icon: Shield,
-                title: 'No Ticket Until Payment',
-                desc: 'Orders only hit your POS after payment is confirmed. No more fake orders or no-shows clogging your kitchen.',
-                color: 'text-red-600',
-                bg: 'bg-red-100',
-              },
-              {
-                icon: BarChart3,
-                title: 'Deep Analytics',
-                desc: 'Every call transcribed and analyzed. See revenue by hour, top items, upsell rates, and more in real-time.',
-                color: 'text-blue-600',
-                bg: 'bg-blue-100',
-              },
-            ].map((feature) => (
-              <div
-                key={feature.title}
-                className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6 hover:border-white/[0.1] hover:bg-white/[0.03] transition-all duration-200"
-              >
-                <div className={cn('h-12 w-12 rounded-xl flex items-center justify-center mb-4', feature.bg)}>
-                  <feature.icon className={cn('h-6 w-6', feature.color)} />
-                </div>
-                <h3 className="text-base font-bold text-white mb-2">{feature.title}</h3>
-                <p className="text-sm text-white/40 leading-relaxed">{feature.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ───── Interactive Demo Section ───── */}
-      <section id="demo" className="relative py-24 border-t border-white/[0.04]">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-ringo-teal/5 rounded-full blur-[150px] pointer-events-none" />
-        <div className="relative max-w-7xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <span className="inline-flex items-center gap-2 rounded-full bg-green-100 border border-green-300 px-4 py-1.5 text-xs font-bold text-green-700 uppercase tracking-wider mb-6">
-              <MessageSquare className="h-3 w-3" /> Live Demo
-            </span>
-            <h2 className="text-4xl lg:text-5xl font-bold">Try Ringo right now</h2>
-            <p className="text-lg text-white/40 mt-4 max-w-xl mx-auto">
-              Chat with our AI agent below. Ask about the menu, place an order, or check hours.
-            </p>
-          </div>
-          <LiveChatDemo />
-        </div>
-      </section>
-
-      {/* ───── How It Works ───── */}
-      <section className="relative py-24 border-t border-white/[0.04]">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold">Live in 3 steps</h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                step: '01',
-                title: 'Create your account',
-                desc: 'Sign up, tell us your restaurant name, and connect your POS. Takes under 5 minutes.',
-                icon: Users,
-              },
-              {
-                step: '02',
-                title: 'Ringo learns your menu',
-                desc: 'We automatically sync your menu, prices, and specials. Ringo knows everything your staff knows.',
-                icon: Bot,
-              },
-              {
-                step: '03',
-                title: 'Start taking orders',
-                desc: 'Forward your phone and Ringo answers 24/7. Orders flow directly to your POS and kitchen.',
-                icon: DollarSign,
-              },
-            ].map((item) => (
-              <div key={item.step} className="text-center">
-                <div className="mx-auto w-16 h-16 rounded-2xl bg-white/[0.04] border border-white/[0.08] flex items-center justify-center mb-5">
-                  <item.icon className="h-7 w-7 text-ringo-teal" />
-                </div>
-                <span className="text-[10px] font-bold text-ringo-teal uppercase tracking-widest">Step {item.step}</span>
-                <h3 className="text-lg font-bold text-white mt-2 mb-2">{item.title}</h3>
-                <p className="text-sm text-white/40 max-w-xs mx-auto">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ───── Testimonials ───── */}
-      <section className="relative py-24 border-t border-white/[0.04]">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold">Loved by restaurants</h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                quote: "Ringo captures orders we used to miss during rush hours. We're seeing $3,200 more per month in phone orders alone.",
-                name: 'Maria Chen',
-                role: 'Owner, Dragon Wok',
-                metric: '+$3,200/mo',
-              },
-              {
-                quote: "The upselling is incredible. Ringo naturally suggests add-ons and our average ticket went from $28 to $36 in the first week.",
-                name: 'Tony Russo',
-                role: "Owner, Tony's Pizzeria",
-                metric: '+28% ticket',
-              },
-              {
-                quote: "We tried 3 other AI phone services. Ringo is the only one that actually sounds natural and doesn't confuse our customers.",
-                name: 'James Park',
-                role: 'GM, Seoul Kitchen',
-                metric: '99% accuracy',
-              },
-            ].map((t) => (
-              <div key={t.name} className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-6">
-                <div className="flex items-center gap-1 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="h-3.5 w-3.5 fill-ringo-amber text-ringo-amber" />
-                  ))}
-                </div>
-                <p className="text-sm text-white/60 leading-relaxed mb-6">&ldquo;{t.quote}&rdquo;</p>
-                <div className="flex items-center justify-between pt-4 border-t border-white/[0.06]">
-                  <div>
-                    <p className="text-sm font-bold text-white">{t.name}</p>
-                    <p className="text-xs text-white/40">{t.role}</p>
-                  </div>
-                  <span className="text-xs font-bold text-ringo-teal bg-ringo-teal/10 px-2.5 py-1 rounded-full">
-                    {t.metric}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ───── Pricing ───── */}
-      <section id="pricing" className="relative py-24 border-t border-white/[0.04]">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl lg:text-5xl font-bold">Simple, transparent pricing</h2>
-            <p className="text-lg text-white/40 mt-4">Start with a 14-day free trial. No credit card required.</p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
-            {[
-              {
-                name: 'Starter',
-                price: '$299',
-                period: '/mo',
-                desc: 'For single-location restaurants getting started',
-                cta: 'Start Free Trial',
-                popular: false,
-                features: [
-                  'Voice AI Agent',
-                  'Up to 100 calls/day',
-                  'Call transcripts',
-                  'Basic analytics',
-                  'POS integration',
-                  'Email support',
-                ],
-              },
-              {
-                name: 'Growth',
-                price: '$599',
-                period: '/mo',
-                desc: 'For restaurants serious about maximizing revenue',
-                cta: 'Start Free Trial',
-                popular: true,
-                features: [
-                  'Voice AI + Chat AI Agent',
-                  'Up to 250 calls/day',
-                  'Smart upselling engine',
-                  'Advanced analytics',
-                  'Custom voice persona',
-                  'Priority support',
-                  'ROI dashboard',
-                ],
-              },
-              {
-                name: 'Enterprise',
-                price: 'Custom',
-                period: '',
-                desc: 'For multi-location operators and franchises',
-                cta: 'Contact Sales',
-                popular: false,
-                features: [
-                  'Everything in Growth',
-                  'Unlimited calls',
-                  'Multi-location support',
-                  'Dedicated account manager',
-                  'Custom integrations',
-                  'White-glove onboarding',
-                  'SLA guarantee',
-                ],
-              },
-            ].map((plan) => (
-              <div
-                key={plan.name}
-                className={cn(
-                  'rounded-3xl border p-8 transition-all duration-200 relative',
-                  plan.popular
-                    ? 'border-ringo-teal/30 bg-ringo-teal/[0.05] shadow-xl shadow-ringo-teal/10 scale-[1.02]'
-                    : 'border-white/[0.06] bg-white/[0.02]'
-                )}
-              >
-                {plan.popular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-ringo-teal px-4 py-1 text-xs font-bold text-white shadow-lg shadow-ringo-teal/30">
-                    MOST POPULAR
-                  </span>
-                )}
-
-                <p className="text-sm font-bold text-white/50 uppercase tracking-wider">{plan.name}</p>
-                <div className="flex items-baseline gap-1 mt-3 mb-2">
-                  <span className="text-4xl font-bold text-white">{plan.price}</span>
-                  <span className="text-white/40">{plan.period}</span>
-                </div>
-                <p className="text-sm text-white/40 mb-6">{plan.desc}</p>
-
-                <Link
-                  href="/onboarding"
-                  className={cn(
-                    'block w-full text-center py-3 rounded-xl font-semibold text-sm transition-all',
-                    plan.popular
-                      ? 'bg-ringo-teal hover:bg-ringo-teal-light text-white shadow-lg shadow-ringo-teal/20'
-                      : 'bg-white/[0.06] hover:bg-white/[0.1] text-white border border-white/[0.08]'
-                  )}
-                >
-                  {plan.cta}
-                </Link>
-
-                <ul className="mt-6 space-y-3">
-                  {plan.features.map((f) => (
-                    <li key={f} className="flex items-center gap-2.5 text-sm text-white/50">
-                      <Check className={cn('h-3.5 w-3.5 flex-shrink-0', plan.popular ? 'text-ringo-teal' : 'text-white/30')} />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ───── FAQ ───── */}
-      <section id="faq" className="relative py-24 border-t border-white/[0.04]">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-4xl lg:text-5xl font-bold">Frequently asked questions</h2>
-          </div>
-          <FAQ />
-        </div>
-      </section>
-
-      {/* ───── Final CTA ───── */}
-      <section className="relative py-32">
-        <div className="absolute inset-0 bg-gradient-to-t from-ringo-teal/10 via-transparent to-transparent pointer-events-none" />
-        <div className="relative max-w-3xl mx-auto px-6 text-center">
-          <h2 className="text-4xl lg:text-5xl font-bold mb-6">
-            Stop missing calls.
-            <br />
-            <span className="bg-gradient-to-r from-ringo-teal to-green-600 bg-clip-text text-transparent">Start making money.</span>
+          <h2 className="text-4xl md:text-5xl font-bold text-[#1A1A2E] mb-4">
+            Transparent Pricing
           </h2>
-          <p className="text-lg text-white/40 mb-8 max-w-lg mx-auto">
-            Join hundreds of restaurants already using Ringo. 14-day free trial, no credit card, setup in 5 minutes.
+          <p className="text-xl text-[#6B5E50] max-w-2xl mx-auto">
+            No hidden fees. No setup costs. Start free and scale as you grow.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          {plans.map((plan, idx) => (
+            <div
+              key={idx}
+              className={cn(
+                'relative rounded-2xl p-8 transition-all duration-300 border',
+                plan.highlight
+                  ? 'border-[#921920] bg-white shadow-2xl shadow-[#921920]/20 scale-105 md:scale-100'
+                  : 'border-[#E8DDD0] bg-white/50 backdrop-blur-sm hover:border-[#921920]/30'
+              )}
+            >
+              {plan.highlight && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-to-r from-[#921920] to-[#0C1A7D] text-white text-xs font-bold">
+                  Most Popular
+                </div>
+              )}
+
+              <h3 className="text-2xl font-bold text-[#1A1A2E] mb-2">{plan.name}</h3>
+              <p className="text-[#6B5E50] text-sm mb-6">{plan.description}</p>
+
+              <div className="mb-6">
+                <span className="text-5xl font-bold text-[#1A1A2E]">{plan.price}</span>
+                <span className="text-[#6B5E50] ml-2">{plan.period}</span>
+              </div>
+
+              <button
+                className={cn(
+                  'w-full py-3 rounded-lg font-semibold transition-all duration-300 mb-8',
+                  plan.highlight
+                    ? 'bg-gradient-to-r from-[#921920] to-[#0C1A7D] text-white hover:shadow-lg hover:shadow-[#921920]/50'
+                    : 'border border-[#921920] text-[#921920] hover:bg-[#921920]/5'
+                )}
+              >
+                {plan.cta}
+              </button>
+
+              <div className="space-y-3">
+                {plan.features.map((feature, fidx) => (
+                  <div key={fidx} className="flex gap-3">
+                    <Check className="h-5 w-5 text-[#921920] flex-shrink-0 mt-0.5" />
+                    <span className="text-[#1A1A2E]">{feature}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="text-center mt-12">
+          <p className="text-[#6B5E50] mb-4">
+            All plans include 14 days free. No credit card required.
           </p>
           <Link
-            href="/onboarding"
-            className="inline-flex items-center gap-2 px-10 py-5 rounded-full bg-ringo-teal hover:bg-ringo-teal-light text-lg font-bold text-white transition-all duration-200 shadow-2xl shadow-ringo-teal/30 hover:shadow-ringo-teal/50 hover:-translate-y-1"
+            href="/pricing"
+            className="inline-flex items-center gap-2 text-[#921920] font-semibold hover:gap-3 transition-all"
           >
-            Get Started Free <ArrowRight className="h-5 w-5" />
+            View detailed comparison <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* ───── Footer ───── */}
-      <footer className="border-t border-white/[0.06] py-12">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
-              <span className="text-xl font-bold text-ringo-teal">Ringo</span>
-              <span className="text-xs text-white/25">The phone rings. Ringo handles it.</span>
+/* ────────────────────────── FAQ Section ────────────────────────── */
+function FAQSection() {
+  const [openIndex, setOpenIndex] = useState(0);
+
+  const faqs = [
+    {
+      q: 'How long does setup take?',
+      a: 'Setup typically takes 10-15 minutes. We guide you through connecting your POS system, configuring your menu, and training the AI voice on your restaurant details. Most restaurants are live within an hour.',
+    },
+    {
+      q: 'Can Ringo handle complex orders?',
+      a: 'Absolutely. Ringo is trained to understand modifications, special requests, dietary restrictions, and complex orders. It asks clarifying questions just like a real person would.',
+    },
+    {
+      q: 'What POS systems do you support?',
+      a: 'We integrate with Square, Toast, Clover, SpotOn, Aloha, Olo, OpenTable, SkyTab, Lightspeed, TouchBistro, and more. If you don\'t see yours, contact us for custom integration.',
+    },
+    {
+      q: 'Is there a contract?',
+      a: 'No contracts. You can cancel anytime. Most customers see ROI within the first month, so we\'re confident you\'ll want to stay.',
+    },
+    {
+      q: 'How much can I save?',
+      a: 'Most restaurants save $3,000-$8,000/month in labor costs. You\'ll redirect staff to other important tasks while Ringo handles the phones.',
+    },
+    {
+      q: 'Is customer data secure?',
+      a: 'Yes. We use bank-level encryption, comply with PCI-DSS standards, and never share customer data with third parties. Your data is yours.',
+    },
+  ];
+
+  return (
+    <section className="relative py-20 overflow-hidden bg-white">
+      <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#921920]/10 border border-[#921920]/20 mb-4">
+            <MessageSquare className="h-4 w-4 text-[#921920]" />
+            <span className="text-sm font-semibold text-[#921920]">FAQ</span>
+          </div>
+          <h2 className="text-4xl md:text-5xl font-bold text-[#1A1A2E] mb-4">
+            Frequently Asked Questions
+          </h2>
+          <p className="text-xl text-[#6B5E50]">
+            Everything you need to know about Ringo.
+          </p>
+        </div>
+
+        <div className="space-y-4">
+          {faqs.map((faq, idx) => (
+            <div
+              key={idx}
+              className="rounded-lg border border-[#E8DDD0] overflow-hidden transition-all"
+            >
+              <button
+                onClick={() => setOpenIndex(openIndex === idx ? -1 : idx)}
+                className="w-full flex items-center justify-between px-6 py-4 hover:bg-[#FFF8F0]/50 transition-colors"
+              >
+                <h3 className="text-lg font-semibold text-[#1A1A2E] text-left">{faq.q}</h3>
+                <ChevronDown
+                  className={cn(
+                    'h-5 w-5 text-[#921920] transition-transform duration-300',
+                    openIndex === idx && 'rotate-180'
+                  )}
+                />
+              </button>
+              {openIndex === idx && (
+                <div className="px-6 py-4 bg-[#FFF8F0]/30 border-t border-[#E8DDD0]">
+                  <p className="text-[#6B5E50] leading-relaxed">{faq.a}</p>
+                </div>
+              )}
             </div>
-            <div className="flex items-center gap-6">
-              <a href="#features" className="text-xs text-white/30 hover:text-white/60 transition-colors">Features</a>
-              <a href="#pricing" className="text-xs text-white/30 hover:text-white/60 transition-colors">Pricing</a>
-              <a href="#faq" className="text-xs text-white/30 hover:text-white/60 transition-colors">FAQ</a>
-              <Link href="/login" className="text-xs text-white/30 hover:text-white/60 transition-colors">Login</Link>
+          ))}
+        </div>
+
+        <div className="mt-12 rounded-2xl border border-[#E8DDD0] bg-gradient-to-br from-[#FFF8F0] to-white p-8 text-center">
+          <h3 className="text-2xl font-bold text-[#1A1A2E] mb-2">Still have questions?</h3>
+          <p className="text-[#6B5E50] mb-6">
+            Our team is here to help. Reach out to us anytime.
+          </p>
+          <Link
+            href="/contact"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r from-[#921920] to-[#0C1A7D] text-white font-semibold hover:shadow-lg transition-all"
+          >
+            Contact Us <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ────────────────────────── CTA Section ────────────────────────── */
+function CTASection() {
+  return (
+    <section className="relative py-20 overflow-hidden">
+      {/* Gradient background */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#921920]/80 via-[#0C1A7D]/80 to-[#921920]/80 backdrop-blur-sm" />
+
+      {/* Animated background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-white/10 blur-[100px] rounded-full" />
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-white/10 blur-[100px] rounded-full" />
+      </div>
+
+      <div className="relative mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center">
+        <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
+          Transform Your Restaurant Today
+        </h2>
+        <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+          Join hundreds of restaurants using Ringo to handle orders, save time, and grow revenue.
+        </p>
+
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Link
+            href="/get-started"
+            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg bg-white text-[#921920] font-bold text-lg hover:shadow-2xl hover:scale-105 transition-all duration-300"
+          >
+            Start Free Trial <ArrowRight className="h-5 w-5" />
+          </Link>
+          <Link
+            href="/schedule-demo"
+            className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg border-2 border-white text-white font-bold text-lg hover:bg-white/10 transition-all"
+          >
+            <PhoneCall className="h-5 w-5" />
+            Schedule a Demo
+          </Link>
+        </div>
+
+        <p className="text-white/70 text-sm mt-6">
+          Free 14-day trial. No credit card required.
+        </p>
+      </div>
+    </section>
+  );
+}
+
+/* ────────────────────────── Navigation ────────────────────────── */
+function Navigation() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <nav className="sticky top-0 z-40 bg-[#FFF8F0]/95 backdrop-blur-md border-b border-[#E8DDD0]">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2">
+            <span className="text-2xl font-black text-[#921920]">Ringo</span>
+          </Link>
+
+          {/* Desktop menu */}
+          <div className="hidden md:flex items-center gap-8">
+            <Link href="#features" className="text-[#1A1A2E] hover:text-[#921920] transition-colors font-medium">
+              Features
+            </Link>
+            <Link href="#pricing" className="text-[#1A1A2E] hover:text-[#921920] transition-colors font-medium">
+              Pricing
+            </Link>
+            <Link href="#faq" className="text-[#1A1A2E] hover:text-[#921920] transition-colors font-medium">
+              FAQ
+            </Link>
+            <Link href="/contact" className="text-[#1A1A2E] hover:text-[#921920] transition-colors font-medium">
+              Contact
+            </Link>
+          </div>
+
+          {/* CTA Button */}
+          <div className="hidden md:flex items-center gap-4">
+            <Link
+              href="/get-started"
+              className="px-6 py-2.5 rounded-lg bg-gradient-to-r from-[#921920] to-[#6B1217] text-white font-semibold hover:shadow-lg hover:shadow-[#921920]/50 transition-all duration-300 hover:scale-105"
+            >
+              Get Started
+            </Link>
+          </div>
+
+          {/* Mobile menu button */}
+          <button
+            onClick={() => setIsOpen(!isOpen)}
+            className="md:hidden p-2 rounded-lg hover:bg-[#921920]/10 transition-colors"
+          >
+            {isOpen ? <X className="h-6 w-6 text-[#1A1A2E]" /> : <ChevronDown className="h-6 w-6 text-[#1A1A2E]" />}
+          </button>
+        </div>
+
+        {/* Mobile menu */}
+        {isOpen && (
+          <div className="md:hidden py-4 space-y-2">
+            <Link href="#features" className="block px-4 py-2 text-[#1A1A2E] hover:bg-[#921920]/10 rounded-lg">
+              Features
+            </Link>
+            <Link href="#pricing" className="block px-4 py-2 text-[#1A1A2E] hover:bg-[#921920]/10 rounded-lg">
+              Pricing
+            </Link>
+            <Link href="#faq" className="block px-4 py-2 text-[#1A1A2E] hover:bg-[#921920]/10 rounded-lg">
+              FAQ
+            </Link>
+            <Link href="/contact" className="block px-4 py-2 text-[#1A1A2E] hover:bg-[#921920]/10 rounded-lg">
+              Contact
+            </Link>
+            <Link
+              href="/get-started"
+              className="block px-4 py-2 rounded-lg bg-gradient-to-r from-[#921920] to-[#6B1217] text-white font-semibold text-center"
+            >
+              Get Started
+            </Link>
+          </div>
+        )}
+      </div>
+    </nav>
+  );
+}
+
+/* ────────────────────────── Hero Section ────────────────────────── */
+function HeroSection() {
+  return (
+    <section className="relative min-h-screen flex items-center overflow-hidden bg-gradient-to-b from-[#FFF8F0] via-white to-[#FFF8F0]">
+      {/* Decorative elements */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Gradient orbs */}
+        <div className="absolute top-20 right-10 w-96 h-96 bg-gradient-to-br from-[#921920]/20 to-transparent blur-[120px] rounded-full" />
+        <div className="absolute bottom-20 left-10 w-96 h-96 bg-gradient-to-tr from-[#0C1A7D]/20 to-transparent blur-[120px] rounded-full" />
+
+        {/* Subtle grid pattern */}
+        <div
+          className="absolute inset-0 opacity-5"
+          style={{
+            backgroundImage: `linear-gradient(0deg, transparent 24%, rgba(147, 25, 32, .05) 25%, rgba(147, 25, 32, .05) 26%, transparent 27%, transparent 74%, rgba(147, 25, 32, .05) 75%, rgba(147, 25, 32, .05) 76%, transparent 77%, transparent),
+                             linear-gradient(90deg, transparent 24%, rgba(147, 25, 32, .05) 25%, rgba(147, 25, 32, .05) 26%, transparent 27%, transparent 74%, rgba(147, 25, 32, .05) 75%, rgba(147, 25, 32, .05) 76%, transparent 77%, transparent)`,
+            backgroundSize: '60px 60px',
+          }}
+        />
+      </div>
+
+      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          {/* Left: Content */}
+          <div className="space-y-8">
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#921920]/10 border border-[#921920]/20 w-fit">
+              <Sparkles className="h-4 w-4 text-[#921920]" />
+              <span className="text-sm font-semibold text-[#921920]">AI Voice Ordering</span>
             </div>
-            <p className="text-xs text-white/20">&copy; {new Date().getFullYear()} Ringo AI. All rights reserved.</p>
+
+            {/* Headline */}
+            <div>
+              <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold text-[#1A1A2E] leading-tight mb-6">
+                Never Miss Another Order
+              </h1>
+              <p className="text-xl md:text-2xl text-[#6B5E50] leading-relaxed max-w-xl">
+                AI voice phone system built for restaurants. Handle calls 24/7, reduce labor costs, and delight customers.
+              </p>
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <Link
+                href="/get-started"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg bg-gradient-to-r from-[#921920] to-[#6B1217] text-white font-bold text-lg hover:shadow-xl hover:shadow-[#921920]/50 transition-all duration-300 hover:scale-105"
+              >
+                Start Free Trial <ArrowRight className="h-5 w-5" />
+              </Link>
+              <Link
+                href="#demo"
+                className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-lg border-2 border-[#921920] text-[#921920] font-bold text-lg hover:bg-[#921920]/5 transition-all"
+              >
+                <Phone className="h-5 w-5" />
+                See Demo
+              </Link>
+            </div>
+
+            {/* Social proof */}
+            <div className="flex items-center gap-2 text-[#6B5E50]">
+              <div className="flex -space-x-2">
+                {[1, 2, 3, 4].map((i) => (
+                  <div
+                    key={i}
+                    className="h-8 w-8 rounded-full bg-gradient-to-br from-[#921920] to-[#0C1A7D] border-2 border-white flex items-center justify-center text-xs font-bold text-white"
+                  >
+                    {i}
+                  </div>
+                ))}
+              </div>
+              <span className="text-sm font-medium">
+                Join 500+ restaurants using Ringo
+              </span>
+            </div>
+          </div>
+
+          {/* Right: Visual */}
+          <div className="relative h-96 lg:h-[600px] flex items-center justify-center">
+            {/* Animated background shapes */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              {/* Outer glow */}
+              <div className="absolute w-96 h-96 rounded-full border border-[#921920]/20 animate-pulse" />
+              <div className="absolute w-80 h-80 rounded-full border border-[#0C1A7D]/20" style={{ animation: 'pulse 2s ease-in-out infinite 0.5s' }} />
+
+              {/* Central icon showcase */}
+              <div className="relative">
+                <div className="w-48 h-48 rounded-3xl bg-gradient-to-br from-[#921920] to-[#0C1A7D] flex items-center justify-center shadow-2xl shadow-[#921920]/50">
+                  <Phone className="h-24 w-24 text-white" />
+                </div>
+
+                {/* Floating feature badges */}
+                <div className="absolute -top-8 -right-8 px-4 py-2.5 rounded-full bg-white border border-[#E8DDD0] shadow-lg shadow-black/10">
+                  <div className="flex items-center gap-2">
+                    <Zap className="h-4 w-4 text-[#921920]" />
+                    <span className="text-sm font-bold text-[#1A1A2E]">10x Faster</span>
+                  </div>
+                </div>
+
+                <div className="absolute -bottom-8 -left-8 px-4 py-2.5 rounded-full bg-white border border-[#E8DDD0] shadow-lg shadow-black/10">
+                  <div className="flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4 text-[#0C1A7D]" />
+                    <span className="text-sm font-bold text-[#1A1A2E]">Real Analytics</span>
+                  </div>
+                </div>
+
+                <div className="absolute top-1/2 -right-24 px-4 py-2.5 rounded-full bg-white border border-[#E8DDD0] shadow-lg shadow-black/10 hidden lg:block">
+                  <div className="flex items-center gap-2">
+                    <Users className="h-4 w-4 text-[#921920]" />
+                    <span className="text-sm font-bold text-[#1A1A2E]">24/7 Support</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </footer>
+      </div>
+    </section>
+  );
+}
+
+/* ────────────────────────── Footer ────────────────────────── */
+function Footer() {
+  return (
+    <footer className="relative bg-[#1A1A2E] text-white overflow-hidden border-t border-white/10">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+          {/* Brand */}
+          <div>
+            <h3 className="text-2xl font-black text-[#921920] mb-4">Ringo</h3>
+            <p className="text-white/70 text-sm leading-relaxed">
+              AI voice ordering for restaurants. Never miss another order.
+            </p>
+          </div>
+
+          {/* Product */}
+          <div>
+            <h4 className="font-bold mb-4">Product</h4>
+            <ul className="space-y-2 text-sm text-white/70">
+              <li><Link href="#features" className="hover:text-white transition-colors">Features</Link></li>
+              <li><Link href="#pricing" className="hover:text-white transition-colors">Pricing</Link></li>
+              <li><Link href="/integrations" className="hover:text-white transition-colors">Integrations</Link></li>
+              <li><Link href="/roadmap" className="hover:text-white transition-colors">Roadmap</Link></li>
+            </ul>
+          </div>
+
+          {/* Company */}
+          <div>
+            <h4 className="font-bold mb-4">Company</h4>
+            <ul className="space-y-2 text-sm text-white/70">
+              <li><Link href="/about" className="hover:text-white transition-colors">About</Link></li>
+              <li><Link href="/blog" className="hover:text-white transition-colors">Blog</Link></li>
+              <li><Link href="/careers" className="hover:text-white transition-colors">Careers</Link></li>
+              <li><Link href="/contact" className="hover:text-white transition-colors">Contact</Link></li>
+            </ul>
+          </div>
+
+          {/* Legal */}
+          <div>
+            <h4 className="font-bold mb-4">Legal</h4>
+            <ul className="space-y-2 text-sm text-white/70">
+              <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link></li>
+              <li><Link href="/terms" className="hover:text-white transition-colors">Terms</Link></li>
+              <li><Link href="/security" className="hover:text-white transition-colors">Security</Link></li>
+              <li><Link href="/compliance" className="hover:text-white transition-colors">Compliance</Link></li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="border-t border-white/10 pt-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-white/60">
+            <p>&copy; 2026 Ringo. All rights reserved.</p>
+            <div className="flex gap-6">
+              <Link href="#" className="hover:text-white transition-colors">Twitter</Link>
+              <Link href="#" className="hover:text-white transition-colors">LinkedIn</Link>
+              <Link href="#" className="hover:text-white transition-colors">GitHub</Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+/* ────────────────────────── Main Page ────────────────────────── */
+export default function HomePage() {
+  return (
+    <div className="bg-[#FFF8F0] min-h-screen overflow-x-hidden">
+      <Navigation />
+      <HeroSection />
+      <POSMarquee />
+      <FeaturesSection />
+      <StatsSection />
+      <LiveDemoSection />
+      <SelfServeDemo />
+      <PricingSection />
+      <FAQSection />
+      <CTASection />
+      <Footer />
     </div>
   );
 }
