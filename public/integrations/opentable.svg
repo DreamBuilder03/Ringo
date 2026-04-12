@@ -1,0 +1,9 @@
+<svg viewBox="0 0 200 60" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="200" height="60" fill="none"/>
+
+  <!-- OpenTable wordmark with modern sans-serif -->
+  <text x="100" y="38" font-family="Arial, sans-serif" font-size="28" font-weight="600" text-anchor="middle" fill="#9CA3AF" letter-spacing="-0.3">
+    OpenTable
+  </text>
+</svg>

@@ -1,24 +1,24 @@
 <svg viewBox="0 0 900 250" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <style>
-      .ringo-default {
+      .ringo-white {
         font-family: 'Arial Black', 'Helvetica Bold', sans-serif;
         font-size: 140px;
         font-weight: 900;
         fill: none;
-        stroke: #1A1A2E;
+        stroke: #FFFFFF;
         stroke-width: 7;
         stroke-linejoin: round;
         stroke-linecap: round;
         letter-spacing: -5px;
       }
 
-      .ringo-inner-outline-dark {
+      .ringo-inner-outline-white {
         font-family: 'Arial Black', 'Helvetica Bold', sans-serif;
         font-size: 140px;
         font-weight: 900;
         fill: none;
-        stroke: #1A1A2E;
+        stroke: #FFFFFF;
         stroke-width: 2;
         stroke-linejoin: round;
         stroke-linecap: round;
@@ -27,19 +27,19 @@
     </style>
   </defs>
 
-  <!-- Default Version: Dark Text for Light Backgrounds -->
-  <g id="ringo-default">
+  <!-- White Version: For Dark Backgrounds -->
+  <g id="ringo-white">
     <!-- Outer stroke (bold double outline) -->
-    <text x="60" y="160" class="ringo-default">RINGO</text>
+    <text x="60" y="160" class="ringo-white">RINGO</text>
 
     <!-- Inner outline for double-line neon effect -->
-    <text x="60" y="160" class="ringo-inner-outline-dark">RINGO</text>
+    <text x="60" y="160" class="ringo-inner-outline-white">RINGO</text>
 
     <!-- Dynamic swooping underline/tail starting from R and curving right -->
     <!-- Main swoosh stroke -->
     <path d="M 80 175 Q 240 195 500 185 Q 700 175 840 155"
           fill="none"
-          stroke="#1A1A2E"
+          stroke="#FFFFFF"
           stroke-width="9"
           stroke-linecap="round"
           stroke-linejoin="round"/>
@@ -47,7 +47,7 @@
     <!-- Inner accent line for double-stroke swoosh effect -->
     <path d="M 80 175 Q 240 195 500 185 Q 700 175 840 155"
           fill="none"
-          stroke="#1A1A2E"
+          stroke="#FFFFFF"
           stroke-width="2.5"
           stroke-linecap="round"
           stroke-linejoin="round"
