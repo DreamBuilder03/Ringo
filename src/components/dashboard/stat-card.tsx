@@ -17,13 +17,13 @@ interface StatCardProps {
 
 const accentColors = {
   teal: {
-    bg: 'bg-ringo-teal/10',
-    text: 'text-ringo-teal',
-    gradient: 'from-ringo-teal/20 to-transparent',
-    glow: 'shadow-ringo-teal/10',
-    border: 'hover:border-ringo-teal/30',
-    ring: 'ring-ringo-teal/5',
-    spark: '#921920',
+    bg: 'bg-[#C9A84C]/10',
+    text: 'text-[#C9A84C]',
+    gradient: 'from-[#C9A84C]/20 to-transparent',
+    glow: 'shadow-[#C9A84C]/10',
+    border: 'hover:border-[#C9A84C]/30',
+    ring: 'ring-[#C9A84C]/5',
+    spark: '#C9A84C',
   },
   amber: {
     bg: 'bg-ringo-amber/10',
@@ -44,13 +44,13 @@ const accentColors = {
     spark: '#1E34B8',
   },
   emerald: {
-    bg: 'bg-emerald-100',
-    text: 'text-emerald-700',
-    gradient: 'from-emerald-100 to-transparent',
-    glow: 'shadow-emerald-200/20',
-    border: 'hover:border-emerald-300/40',
-    ring: 'ring-emerald-200/10',
-    spark: '#059669',
+    bg: 'bg-[#C9A84C]/10',
+    text: 'text-[#C9A84C]',
+    gradient: 'from-[#C9A84C]/20 to-transparent',
+    glow: 'shadow-[#C9A84C]/10',
+    border: 'hover:border-[#C9A84C]/30',
+    ring: 'ring-[#C9A84C]/5',
+    spark: '#C9A84C',
   },
 };
 

@@ -149,22 +149,22 @@ export function Sidebar({ role }: SidebarProps) {
           </div>
 
           {/* Live Agent Status */}
-          <div className="mt-4 rounded-xl bg-gradient-to-r from-ringo-teal/10 to-green-100/30 border border-ringo-teal/20 p-3">
+          <div className="mt-4 rounded-xl bg-gradient-to-r from-[#C9A84C]/10 to-[#C9A84C]/5 border border-[#C9A84C]/20 p-3">
             <div className="flex items-center gap-2.5">
               <div className="relative">
-                <div className="h-8 w-8 rounded-lg bg-ringo-teal/20 flex items-center justify-center">
-                  <Headphones className="h-4 w-4 text-ringo-teal" />
+                <div className="h-8 w-8 rounded-lg bg-[#C9A84C]/20 flex items-center justify-center">
+                  <Headphones className="h-4 w-4 text-[#C9A84C]" />
                 </div>
                 <div className={cn(
                   'absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-ringo-darker transition-all duration-1000',
-                  agentPulse ? 'bg-green-500 shadow-lg shadow-green-500/50' : 'bg-green-500'
+                  agentPulse ? 'bg-[#C9A84C] shadow-lg shadow-[#C9A84C]/50' : 'bg-[#C9A84C]'
                 )} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-foreground">AI Agent Active</p>
                 <p className="text-[10px] text-ringo-muted">Answering calls 24/7</p>
               </div>
-              <Activity className="h-4 w-4 text-ringo-teal animate-pulse" />
+              <Activity className="h-4 w-4 text-[#C9A84C] animate-pulse" />
             </div>
           </div>
         </div>
@@ -185,13 +185,13 @@ export function Sidebar({ role }: SidebarProps) {
                 className={cn(
                   'group flex items-center gap-3 rounded-xl px-3 py-3 text-sm transition-all duration-200',
                   isActive
-                    ? 'bg-ringo-teal/10 text-ringo-teal shadow-sm'
+                    ? 'bg-[#C9A84C]/10 text-[#C9A84C] shadow-sm'
                     : 'text-ringo-muted hover:bg-ringo-card/80 hover:text-foreground'
                 )}
               >
                 <div className={cn(
                   'rounded-lg p-1.5 transition-colors',
-                  isActive ? 'bg-ringo-teal/20' : 'bg-ringo-border/30 group-hover:bg-ringo-border/50'
+                  isActive ? 'bg-[#C9A84C]/20' : 'bg-ringo-border/30 group-hover:bg-ringo-border/50'
                 )}>
                   <Icon className="h-4 w-4" />
                 </div>
@@ -199,12 +199,12 @@ export function Sidebar({ role }: SidebarProps) {
                   <p className="font-medium">{link.label}</p>
                   <p className={cn(
                     'text-[10px] transition-colors',
-                    isActive ? 'text-ringo-teal/70' : 'text-ringo-muted/60'
+                    isActive ? 'text-[#C9A84C]/70' : 'text-ringo-muted/60'
                   )}>
                     {link.description}
                   </p>
                 </div>
-                {isActive && <ChevronRight className="h-3.5 w-3.5 text-ringo-teal/50" />}
+                {isActive && <ChevronRight className="h-3.5 w-3.5 text-[#C9A84C]/50" />}
               </Link>
             );
           })}
@@ -216,7 +216,7 @@ export function Sidebar({ role }: SidebarProps) {
           <div className="rounded-xl bg-ringo-card/50 border border-ringo-border p-3">
             <div className="flex items-center justify-between mb-2">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-ringo-muted">Today&apos;s Calls</p>
-              <span className="text-xs font-bold text-ringo-teal">
+              <span className="text-xs font-bold text-[#C9A84C]">
                 {todayCalls} / {callLimit >= 9999 ? '∞' : callLimit}
               </span>
             </div>
@@ -226,7 +226,7 @@ export function Sidebar({ role }: SidebarProps) {
                   'h-full rounded-full transition-all duration-500',
                   todayCalls / callLimit > 0.9
                     ? 'bg-gradient-to-r from-red-600 to-red-700'
-                    : 'bg-gradient-to-r from-ringo-teal to-green-500'
+                    : 'bg-gradient-to-r from-[#C9A84C] to-[#F5E196]'
                 )}
                 style={{ width: `${Math.min((todayCalls / callLimit) * 100, 100)}%` }}
               />
