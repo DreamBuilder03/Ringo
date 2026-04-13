@@ -21,6 +21,8 @@ export default function AddRestaurantPage() {
     phone: '',
     posType: 'none',
     retellAgentId: '',
+    retellAgentIdEs: '',
+    preferredLanguage: 'en',
     ownerEmail: '',
   });
 
@@ -43,6 +45,8 @@ export default function AddRestaurantPage() {
           phone: form.phone,
           pos_type: form.posType,
           retell_agent_id: form.retellAgentId || null,
+          retell_agent_id_es: form.retellAgentIdEs || null,
+          preferred_language: form.preferredLanguage,
           owner_email: form.ownerEmail || null,
         }),
       });
@@ -53,7 +57,7 @@ export default function AddRestaurantPage() {
       }
 
       setSuccess(true);
-      setForm({ name: '', address: '', phone: '', posType: 'none', retellAgentId: '', ownerEmail: '' });
+      setForm({ name: '', address: '', phone: '', posType: 'none', retellAgentId: '', retellAgentIdEs: '', preferredLanguage: 'en', ownerEmail: '' });
 
       // Redirect to admin page after brief success message
       setTimeout(() => router.push('/admin'), 2000);
@@ -119,11 +123,32 @@ export default function AddRestaurantPage() {
           />
           <Input
             id="retellAgentId"
-            label="Retell Agent ID"
+            label="Retell Agent ID (English)"
             placeholder="agent_xxxxxxxx"
             value={form.retellAgentId}
             onChange={(e) => updateField('retellAgentId', e.target.value)}
           />
+          <Select
+            id="preferredLanguage"
+            label="Preferred Language"
+            options={[
+              { value: 'en', label: 'English Only' },
+              { value: 'es', label: 'Spanish Only' },
+              { value: 'both', label: 'Both English & Spanish' },
+            ]}
+            value={form.preferredLanguage}
+            onChange={(e) => updateField('preferredLanguage', e.target.value)}
+          />
+          {(form.preferredLanguage === 'es' || form.preferredLanguage === 'both') && (
+            <Input
+              id="retellAgentIdEs"
+              label="Retell Agent ID (Spanish)"
+              placeholder="agent_xxxxxxxx"
+              value={form.retellAgentIdEs}
+              onChange={(e) => updateField('retellAgentIdEs', e.target.value)}
+              required={form.preferredLanguage === 'es' || form.preferredLanguage === 'both'}
+            />
+          )}
 
           {success && (
             <div className="rounded-lg bg-emerald-400/10 border border-emerald-400/20 px-4 py-2 text-sm text-emerald-400">

@@ -305,9 +305,9 @@ export default function MenuManagementPage() {
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">Menu Management</h1>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 sm:gap-3 mb-1 flex-wrap">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">Menu Management</h1>
             <span className="inline-flex items-center rounded-full bg-ringo-border/30 px-2.5 py-1 text-xs font-semibold text-ringo-muted">
               {filteredItems.length}
             </span>
@@ -343,12 +343,12 @@ export default function MenuManagementPage() {
         </div>
 
         {/* Category Tabs */}
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-2 -mx-4 sm:mx-0 px-4 sm:px-0">
           {categories.map((category) => (
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              className={`px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+              className={`px-2.5 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${
                 selectedCategory === category
                   ? 'bg-ringo-teal text-white'
                   : 'bg-ringo-card border border-ringo-border text-foreground hover:border-ringo-teal/50'
@@ -484,8 +484,8 @@ export default function MenuManagementPage() {
 
       {/* Add/Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
+          <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl my-auto">
             {/* Modal Header */}
             <div className="sticky top-0 flex items-center justify-between mb-6 pb-4 border-b border-ringo-border bg-ringo-card">
               <h2 className="text-xl font-bold text-foreground">
@@ -500,7 +500,7 @@ export default function MenuManagementPage() {
             </div>
 
             {/* Modal Body */}
-            <div className="space-y-5">
+            <div className="space-y-5 px-6 sm:px-6">
               {/* Item Name */}
               <div>
                 <label className="block text-sm font-medium text-ringo-muted mb-1.5">
@@ -668,7 +668,7 @@ export default function MenuManagementPage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="flex gap-3 mt-8 pt-6 border-t border-ringo-border">
+            <div className="flex gap-3 mt-8 pt-6 px-6 sm:px-6 border-t border-ringo-border">
               <Button
                 variant="secondary"
                 size="md"

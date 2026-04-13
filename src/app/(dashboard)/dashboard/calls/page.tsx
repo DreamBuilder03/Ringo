@@ -57,20 +57,20 @@ export default function CallsPage() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Call Log</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Call Log</h1>
           <p className="text-sm text-ringo-muted mt-1">
             {total > 0 ? `${total} total calls` : 'No calls yet'}
           </p>
         </div>
 
         {/* Filters */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap sm:flex-nowrap">
           {outcomeFilters.map((f) => (
             <button
               key={f.value}
               onClick={() => { setFilter(f.value); setPage(0); }}
               className={cn(
-                'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
+                'px-2 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap',
                 filter === f.value
                   ? 'bg-ringo-teal text-white'
                   : 'bg-ringo-card border border-ringo-border text-ringo-muted hover:text-foreground'
@@ -93,11 +93,11 @@ export default function CallsPage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center justify-center gap-2 flex-wrap">
           <button
             onClick={() => setPage(Math.max(0, page - 1))}
             disabled={page === 0}
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-ringo-card border border-ringo-border text-ringo-muted disabled:opacity-30"
+            className="px-3 py-2 rounded-lg text-xs font-semibold bg-ringo-card border border-ringo-border text-ringo-muted disabled:opacity-30 min-h-[44px] min-w-[44px]"
           >
             Previous
           </button>
@@ -107,7 +107,7 @@ export default function CallsPage() {
           <button
             onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
             disabled={page >= totalPages - 1}
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-ringo-card border border-ringo-border text-ringo-muted disabled:opacity-30"
+            className="px-3 py-2 rounded-lg text-xs font-semibold bg-ringo-card border border-ringo-border text-ringo-muted disabled:opacity-30 min-h-[44px] min-w-[44px]"
           >
             Next
           </button>

@@ -136,6 +136,23 @@ export default function OnboardingPage() {
         .update({ full_name: form.fullName })
         .eq('id', user.id);
 
+      // Send welcome email
+      try {
+        await fetch('/api/emails/welcome', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            restaurantId: restaurant.id,
+            restaurantName: form.restaurantName,
+            ownerName: form.fullName,
+            ownerEmail: form.email,
+          }),
+        });
+      } catch (emailErr) {
+        console.warn('Welcome email send failed:', emailErr);
+        // Don't fail onboarding if email fails
+      }
+
       // If Enterprise, skip Stripe (contact sales flow)
       if (form.planTier === 'pro') {
         setLoading(false);
@@ -169,6 +186,25 @@ export default function OnboardingPage() {
 
       setLoading(false);
       setStep(4);
+
+      // Send welcome email on final completion if not already sent
+      if (form.planTier !== 'pro') {
+        try {
+          await fetch('/api/emails/welcome', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              restaurantId: restaurant.id,
+              restaurantName: form.restaurantName,
+              ownerName: form.fullName,
+              ownerEmail: form.email,
+            }),
+          });
+        } catch (emailErr) {
+          console.warn('Welcome email send failed:', emailErr);
+          // Don't fail onboarding if email fails
+        }
+      }
     } catch (err) {
       console.error('Onboarding error:', err);
       setError('Something went wrong. Please try again.');

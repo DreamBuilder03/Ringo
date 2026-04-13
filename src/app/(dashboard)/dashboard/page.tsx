@@ -192,10 +192,10 @@ export default function DashboardPage() {
       </div>
 
       {/* Welcome header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-2xl font-bold text-foreground tracking-tight">Dashboard</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="min-w-0">
+          <div className="flex items-center gap-2 sm:gap-3 mb-1 flex-wrap">
+            <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">Dashboard</h1>
             <div className="flex items-center gap-1.5 rounded-full bg-[#C9A84C]/10 border border-[#C9A84C]/20 px-2.5 py-1 shadow-sm shadow-[#C9A84C]/10">
               <div className="h-1.5 w-1.5 rounded-full bg-[#C9A84C] animate-pulse" />
               <span className="text-[10px] font-bold text-[#C9A84C]">LIVE</span>
@@ -205,16 +205,16 @@ export default function DashboardPage() {
         </div>
 
         {hasData && (
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 rounded-xl bg-ringo-card/80 backdrop-blur-sm border border-ringo-border px-3 py-2 shadow-sm ring-1 ring-black/[0.02]">
-              <Target className="h-3.5 w-3.5 text-[#C9A84C]" />
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
+            <div className="flex items-center gap-1.5 rounded-xl bg-ringo-card/80 backdrop-blur-sm border border-ringo-border px-2 sm:px-3 py-2 shadow-sm ring-1 ring-black/[0.02] text-xs sm:text-sm">
+              <Target className="h-3 sm:h-3.5 w-3 sm:w-3.5 text-[#C9A84C] flex-shrink-0" />
               <span className="text-xs font-semibold text-foreground">{stats.answerRate}%</span>
-              <span className="text-[10px] text-ringo-muted">answer rate</span>
+              <span className="text-[10px] text-ringo-muted hidden sm:inline">answer rate</span>
             </div>
-            <div className="flex items-center gap-1.5 rounded-xl bg-ringo-card/80 backdrop-blur-sm border border-ringo-border px-3 py-2 shadow-sm ring-1 ring-black/[0.02]">
-              <Activity className="h-3.5 w-3.5 text-ringo-amber" />
+            <div className="flex items-center gap-1.5 rounded-xl bg-ringo-card/80 backdrop-blur-sm border border-ringo-border px-2 sm:px-3 py-2 shadow-sm ring-1 ring-black/[0.02] text-xs sm:text-sm">
+              <Activity className="h-3 sm:h-3.5 w-3 sm:w-3.5 text-ringo-amber flex-shrink-0" />
               <span className="text-xs font-semibold text-foreground">{stats.ordersTaken}/{stats.totalCalls}</span>
-              <span className="text-[10px] text-ringo-muted">converted</span>
+              <span className="text-[10px] text-ringo-muted hidden sm:inline">converted</span>
             </div>
           </div>
         )}
@@ -264,8 +264,8 @@ export default function DashboardPage() {
       />
 
       {/* Two-column layout */}
-      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
-        <div className="xl:col-span-3">
+      <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-5 gap-4 lg:gap-6">
+        <div className="lg:col-span-2 xl:col-span-3">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <h2 className="text-lg font-bold text-foreground tracking-tight">Recent Calls</h2>
@@ -292,7 +292,7 @@ export default function DashboardPage() {
           )}
         </div>
 
-        <div className="xl:col-span-2">
+        <div className="lg:col-span-1 xl:col-span-2">
           <PeakHoursHeatmap data={heatmapData} />
         </div>
       </div>

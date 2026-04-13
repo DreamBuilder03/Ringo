@@ -1,6 +1,6 @@
 export type PlanTier = 'starter' | 'growth' | 'pro';
 export type CallOutcome = 'order_placed' | 'inquiry' | 'missed' | 'upsell_only';
-export type PosType = 'square' | 'toast' | 'clover' | 'none';
+export type PosType = 'square' | 'toast' | 'clover' | 'spoton' | 'none';
 export type UserRole = 'admin' | 'restaurant';
 export type HealthStatus = 'green' | 'yellow' | 'red';
 
@@ -12,6 +12,8 @@ export interface Restaurant {
   pos_type: PosType;
   pos_connected: boolean;
   retell_agent_id: string | null;
+  retell_agent_id_es: string | null;  // Spanish voice agent
+  preferred_language: 'en' | 'es' | 'both';
   stripe_subscription_id: string | null;
   stripe_customer_id: string | null;
   plan_tier: PlanTier | null;

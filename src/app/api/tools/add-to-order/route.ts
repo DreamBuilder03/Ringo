@@ -75,11 +75,11 @@ export async function POST(request: NextRequest) {
     // Initialize Supabase client
     const supabase = await createServiceRoleClient();
 
-    // Look up restaurant by agent_id
+    // Look up restaurant by agent_id (check both English and Spanish agents)
     const { data: restaurant, error: restaurantError } = await supabase
       .from('restaurants')
       .select('id, name, tax_rate')
-      .eq('retell_agent_id', call.agent_id)
+      .or(`retell_agent_id.eq.${call.agent_id},retell_agent_id_es.eq.${call.agent_id}`)
       .single();
 
     if (restaurantError || !restaurant) {

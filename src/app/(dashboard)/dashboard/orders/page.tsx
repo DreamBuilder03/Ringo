@@ -357,8 +357,8 @@ export default function OrdersPage() {
     <div className="space-y-6 animate-fade-in">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Orders</h1>
+        <div className="min-w-0">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Orders</h1>
           <p className="text-sm text-ringo-muted mt-1">
             {totalCount > 0 ? `${totalCount} total orders` : 'No orders yet'}
           </p>
@@ -381,7 +381,7 @@ export default function OrdersPage() {
       </div>
 
       {/* Status filter tabs */}
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-1.5 sm:gap-2">
         {STATUS_FILTERS.map((filter) => (
           <button
             key={filter.value}
@@ -390,7 +390,7 @@ export default function OrdersPage() {
               setPage(0);
             }}
             className={cn(
-              'px-3 py-1.5 rounded-lg text-xs font-semibold transition-all',
+              'px-2 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap',
               statusFilter === filter.value
                 ? 'bg-ringo-teal text-white'
                 : 'bg-ringo-card border border-ringo-border text-ringo-muted hover:text-foreground'
@@ -426,11 +426,11 @@ export default function OrdersPage() {
 
       {/* Pagination */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex items-center justify-center gap-2 flex-wrap">
           <button
             onClick={() => setPage(Math.max(0, page - 1))}
             disabled={page === 0}
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-ringo-card border border-ringo-border text-ringo-muted disabled:opacity-30"
+            className="px-3 py-2 rounded-lg text-xs font-semibold bg-ringo-card border border-ringo-border text-ringo-muted disabled:opacity-30 min-h-[44px] min-w-[44px]"
           >
             Previous
           </button>
@@ -440,7 +440,7 @@ export default function OrdersPage() {
           <button
             onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
             disabled={page >= totalPages - 1}
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-ringo-card border border-ringo-border text-ringo-muted disabled:opacity-30"
+            className="px-3 py-2 rounded-lg text-xs font-semibold bg-ringo-card border border-ringo-border text-ringo-muted disabled:opacity-30 min-h-[44px] min-w-[44px]"
           >
             Next
           </button>

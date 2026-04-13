@@ -104,16 +104,16 @@ export default function AnalyticsPage() {
       {/* Header */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Analytics</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Analytics</h1>
           <p className="text-sm text-ringo-muted mt-1">Deep dive into your AI agent&apos;s performance</p>
         </div>
-        <div className="flex items-center rounded-xl border border-ringo-border bg-ringo-card p-1">
+        <div className="flex items-center rounded-xl border border-ringo-border bg-ringo-card p-1 flex-wrap sm:flex-nowrap">
           {timeRanges.map((tr) => (
             <button
               key={tr.value}
               onClick={() => setRange(tr.value)}
               className={cn(
-                'px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200',
+                'px-3 sm:px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 flex-1 sm:flex-none',
                 range === tr.value
                   ? 'bg-ringo-teal text-white shadow-sm'
                   : 'text-ringo-muted hover:text-foreground'
@@ -126,7 +126,7 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Top Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: 'Total Calls', value: data.totalCalls.toLocaleString(), trend: data.callsTrend, icon: Phone },
           { label: 'Orders Placed', value: data.ordersPlaced.toLocaleString(), trend: data.ordersTrend, icon: ShoppingCart },
@@ -181,7 +181,7 @@ export default function AnalyticsPage() {
       )}
 
       {/* Performance Metrics */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="rounded-2xl border border-ringo-border bg-ringo-card p-5 text-center">
           <div className="mx-auto w-10 h-10 rounded-full bg-emerald-400/10 flex items-center justify-center mb-3">
             <Target className="h-5 w-5 text-emerald-400" />

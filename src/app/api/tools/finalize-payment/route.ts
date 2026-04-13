@@ -49,11 +49,11 @@ export async function POST(request: NextRequest) {
     // Initialize Supabase client
     const supabase = await createServiceRoleClient();
 
-    // Look up restaurant by agent_id
+    // Look up restaurant by agent_id (check both English and Spanish agents)
     const { data: restaurant, error: restaurantError } = await supabase
       .from('restaurants')
-      .select('id, name, pos_type, pos_connected, square_access_token, square_location_id, tax_rate')
-      .eq('retell_agent_id', call.agent_id)
+      .select('id, name, pos_type, pos_connected, square_access_token, square_location_id, tax_rate, preferred_language')
+      .or(`retell_agent_id.eq.${call.agent_id},retell_agent_id_es.eq.${call.agent_id}`)
       .single();
 
     if (restaurantError || !restaurant) {
@@ -192,8 +192,10 @@ export async function POST(request: NextRequest) {
     const paymentUrl = squareData.payment_link.url;
     const paymentIntentId = squareData.payment_link.id;
 
-    // Send SMS notification
-    const smsMessage = `Your ${restaurant.name} order is ready for payment! Total: $${order.total.toFixed(2)}. Pay here: ${paymentUrl} - Once paid, your order goes straight to the kitchen!`;
+    // Send SMS notification (bilingual support)
+    const smsMessageEn = `Your ${restaurant.name} order is ready for payment! Total: $${order.total.toFixed(2)}. Pay here: ${paymentUrl} - Once paid, your order goes straight to the kitchen!`;
+    const smsMessageEs = `Tu pedido de ${restaurant.name} esta listo para pagar! Total: $${order.total.toFixed(2)}. Paga aqui: ${paymentUrl} - Una vez pagado, tu pedido va directamente a la cocina!`;
+    const smsMessage = restaurant.preferred_language === 'es' ? smsMessageEs : smsMessageEn;
 
     try {
       await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'https://useringo.ai'}/api/sms`, {

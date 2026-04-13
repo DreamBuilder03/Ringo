@@ -5,6 +5,8 @@ import {
   classifyCallOutcome,
   type RetellCallEvent,
 } from '@/lib/retell';
+import { sendEmail } from '@/lib/email';
+import { failedCallAlertEmail } from '@/lib/email-templates';
 
 export async function POST(request: Request) {
   try {
@@ -27,12 +29,24 @@ export async function POST(request: Request) {
 
     const supabase = await createServiceRoleClient();
 
-    // Look up restaurant by agent ID
-    const { data: restaurant } = await supabase
+    // Look up restaurant by agent ID (try English agent first, then Spanish)
+    let restaurant = null;
+    const { data: enRestaurant } = await supabase
       .from('restaurants')
       .select('id')
       .eq('retell_agent_id', event.call.agent_id)
       .single();
+
+    if (enRestaurant) {
+      restaurant = enRestaurant;
+    } else {
+      const { data: esRestaurant } = await supabase
+        .from('restaurants')
+        .select('id')
+        .eq('retell_agent_id_es', event.call.agent_id)
+        .single();
+      restaurant = esRestaurant;
+    }
 
     if (!restaurant) {
       console.error(`No restaurant found for agent: ${event.call.agent_id}`);
@@ -74,6 +88,35 @@ export async function POST(request: Request) {
             call_outcome: outcome,
           })
           .eq('retell_call_id', event.call.call_id);
+
+        // If call was missed, send alert email to restaurant owner
+        if (outcome === 'missed') {
+          try {
+            const { data: profile } = await supabase
+              .from('profiles')
+              .select('email')
+              .eq('id', restaurant.owner_user_id)
+              .single();
+
+            if (profile?.email) {
+              const html = failedCallAlertEmail({
+                restaurantName: restaurant.name,
+                callTime: event.call.start_timestamp,
+                duration: duration,
+                transcript: event.call.transcript || undefined,
+              });
+
+              await sendEmail({
+                to: profile.email,
+                subject: `Missed call to ${restaurant.name}`,
+                html,
+              });
+            }
+          } catch (emailError) {
+            console.error(`[${new Date().toISOString()}] Failed to send missed call alert:`, emailError);
+            // Don't fail the webhook if email fails
+          }
+        }
         break;
       }
 

@@ -130,11 +130,11 @@ export function StatCard({
       {/* Subtle inner shine */}
       <div className="absolute inset-0 bg-gradient-to-b from-white/60 to-transparent opacity-50 pointer-events-none rounded-2xl" />
 
-      <div className="relative flex items-start justify-between">
-        <div className="space-y-2">
-          <p className="text-[11px] font-semibold uppercase tracking-wider text-ringo-muted">{title}</p>
+      <div className="relative flex items-start justify-between gap-3">
+        <div className="space-y-2 min-w-0 flex-1">
+          <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-ringo-muted">{title}</p>
           <p className={cn(
-            'text-3xl font-bold text-foreground transition-all duration-700',
+            'text-2xl sm:text-3xl font-bold text-foreground transition-all duration-700 break-words',
             animated ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
           )}>
             {value}
@@ -156,13 +156,13 @@ export function StatCard({
           </div>
         </div>
 
-        <div className="flex flex-col items-end gap-2">
+        <div className="flex flex-col items-end gap-2 flex-shrink-0">
           <div className={cn(
-            'rounded-xl p-2.5 transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg',
+            'rounded-xl p-2.5 transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg min-h-[44px] min-w-[44px] flex items-center justify-center',
             colors.bg,
             colors.glow
           )}>
-            <Icon className={cn('h-5 w-5', colors.text)} />
+            <Icon className={cn('h-4 sm:h-5 w-4 sm:w-5', colors.text)} />
           </div>
           {sparklineData && (
             <MiniSparkline data={sparklineData} color={colors.spark} />

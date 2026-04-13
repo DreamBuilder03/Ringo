@@ -41,6 +41,7 @@ const restaurantLinks = [
   { href: '/dashboard/calls', label: 'Call Log', icon: Phone, description: 'All call history' },
   { href: '/dashboard/menu', label: 'Menu', icon: UtensilsCrossed, description: 'Manage menu items' },
   { href: '/dashboard/orders', label: 'Orders', icon: ShoppingCart, description: 'Order history' },
+  { href: '/dashboard/customers', label: 'Customers', icon: Users, description: 'Customer insights' },
   { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3, description: 'Deep insights' },
   { href: '/settings', label: 'Settings', icon: Settings, description: 'POS & billing' },
 ];
@@ -107,7 +108,7 @@ export function Sidebar({ role }: SidebarProps) {
       {/* Mobile toggle */}
       <button
         onClick={() => setMobileOpen(!mobileOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 rounded-xl bg-ringo-card/90 backdrop-blur-sm border border-ringo-border p-2.5 shadow-lg"
+        className="lg:hidden fixed top-4 left-4 z-50 rounded-lg bg-ringo-card/90 backdrop-blur-sm border border-ringo-border p-2.5 shadow-lg min-h-[44px] min-w-[44px] flex items-center justify-center"
       >
         {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </button>
@@ -187,7 +188,7 @@ export function Sidebar({ role }: SidebarProps) {
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
                 className={cn(
-                  'group flex items-center gap-3 rounded-xl px-3 py-3 text-sm transition-all duration-200',
+                  'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200 min-h-[44px]',
                   isActive
                     ? 'bg-[#C9A84C]/10 text-[#C9A84C] shadow-sm'
                     : 'text-ringo-muted hover:bg-ringo-card/80 hover:text-foreground'

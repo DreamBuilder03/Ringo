@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { sendEmail } from '@/lib/email';
+import { orderPaidEmail } from '@/lib/email-templates';
 
 /**
  * Square webhook handler for payment completion events.
@@ -124,6 +126,42 @@ export async function POST(request: NextRequest) {
     }
 
     console.log(`[Square Webhook] Order ${order.id} marked as paid`);
+
+    // Send order paid email to restaurant owner (non-blocking)
+    try {
+      const { data: restaurant } = await supabase
+        .from('restaurants')
+        .select('name, owner_user_id')
+        .eq('id', order.restaurant_id)
+        .single();
+
+      if (restaurant) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('id', restaurant.owner_user_id)
+          .single();
+
+        if (profile?.email) {
+          const html = orderPaidEmail({
+            restaurantName: restaurant.name,
+            orderId: order.id,
+            items: order.items || [],
+            total: order.total,
+            customerPhone: order.customer_phone || 'Unknown',
+          });
+
+          await sendEmail({
+            to: profile.email,
+            subject: `New paid order from ${order.customer_phone || 'customer'}`,
+            html,
+          });
+        }
+      }
+    } catch (emailError) {
+      console.error(`[Square Webhook] Failed to send order paid email for order ${order.id}:`, emailError);
+      // Don't fail the webhook if email fails
+    }
 
     // Push to Square POS (non-blocking)
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://useringo.ai';
