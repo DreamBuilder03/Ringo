@@ -103,7 +103,7 @@ export default function ConfirmPage() {
   const todayLine = place.hours?.[weekdayOrder[today]] || null;
 
   return (
-    <section className="relative overflow-hidden">
+    <section className="relative overflow-x-hidden">
       <div className="halo" />
       <div className="mx-auto max-w-5xl px-6 py-16">
         <button

@@ -25,6 +25,21 @@ export default function DemoHero() {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const geoRef = useRef<{ lat: number; lng: number } | null>(null);
+
+  // Ask for browser geolocation once on mount. If denied, we fall back to Vercel IP geo server-side.
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || !navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        geoRef.current = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+      },
+      () => {
+        /* denied or failed — server will fall back to IP geo */
+      },
+      { enableHighAccuracy: false, timeout: 4000, maximumAge: 600000 }
+    );
+  }, []);
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
@@ -38,7 +53,12 @@ export default function DemoHero() {
         const res = await fetch('/api/demo/places/autocomplete', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ input: input.trim(), sessionToken }),
+          body: JSON.stringify({
+            input: input.trim(),
+            sessionToken,
+            lat: geoRef.current?.lat,
+            lng: geoRef.current?.lng,
+          }),
         });
         const data = await res.json();
         setSuggestions(data.suggestions || []);
@@ -74,10 +94,10 @@ export default function DemoHero() {
   }
 
   return (
-    <section className="relative overflow-hidden">
+    <section className="relative overflow-x-hidden">
       <div className="halo" />
       <div className="grain" />
-      <div className="relative mx-auto flex min-h-[calc(100vh-72px)] max-w-4xl flex-col items-center justify-center px-6 py-20">
+      <div className="relative mx-auto flex max-w-4xl flex-col items-center px-6 pb-24 pt-20 md:pt-28">
         <div className="fade-in flex flex-col items-center text-center">
           <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs uppercase tracking-[0.14em] text-white/60">
             <span className="live-dot" /> Live demo, under a minute

@@ -3,8 +3,27 @@
 import { useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
-const LOCATIONS = ['1', '2–5', '6–10', '11+'];
-const POS = ['Square', 'Toast', 'Clover', 'Other', 'None / pen & paper'];
+const LOCATIONS = ['1', '2', '3', '4', '5', '6+'];
+// Keep the list broad — we want prospects to see their POS no matter what they run.
+// Integration status is handled separately; everything here can at least do call handoff / order SMS.
+const POS = [
+  'Square',
+  'Toast',
+  'Clover',
+  'SpotOn',
+  'Lightspeed',
+  'TouchBistro',
+  'Revel',
+  'Aloha (NCR)',
+  'Oracle MICROS',
+  'Heartland',
+  'HungerRush',
+  'Upserve',
+  'Lavu',
+  'PAR Brink',
+  'Other',
+  'None / pen & paper',
+];
 const FEATURES = [
   '24/7 AI phone answering',
   'Takeout & pickup ordering',
@@ -23,6 +42,7 @@ export default function QualifyPage() {
 
   const [step, setStep] = useState<Step>('locations');
   const [locations, setLocations] = useState<string>('');
+  const [locationsCustom, setLocationsCustom] = useState<string>('');
   const [pos, setPos] = useState<string>('');
   const [features, setFeatures] = useState<string[]>([]);
   const [fullName, setFullName] = useState('');
@@ -34,8 +54,9 @@ export default function QualifyPage() {
   const toggleFeature = (f: string) =>
     setFeatures((prev) => (prev.includes(f) ? prev.filter((x) => x !== f) : [...prev, f]));
 
+  const locationsValue = locations === '6+' ? locationsCustom.trim() : locations;
   const canNext =
-    (step === 'locations' && !!locations) ||
+    (step === 'locations' && !!locations && (locations !== '6+' || !!locationsCustom.trim())) ||
     (step === 'pos' && !!pos) ||
     (step === 'features' && features.length > 0) ||
     (step === 'contact' && !!fullName && !!phone && !!email);
@@ -52,7 +73,7 @@ export default function QualifyPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           leadId,
-          locations_count: locations,
+          locations_count: locationsValue,
           pos_system: pos,
           features_interested: features,
           full_name: fullName,
@@ -82,7 +103,7 @@ export default function QualifyPage() {
   const progress = ((stepIndex + 1) / 4) * 100;
 
   return (
-    <section className="relative overflow-hidden">
+    <section className="relative overflow-x-hidden">
       <div className="halo" />
       <div className="mx-auto max-w-3xl px-6 py-16">
         <div className="mb-10 h-[2px] w-full overflow-hidden rounded-full bg-white/5">
@@ -99,11 +120,11 @@ export default function QualifyPage() {
                 label="How many locations do you own?"
                 hint="Answering helps us match you with the right rollout plan."
               />
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <div className="grid grid-cols-3 gap-3 sm:grid-cols-6">
                 {LOCATIONS.map((l) => (
                   <button
                     key={l}
-                    className="chip justify-center py-4"
+                    className="chip justify-center py-4 text-base"
                     data-selected={locations === l}
                     onClick={() => setLocations(l)}
                   >
@@ -111,17 +132,35 @@ export default function QualifyPage() {
                   </button>
                 ))}
               </div>
+              {locations === '6+' && (
+                <div className="fade-in">
+                  <span className="mb-2 block text-xs uppercase tracking-[0.12em] text-white/50">
+                    Exactly how many?
+                  </span>
+                  <input
+                    className="input max-w-xs"
+                    inputMode="numeric"
+                    placeholder="e.g. 12"
+                    value={locationsCustom}
+                    onChange={(e) => setLocationsCustom(e.target.value.replace(/[^0-9]/g, ''))}
+                    autoFocus
+                  />
+                </div>
+              )}
             </div>
           )}
 
           {step === 'pos' && (
             <div className="space-y-8">
-              <Question label="What POS system do you use?" />
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <Question
+                label="What POS system do you use?"
+                hint="Don't see yours? Pick Other — we'll wire it up."
+              />
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
                 {POS.map((p) => (
                   <button
                     key={p}
-                    className="chip justify-center py-4"
+                    className="chip justify-center py-3 text-[13px]"
                     data-selected={pos === p}
                     onClick={() => setPos(p)}
                   >

@@ -5,7 +5,12 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function POST(req: NextRequest) {
   try {
-    const { input, sessionToken } = await req.json();
+    const body = await req.json();
+    const { input, sessionToken } = body as { input?: string; sessionToken?: string };
+    // Client-provided lat/lng (from browser geolocation) takes priority over IP geo.
+    const clientLat = typeof body?.lat === 'number' ? body.lat : null;
+    const clientLng = typeof body?.lng === 'number' ? body.lng : null;
+
     if (!input || typeof input !== 'string' || input.length < 2) {
       return NextResponse.json({ suggestions: [] });
     }
@@ -18,18 +23,34 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Bias results to the visitor's location. Prefer browser geolocation if provided,
+    // else fall back to Vercel's IP-based geo headers.
+    const latStr = clientLat != null ? String(clientLat) : req.headers.get('x-vercel-ip-latitude');
+    const lngStr = clientLng != null ? String(clientLng) : req.headers.get('x-vercel-ip-longitude');
+    const lat = latStr ? parseFloat(latStr) : null;
+    const lng = lngStr ? parseFloat(lngStr) : null;
+
+    const requestBody: Record<string, unknown> = {
+      input,
+      // Max 5 primary types; "food" is not a valid primary type.
+      includedPrimaryTypes: ['restaurant', 'cafe', 'bakery', 'bar', 'meal_takeaway'],
+      sessionToken,
+    };
+
+    if (lat !== null && lng !== null && !Number.isNaN(lat) && !Number.isNaN(lng)) {
+      // 50km radius around the visitor. Bias (not restrict) — still allows national chains.
+      requestBody.locationBias = {
+        circle: { center: { latitude: lat, longitude: lng }, radius: 50000 },
+      };
+    }
+
     const res = await fetch('https://places.googleapis.com/v1/places:autocomplete', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'X-Goog-Api-Key': apiKey,
       },
-      body: JSON.stringify({
-        input,
-        // Max 5 primary types; "food" is not a valid primary type.
-        includedPrimaryTypes: ['restaurant', 'cafe', 'bakery', 'bar', 'meal_takeaway'],
-        sessionToken,
-      }),
+      body: JSON.stringify(requestBody),
       cache: 'no-store',
     });
 

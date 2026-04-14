@@ -151,7 +151,7 @@ export default function CallPage() {
   }
 
   return (
-    <section className="relative overflow-hidden">
+    <section className="relative overflow-x-hidden">
       <div className="halo" />
       <div className="mx-auto max-w-5xl px-6 py-16">
         <div className="fade-in mx-auto max-w-xl text-center">
