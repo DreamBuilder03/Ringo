@@ -26,7 +26,8 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         input,
-        includedPrimaryTypes: ['restaurant', 'food', 'cafe', 'bakery', 'bar', 'meal_takeaway'],
+        // Max 5 primary types; "food" is not a valid primary type.
+        includedPrimaryTypes: ['restaurant', 'cafe', 'bakery', 'bar', 'meal_takeaway'],
         sessionToken,
       }),
       cache: 'no-store',
