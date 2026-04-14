@@ -7,6 +7,7 @@ import {
 } from '@/lib/retell';
 import { sendEmail } from '@/lib/email';
 import { failedCallAlertEmail } from '@/lib/email-templates';
+import { alertDemoLead } from '@/lib/demo-alerts';
 
 export async function POST(request: Request) {
   try {
@@ -49,8 +50,27 @@ export async function POST(request: Request) {
     }
 
     if (!restaurant) {
-      console.error(`No restaurant found for agent: ${event.call.agent_id}`);
-      return NextResponse.json({ error: 'Restaurant not found' }, { status: 404 });
+      // Could still be a website demo call on an unbound demo agent — fire the
+      // lead alert, then exit cleanly without touching the `calls` table.
+      if (event.event === 'call_ended') {
+        const duration = parseCallDuration(
+          event.call.start_timestamp,
+          event.call.end_timestamp
+        );
+        try {
+          await alertDemoLead({
+            supabase,
+            retellCallId: event.call.call_id,
+            durationSec: duration,
+            transcript: event.call.transcript || null,
+            transcriptUrl: event.call.recording_url || null,
+          });
+        } catch (demoErr) {
+          console.error(`[${new Date().toISOString()}] demo-alerts (no-restaurant path) failed:`, demoErr);
+        }
+      }
+      console.log(`No restaurant bound to agent ${event.call.agent_id} — treating as demo/unbound`);
+      return NextResponse.json({ received: true, unbound: true });
     }
 
     switch (event.event) {
@@ -88,6 +108,20 @@ export async function POST(request: Request) {
             call_outcome: outcome,
           })
           .eq('retell_call_id', event.call.call_id);
+
+        // If this call came from the website Live Demo, page the sales team.
+        // alertDemoLead() is a no-op if no demo_leads row matches this call_id.
+        try {
+          await alertDemoLead({
+            supabase,
+            retellCallId: event.call.call_id,
+            durationSec: duration,
+            transcript: event.call.transcript || null,
+            transcriptUrl: event.call.recording_url || null,
+          });
+        } catch (demoErr) {
+          console.error(`[${new Date().toISOString()}] demo-alerts failed:`, demoErr);
+        }
 
         // If call was missed, send alert email to restaurant owner
         if (outcome === 'missed') {

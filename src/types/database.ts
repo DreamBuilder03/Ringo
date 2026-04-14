@@ -22,6 +22,14 @@ export interface Restaurant {
   tax_rate: number;
   created_at: string;
   owner_user_id: string;
+  location_group_id?: string | null;
+}
+
+export interface LocationGroup {
+  id: string;
+  name: string;
+  owner_user_id: string;
+  created_at: string;
 }
 
 export interface Call {

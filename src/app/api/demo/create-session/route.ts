@@ -1,0 +1,135 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { createServiceRoleClient } from '@/lib/supabase/server';
+
+// Creates a Retell Web Call for the visitor's demo.
+// Extends the legacy /api/demo-call route with: real Google Places data, bilingual support,
+// a stub menu by cuisine, lead record linking, and a returning access_token for the Web SDK.
+
+interface Body {
+  leadId?: string;
+  language?: 'en' | 'es' | 'multi';
+  // Restaurant context (from places/details)
+  restaurantName: string;
+  cuisineType?: string;
+  address?: string;
+  phone?: string;
+  hours?: string[] | null;
+  // Lead context
+  customerName?: string;
+}
+
+// Tiny cuisine-based fallback menu so Ringo has something to read when the real menu isn't available.
+function stubMenuFor(cuisine: string): string {
+  const c = (cuisine || '').toLowerCase();
+  if (c.includes('pizza')) return 'Cheese Pizza $12, Pepperoni Pizza $14, Supreme Pizza $17, Garlic Knots $6, Caesar Salad $8';
+  if (c.includes('mexican') || c.includes('taco'))
+    return 'Carne Asada Taco $4.50, Chicken Burrito $11, Chips & Salsa $5, Quesadilla $9, Horchata $3';
+  if (c.includes('chinese'))
+    return 'General Tso Chicken $13, Beef & Broccoli $14, Vegetable Fried Rice $9, Egg Rolls $5, Wonton Soup $6';
+  if (c.includes('sushi') || c.includes('japan'))
+    return 'California Roll $8, Spicy Tuna Roll $10, Salmon Nigiri $6, Miso Soup $4, Edamame $5';
+  if (c.includes('burger') || c.includes('american'))
+    return 'Classic Cheeseburger $12, Bacon Burger $14, Chicken Sandwich $11, Fries $5, Milkshake $6';
+  if (c.includes('indian'))
+    return 'Chicken Tikka Masala $15, Lamb Vindaloo $16, Garlic Naan $3, Samosa $5, Mango Lassi $4';
+  if (c.includes('thai'))
+    return 'Pad Thai $13, Green Curry $14, Tom Yum Soup $7, Spring Rolls $6, Thai Iced Tea $4';
+  if (c.includes('coffee') || c.includes('cafe') || c.includes('bakery'))
+    return 'Latte $5, Cappuccino $4.50, Croissant $4, Avocado Toast $11, Chocolate Chip Cookie $3';
+  return 'House Burger $12, Caesar Salad $9, Chicken Tenders $10, Fries $5, Chocolate Shake $6';
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = (await req.json()) as Body;
+    const {
+      leadId,
+      language = 'en',
+      restaurantName,
+      cuisineType = 'Restaurant',
+      address,
+      phone,
+      hours,
+      customerName,
+    } = body;
+
+    if (!restaurantName) {
+      return NextResponse.json({ error: 'restaurantName is required' }, { status: 400 });
+    }
+
+    const apiKey = process.env.RETELL_API_KEY;
+    const agentId = process.env.RETELL_DEMO_AGENT_ID;
+
+    // Dev fallback: let the UI work without live Retell keys during local dev.
+    if (!apiKey || apiKey === 'placeholder' || !agentId || agentId === 'placeholder') {
+      console.warn('[demo/create-session] Retell not configured — returning demo_mode token');
+      return NextResponse.json({
+        access_token: 'demo_mode',
+        demo_mode: true,
+        call_id: null,
+      });
+    }
+
+    const dynamicVars = {
+      restaurant_name: restaurantName,
+      cuisine_type: cuisineType,
+      address: address || '',
+      phone: phone || '',
+      hours_today: (hours && hours[new Date().getDay()]) || '',
+      customer_name: customerName || '',
+      stub_menu: stubMenuFor(cuisineType),
+      demo_mode: 'true',
+    };
+
+    const retellRes = await fetch('https://api.retellai.com/v2/create-web-call', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        agent_id: agentId,
+        metadata: { lead_id: leadId || null, source: 'website_demo', language },
+        retell_llm_dynamic_variables: dynamicVars,
+      }),
+    });
+
+    if (!retellRes.ok) {
+      const text = await retellRes.text();
+      console.error('[demo/create-session] Retell error', retellRes.status, text);
+      return NextResponse.json(
+        { error: `Retell error: ${retellRes.status}` },
+        { status: 502 }
+      );
+    }
+
+    const data = (await retellRes.json()) as { access_token: string; call_id?: string };
+
+    // Best-effort: attach the web-call id to the lead row so we can correlate transcripts later.
+    if (leadId && data.call_id) {
+      try {
+        const supabase = await createServiceRoleClient();
+        await supabase
+          .from('demo_leads')
+          .update({
+            retell_web_call_id: data.call_id,
+            demo_language: language,
+            demo_started_at: new Date().toISOString(),
+            status: 'demo_ready',
+          })
+          .eq('id', leadId);
+      } catch (err) {
+        console.error('[demo/create-session] lead update failed (non-fatal)', err);
+      }
+    }
+
+    return NextResponse.json({
+      access_token: data.access_token,
+      call_id: data.call_id || null,
+      demo_mode: false,
+    });
+  } catch (err) {
+    console.error('[demo/create-session] exception', err);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}

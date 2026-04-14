@@ -1,6 +1,32 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
 import type { Call, Restaurant, RestaurantWithStats, OrderItem } from '@/types/database';
 
+// ──────── Get all restaurants a user owns (multi-location) ────────
+export async function getUserRestaurants(supabase: SupabaseClient): Promise<Restaurant[]> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return [];
+
+  // Check if user has a location group
+  const { data: groups } = await supabase
+    .from('location_groups')
+    .select('id')
+    .eq('owner_user_id', user.id);
+
+  if (groups && groups.length > 0) {
+    const groupIds = groups.map((g: { id: string }) => g.id);
+    const { data: restaurants } = await supabase
+      .from('restaurants')
+      .select('*')
+      .in('location_group_id', groupIds)
+      .order('name');
+    return (restaurants || []) as Restaurant[];
+  }
+
+  // Fallback: single restaurant via profile
+  const restaurant = await getUserRestaurant(supabase);
+  return restaurant ? [restaurant as Restaurant] : [];
+}
+
 // ──────── Get authenticated user's restaurant ────────
 export async function getUserRestaurant(supabase: SupabaseClient) {
   const { data: { user } } = await supabase.auth.getUser();

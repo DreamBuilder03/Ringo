@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 import { getUserRestaurant } from '@/lib/queries';
 import type { UserRole } from '@/types/database';
+import { LocationSwitcher } from '@/components/dashboard/location-switcher';
 
 const PLAN_CALL_LIMITS: Record<string, number> = {
   starter: 100,
@@ -172,6 +173,9 @@ export function Sidebar({ role }: SidebarProps) {
               <Activity className="h-4 w-4 text-[#C9A84C] animate-pulse" />
             </div>
           </div>
+
+          {/* Location switcher — multi-location support */}
+          <LocationSwitcher />
         </div>
 
         {/* Navigation */}
