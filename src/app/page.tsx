@@ -464,8 +464,8 @@ function ROICalculator() {
           <p className="text-4xl md:text-5xl font-bold text-bone mb-1">${missedRevenue.toLocaleString()}</p>
           <p className="text-bone/40 text-sm mb-6">${yearlyLost.toLocaleString()} per year</p>
           <div className="bg-[#F3EEE3]/10 rounded-xl p-4 border border-[#F3EEE3]/20">
-            <p className="text-[#F3EEE3] text-sm font-semibold mb-0.5">With Ringo at $299/mo</p>
-            <p className="text-bone/60 text-xs">ROI payback in {Math.max(1, Math.ceil(299 / (missedRevenue || 1)))} day{Math.ceil(299 / (missedRevenue || 1)) !== 1 ? "s" : ""}</p>
+            <p className="text-[#F3EEE3] text-sm font-semibold mb-0.5">With Ringo at $799/mo</p>
+            <p className="text-bone/60 text-xs">ROI payback in {Math.max(1, Math.ceil(799 / ((missedRevenue / 30) || 1)))} day{Math.ceil(799 / ((missedRevenue / 30) || 1)) !== 1 ? "s" : ""}</p>
           </div>
         </div>
       </div>
@@ -659,7 +659,7 @@ export default function HomePage() {
             <div className="flex justify-center lg:justify-end order-2 lg:order-1">
               <PhoneMockup />
             </div>
-            <div className="order-1 lg:order-2">
+            <div id="demo" className="order-1 lg:order-2 scroll-mt-24">
               <DemoCallForm />
             </div>
           </div>
@@ -740,7 +740,7 @@ export default function HomePage() {
       </section>
 
       {/* ═══════════════ 5. POS INTEGRATIONS MARQUEE ═══════════════ */}
-      <section className="bg-[#0A0A0A] py-10 border-t border-[#2E2E2E]/60">
+      <section id="integrations" className="bg-[#0A0A0A] py-10 border-t border-[#2E2E2E]/60 scroll-mt-20">
         <p className="text-center text-[#6B6B6B] text-xs font-semibold uppercase tracking-widest mb-6">
           Integrates with your POS
         </p>
@@ -933,6 +933,212 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* ═══════════════ 6b. BENTO GRID — WHY RINGO ═══════════════ */}
+      <section className="bg-[#0A0A0A] py-24 md:py-32 px-5 sm:px-6 lg:px-8 border-t border-bone/[0.06]">
+        <div className="max-w-7xl mx-auto">
+          <RevealSection>
+            <div className="text-center mb-16 max-w-3xl mx-auto">
+              <p className="eyebrow text-bone/50 mb-4">Why Ringo</p>
+              <h2 className="text-3xl md:text-5xl lg:text-[56px] font-normal text-bone leading-[1.05] tracking-[-0.025em]" style={{ fontFamily: "'Fraunces', serif", fontVariationSettings: "'opsz' 96, 'SOFT' 50" }}>
+                Turn every ring into <span className="italic text-bone">cash</span>.
+              </h2>
+              <p className="text-bone/50 mt-5 text-lg leading-relaxed">
+                Six things no other voice AI ships in one box.
+              </p>
+            </div>
+          </RevealSection>
+
+          <div className="grid grid-cols-1 md:grid-cols-6 grid-rows-none md:grid-rows-[auto_auto] gap-4 md:gap-5">
+            {/* TILE 1 — Big hero tile: Pay Before Prep */}
+            <RevealSection className="md:col-span-4 md:row-span-2">
+              <div className="group relative h-full min-h-[320px] md:min-h-[520px] bg-[#141414] rounded-3xl border border-bone/[0.06] hover:border-bone/[0.14] p-8 md:p-12 overflow-hidden transition-[border-color] duration-300">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_10%,rgba(243,238,227,0.06),transparent_60%)] pointer-events-none" />
+                <div className="relative flex flex-col h-full">
+                  <p className="eyebrow text-bone/40 mb-4">Pay Before Prep</p>
+                  <h3 className="text-bone text-3xl md:text-4xl lg:text-5xl leading-[1.05] tracking-[-0.025em] mb-6 max-w-xl" style={{ fontFamily: "'Fraunces', serif", fontVariationSettings: "'opsz' 96, 'SOFT' 50" }}>
+                    The kitchen never makes food that doesn&apos;t get paid for.
+                  </h3>
+                  <p className="text-bone/55 text-[15px] leading-relaxed max-w-md mb-10">
+                    Ringo collects payment by SMS link before the ticket fires. Zero no-shows. Zero food waste. Zero chargebacks.
+                  </p>
+
+                  <div className="mt-auto grid grid-cols-3 gap-4 max-w-xl">
+                    {[
+                      { n: "$4,200", l: "avg food waste saved / mo" },
+                      { n: "0", l: "tickets fire before pay" },
+                      { n: "2.3s", l: "avg link delivery" },
+                    ].map((x) => (
+                      <div key={x.l} className="border-t border-bone/[0.08] pt-4">
+                        <div
+                          className="text-bone"
+                          style={{
+                            fontFamily: "'Fraunces', serif",
+                            fontStyle: "italic",
+                            fontVariationSettings: "'opsz' 96, 'SOFT' 50",
+                            fontSize: "clamp(28px, 3.2vw, 44px)",
+                            lineHeight: 1,
+                            letterSpacing: "-0.03em",
+                          }}
+                        >
+                          {x.n}
+                        </div>
+                        <p className="text-bone/40 text-[11px] uppercase tracking-[0.12em] mt-2 leading-snug">{x.l}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </RevealSection>
+
+            {/* TILE 2 — 24/7 answer */}
+            <RevealSection className="md:col-span-2">
+              <div className="group relative h-full min-h-[220px] bg-[#141414] rounded-3xl border border-bone/[0.06] hover:border-bone/[0.14] p-8 overflow-hidden transition-[border-color] duration-300">
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="w-2 h-2 rounded-full bg-[#F3EEE3] animate-pulse" />
+                  <span className="text-[11px] uppercase tracking-[0.18em] text-[#F3EEE3] font-semibold">Live</span>
+                </div>
+                <h3 className="text-bone text-2xl md:text-[28px] leading-[1.1] tracking-[-0.02em] mb-3" style={{ fontFamily: "'Fraunces', serif", fontVariationSettings: "'opsz' 72, 'SOFT' 40" }}>
+                  Answers in <span className="italic">two rings</span>, every ring.
+                </h3>
+                <p className="text-bone/50 text-sm leading-relaxed">
+                  24/7/365. Holidays. Dinner rush. 3 a.m. Never a voicemail.
+                </p>
+              </div>
+            </RevealSection>
+
+            {/* TILE 3 — Upsell engine — INVERTED */}
+            <RevealSection className="md:col-span-2">
+              <div className="group relative h-full min-h-[220px] bg-bone rounded-3xl p-8 overflow-hidden border border-bone">
+                <p className="eyebrow text-obsidian/50 mb-6">Upsell engine</p>
+                <div
+                  className="text-obsidian mb-3"
+                  style={{
+                    fontFamily: "'Fraunces', serif",
+                    fontStyle: "italic",
+                    fontVariationSettings: "'opsz' 144, 'SOFT' 40",
+                    fontSize: "clamp(54px, 7vw, 88px)",
+                    lineHeight: 0.9,
+                    letterSpacing: "-0.04em",
+                  }}
+                >
+                  +$3.40
+                </div>
+                <p className="text-obsidian/70 text-sm leading-relaxed max-w-[220px]">
+                  Average lift per call. Staff forget combos. Ringo never does.
+                </p>
+              </div>
+            </RevealSection>
+
+            {/* TILE 4 — Readback accuracy */}
+            <RevealSection className="md:col-span-3">
+              <div className="group relative h-full min-h-[220px] bg-[#141414] rounded-3xl border border-bone/[0.06] hover:border-bone/[0.14] p-8 overflow-hidden transition-[border-color] duration-300">
+                <p className="eyebrow text-bone/40 mb-6">Full order readback</p>
+                <h3 className="text-bone text-2xl md:text-[28px] leading-[1.15] tracking-[-0.02em] mb-4" style={{ fontFamily: "'Fraunces', serif", fontVariationSettings: "'opsz' 72, 'SOFT' 40" }}>
+                  <span className="italic">99.4%</span> order accuracy, before the ticket even prints.
+                </h3>
+                <p className="text-bone/50 text-sm leading-relaxed max-w-md">
+                  Every item, mod, and allergy is read back and confirmed. Fewer remakes, fewer refunds, happier kitchens.
+                </p>
+              </div>
+            </RevealSection>
+
+            {/* TILE 5 — CRM */}
+            <RevealSection className="md:col-span-3">
+              <div className="group relative h-full min-h-[220px] bg-[#141414] rounded-3xl border border-bone/[0.06] hover:border-bone/[0.14] p-8 overflow-hidden transition-[border-color] duration-300">
+                <p className="eyebrow text-bone/40 mb-6">Customer database, not just a dashboard</p>
+                <h3 className="text-bone text-2xl md:text-[28px] leading-[1.15] tracking-[-0.02em] mb-4" style={{ fontFamily: "'Fraunces', serif", fontVariationSettings: "'opsz' 72, 'SOFT' 40" }}>
+                  Every caller becomes a <span className="italic">contact</span>.
+                </h3>
+                <p className="text-bone/50 text-sm leading-relaxed max-w-md mb-6">
+                  Name, number, order history, lifetime value — synced into your CRM. Now you can actually market to them.
+                </p>
+                <div className="flex -space-x-2">
+                  {["JM", "SL", "MR", "ET", "KP"].map((initials, i) => (
+                    <div key={i} className="w-9 h-9 rounded-full bg-[#1E1E1E] border border-[#141414] flex items-center justify-center text-[11px] font-semibold text-bone/70">
+                      {initials}
+                    </div>
+                  ))}
+                  <div className="w-9 h-9 rounded-full bg-bone/[0.08] border border-[#141414] flex items-center justify-center text-[11px] font-semibold text-bone">
+                    +1.2k
+                  </div>
+                </div>
+              </div>
+            </RevealSection>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════ 6c. PAY BEFORE PREP — PALETTE INVERTED ═══════════════ */}
+      <section className="bg-bone py-24 md:py-36 px-5 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto">
+          <RevealSection>
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-16 items-center">
+              <div className="md:col-span-7">
+                <p className="eyebrow text-obsidian/50 mb-6">The unfair advantage</p>
+                <h2
+                  className="text-obsidian leading-[0.98] tracking-[-0.035em]"
+                  style={{
+                    fontFamily: "'Fraunces', serif",
+                    fontVariationSettings: "'opsz' 144, 'SOFT' 60",
+                    fontSize: "clamp(40px, 7vw, 88px)",
+                    fontWeight: 400,
+                  }}
+                >
+                  Your kitchen never makes food that doesn&apos;t get{" "}
+                  <span className="italic">paid for</span>. Ever.
+                </h2>
+                <p className="text-obsidian/70 text-lg md:text-xl leading-relaxed mt-8 max-w-xl">
+                  Competitors take the order and hope. Ringo locks the ticket until the customer confirms payment by SMS — so you never cook for a no-show again.
+                </p>
+                <div className="mt-10 space-y-3 max-w-md">
+                  {[
+                    ["Without Ringo", "5% no-show rate = $220/day in food cost gone.", true],
+                    ["With Ringo", "0 tickets fire before payment clears. Period.", false],
+                  ].map(([label, body, strike]) => (
+                    <div key={String(label)} className="flex items-start gap-4 py-4 border-t border-obsidian/10">
+                      <span className="eyebrow text-obsidian/50 pt-0.5 min-w-[110px]">{label}</span>
+                      <span className={`text-obsidian text-[15px] leading-relaxed ${strike ? "line-through decoration-1 decoration-obsidian/60" : "font-semibold"}`}>
+                        {body}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="md:col-span-5">
+                <div className="relative aspect-[4/5] rounded-3xl border border-obsidian/10 bg-gradient-to-b from-[#F3EEE3] to-[#E5DFD0] p-10 flex flex-col justify-between overflow-hidden">
+                  <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, #0A0A0A 1px, transparent 0)", backgroundSize: "24px 24px" }} />
+                  <div className="relative">
+                    <p className="eyebrow text-obsidian/50 mb-2">Monthly savings</p>
+                    <div
+                      className="text-obsidian"
+                      style={{
+                        fontFamily: "'Fraunces', serif",
+                        fontStyle: "italic",
+                        fontVariationSettings: "'opsz' 144, 'SOFT' 60",
+                        fontSize: "clamp(72px, 12vw, 128px)",
+                        lineHeight: 0.9,
+                        letterSpacing: "-0.04em",
+                      }}
+                    >
+                      $4,200
+                    </div>
+                    <p className="text-obsidian/60 text-sm mt-4 max-w-[220px] leading-relaxed">
+                      Average food-cost eliminated at a 200 orders/day location.
+                    </p>
+                  </div>
+                  <div className="relative border-t border-obsidian/15 pt-6 flex items-center gap-3">
+                    <div className="w-2 h-2 rounded-full bg-obsidian animate-pulse" />
+                    <span className="text-[11px] uppercase tracking-[0.18em] text-obsidian/70 font-semibold">
+                      Ticket locked · awaiting pay
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </RevealSection>
+        </div>
+      </section>
+
       {/* ═══════════════ 7. DASHBOARD PREVIEW ═══════════════ */}
       <section className="bg-[#0A0A0A] py-24 md:py-32 px-5 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
@@ -982,93 +1188,133 @@ export default function HomePage() {
           </RevealSection>
 
           <RevealSection delay={100}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {/* Starter */}
-              <div className="bg-bone rounded-2xl border border-[#2E2E2E]/60 p-8 flex flex-col">
-                <h3 className="text-xl font-bold text-[#F3EEE3] mb-1">Starter</h3>
-                <p className="text-sm text-[#6B6B6B] mb-6">Perfect for single-location restaurants</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:items-stretch">
+              {/* Starter — DARK */}
+              <div className="bg-[#141414] rounded-3xl border border-bone/[0.06] hover:border-bone/[0.14] p-8 flex flex-col transition-[border-color] duration-300">
+                <h3 className="text-bone text-xl font-semibold mb-1">Starter</h3>
+                <p className="text-sm text-bone/50 mb-8">Single-location independents</p>
                 <div className="flex items-baseline gap-1 mb-1">
-                  <span className="text-4xl font-bold text-[#F3EEE3]">$299</span>
-                  <span className="text-[#6B6B6B] text-sm">/month</span>
+                  <span
+                    className="text-bone"
+                    style={{
+                      fontFamily: "'Fraunces', serif",
+                      fontStyle: "italic",
+                      fontVariationSettings: "'opsz' 96, 'SOFT' 40",
+                      fontSize: "56px",
+                      letterSpacing: "-0.04em",
+                      lineHeight: 1,
+                    }}
+                  >
+                    $799
+                  </span>
+                  <span className="text-bone/40 text-sm">/mo</span>
                 </div>
-                <p className="text-xs text-[#6B6B6B] mb-8">Billed monthly</p>
-                <button className="w-full bg-[#F3EEE3] text-[#0A0A0A] py-3 rounded-xl font-semibold hover:bg-[#C8C8C8] transition-all text-sm mb-8">
-                  Get Started
-                </button>
+                <p className="text-xs text-bone/40 mb-8">Pays for itself in ~35 calls</p>
+                <a href="#demo" className="w-full bg-bone/[0.06] border border-bone/[0.1] hover:bg-bone/[0.1] text-bone py-3 rounded-full font-semibold transition-[background-color] duration-200 text-sm mb-8 text-center block">
+                  Start with Starter
+                </a>
                 <ul className="space-y-3 flex-1">
                   {[
-                    "Up to 100 calls/day",
+                    "Up to 100 calls / day",
                     "1 location",
-                    "POS integration (Square, Toast, or Clover)",
-                    "Real-time dashboard",
-                    "Call transcripts",
+                    "1 POS integration",
+                    "Real-time dashboard + transcripts",
                     "Monthly ROI report",
                     "Email support",
                   ].map((f) => (
-                    <li key={f} className="flex items-start gap-2.5 text-sm text-[#6B6B6B]">
-                      <Check className="w-4 h-4 text-[#F3EEE3] flex-shrink-0 mt-0.5" /> {f}
+                    <li key={f} className="flex items-start gap-2.5 text-sm text-bone/70">
+                      <Check className="w-4 h-4 text-bone flex-shrink-0 mt-0.5" /> {f}
                     </li>
                   ))}
                 </ul>
               </div>
 
-              {/* Growth — MOST POPULAR */}
-              <div className="bg-[#0A0A0A] rounded-2xl p-8 flex flex-col relative overflow-hidden shadow-xl shadow-obsidian/10 ring-2 ring-[#F3EEE3]">
-                <div className="absolute top-0 right-0 bg-[#F3EEE3] text-[#0A0A0A] text-[10px] font-bold uppercase tracking-wider px-4 py-1.5 rounded-bl-xl">
-                  Most Popular
+              {/* Growth — INVERTED (featured) */}
+              <div className="bg-bone rounded-3xl p-8 flex flex-col relative overflow-hidden shadow-[0_24px_80px_-20px_rgba(243,238,227,0.2)] md:-my-3">
+                <div className="absolute top-5 right-5 bg-obsidian text-bone text-[10px] font-bold uppercase tracking-[0.14em] px-3 py-1 rounded-full">
+                  Most popular
                 </div>
-                <h3 className="text-xl font-bold text-bone mb-1">Growth</h3>
-                <p className="text-sm text-bone/50 mb-6">For multi-location operators</p>
+                <h3 className="text-obsidian text-xl font-semibold mb-1">Growth</h3>
+                <p className="text-sm text-obsidian/60 mb-8">Multi-location operators</p>
                 <div className="flex items-baseline gap-1 mb-1">
-                  <span className="text-4xl font-bold text-[#F3EEE3]">$599</span>
-                  <span className="text-bone/50 text-sm">/month</span>
+                  <span
+                    className="text-obsidian"
+                    style={{
+                      fontFamily: "'Fraunces', serif",
+                      fontStyle: "italic",
+                      fontVariationSettings: "'opsz' 144, 'SOFT' 60",
+                      fontSize: "72px",
+                      letterSpacing: "-0.045em",
+                      lineHeight: 1,
+                    }}
+                  >
+                    $1,499
+                  </span>
+                  <span className="text-obsidian/50 text-sm">/mo</span>
                 </div>
-                <p className="text-xs text-bone/40 mb-8">Billed monthly</p>
-                <button className="w-full bg-[#F3EEE3] text-[#0A0A0A] py-3 rounded-xl font-semibold hover:bg-[#C8C8C8] transition-all text-sm mb-8">
-                  Get Started
-                </button>
+                <p className="text-xs text-obsidian/60 mb-8">Pays for itself in ~30 hours</p>
+                <a href="#demo" className="w-full bg-obsidian hover:bg-[#1E1E1E] text-bone py-3 rounded-full font-semibold transition-[background-color] duration-200 text-sm mb-8 text-center block">
+                  Schedule a demo
+                </a>
                 <ul className="space-y-3 flex-1">
                   {[
-                    "Up to 250 calls/day",
+                    "Up to 250 calls / day",
                     "Up to 3 locations",
                     "All POS integrations",
-                    "Everything in Starter",
-                    "Pay-before-prep SMS payment flow",
-                    "GHL CRM sync",
+                    "Pay-before-prep SMS flow",
+                    "GHL CRM sync + marketing",
                     "Weekly performance reports",
-                    "Priority support (phone + email)",
+                    "Priority support (call the founder)",
                     "Custom upsell scripts",
                   ].map((f) => (
-                    <li key={f} className="flex items-start gap-2.5 text-sm text-bone/70">
-                      <Check className="w-4 h-4 text-[#F3EEE3] flex-shrink-0 mt-0.5" /> {f}
+                    <li key={f} className="flex items-start gap-2.5 text-sm text-obsidian/75">
+                      <Check className="w-4 h-4 text-obsidian flex-shrink-0 mt-0.5" /> {f}
                     </li>
                   ))}
                 </ul>
+                <div className="mt-8 border-t border-obsidian/10 pt-5">
+                  <p className="text-obsidian text-sm italic leading-relaxed" style={{ fontFamily: "'Fraunces', serif", fontVariationSettings: "'opsz' 48, 'SOFT' 60" }}>
+                    &ldquo;Paid for itself in 10 days. Tickets are bigger, kitchen is calmer, and the phone never goes unanswered.&rdquo;
+                  </p>
+                  <p className="text-obsidian/60 text-xs mt-2">— Marco R., 3-location pizza operator, CA</p>
+                </div>
               </div>
 
-              {/* Enterprise */}
-              <div className="bg-bone rounded-2xl border border-[#2E2E2E]/60 p-8 flex flex-col">
-                <h3 className="text-xl font-bold text-[#F3EEE3] mb-1">Enterprise</h3>
-                <p className="text-sm text-[#6B6B6B] mb-6">For franchise networks and large groups</p>
+              {/* Enterprise — DARK */}
+              <div className="bg-[#141414] rounded-3xl border border-bone/[0.06] hover:border-bone/[0.14] p-8 flex flex-col transition-[border-color] duration-300">
+                <h3 className="text-bone text-xl font-semibold mb-1">Enterprise</h3>
+                <p className="text-sm text-bone/50 mb-8">Franchise networks & groups</p>
                 <div className="flex items-baseline gap-1 mb-1">
-                  <span className="text-4xl font-bold text-[#F3EEE3]">Custom</span>
+                  <span
+                    className="text-bone"
+                    style={{
+                      fontFamily: "'Fraunces', serif",
+                      fontStyle: "italic",
+                      fontVariationSettings: "'opsz' 96, 'SOFT' 40",
+                      fontSize: "56px",
+                      letterSpacing: "-0.04em",
+                      lineHeight: 1,
+                    }}
+                  >
+                    Custom
+                  </span>
                 </div>
-                <p className="text-xs text-[#6B6B6B] mb-8">Tailored to your needs</p>
-                <a href="mailto:hello@useringo.ai" className="w-full bg-[#F3EEE3] text-[#0A0A0A] py-3 rounded-xl font-semibold hover:bg-[#C8C8C8] transition-all text-sm mb-8 text-center block">
-                  Talk to Us
+                <p className="text-xs text-bone/40 mb-8">Tailored to your network</p>
+                <a href="mailto:hello@useringo.ai" className="w-full bg-bone/[0.06] border border-bone/[0.1] hover:bg-bone/[0.1] text-bone py-3 rounded-full font-semibold transition-[background-color] duration-200 text-sm mb-8 text-center block">
+                  Talk to us
                 </a>
                 <ul className="space-y-3 flex-1">
                   {[
                     "Unlimited calls",
-                    "Unlimited locations",
+                    "10+ locations",
                     "White-glove onboarding",
                     "Dedicated account manager",
-                    "Custom integrations",
-                    "Franchise network dashboard",
+                    "Custom POS / CRM integrations",
+                    "Franchise corporate dashboard",
                     "SLA guarantee",
                   ].map((f) => (
-                    <li key={f} className="flex items-start gap-2.5 text-sm text-[#6B6B6B]">
-                      <Check className="w-4 h-4 text-[#F3EEE3] flex-shrink-0 mt-0.5" /> {f}
+                    <li key={f} className="flex items-start gap-2.5 text-sm text-bone/70">
+                      <Check className="w-4 h-4 text-bone flex-shrink-0 mt-0.5" /> {f}
                     </li>
                   ))}
                 </ul>
