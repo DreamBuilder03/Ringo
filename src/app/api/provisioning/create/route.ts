@@ -142,14 +142,26 @@ async function retellCloneAgent(params: {
   delete body.updated_at;
   delete body.channel;
   delete body.response_engine_version;
-  // Final safety net — strip any remaining top-level field whose name contains
-  // "version" or "timestamp" (case-insensitive). Retell's API has churned these
-  // names before; this prevents a future field rename from breaking us.
-  for (const key of Object.keys(body)) {
-    if (/version|timestamp/i.test(key)) {
-      delete body[key];
+  // Recursive scrub: Retell nests `version` inside response_engine
+  // ({type, llm_id, version}) and other sub-objects. Strip any key matching
+  // /version|timestamp/i at any depth.
+  const scrub = (val: unknown): void => {
+    if (Array.isArray(val)) {
+      for (const item of val) scrub(item);
+      return;
     }
-  }
+    if (val && typeof val === 'object') {
+      const obj = val as Record<string, unknown>;
+      for (const key of Object.keys(obj)) {
+        if (/version|timestamp/i.test(key)) {
+          delete obj[key];
+        } else {
+          scrub(obj[key]);
+        }
+      }
+    }
+  };
+  scrub(body);
   body.agent_name = `${params.restaurantName} — Ringo`;
   // Stamp metadata so we can find the agent later
   body.metadata = {
