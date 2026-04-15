@@ -61,3 +61,164 @@ export function stubMenuFor(restaurantName: string, cuisine: string): string {
   }
   return stubMenuByCuisine(cuisine);
 }
+
+// In-memory cache so we don't re-scrape + re-LLM the same restaurant every call.
+const MENU_CACHE = new Map<string, { menu: string; ts: number }>();
+const CACHE_TTL_MS = 1000 * 60 * 60 * 24; // 24h
+
+function chainMatch(restaurantName: string): string | null {
+  for (const { match, menu } of CHAIN_MENUS) {
+    if (match.test(restaurantName || '')) return menu;
+  }
+  return null;
+}
+
+// Strip HTML/scripts/styles to get clean text the LLM can chew through.
+function htmlToText(html: string): string {
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+    .replace(/<noscript[\s\S]*?<\/noscript>/gi, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+async function fetchWithTimeout(url: string, ms: number): Promise<Response | null> {
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), ms);
+  try {
+    const res = await fetch(url, {
+      signal: ctrl.signal,
+      headers: {
+        'User-Agent':
+          'Mozilla/5.0 (compatible; RingoBot/1.0; +https://useringo.ai)',
+        Accept: 'text/html,application/xhtml+xml',
+      },
+      redirect: 'follow',
+    });
+    return res;
+  } catch {
+    return null;
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+// Try to find a "menu" page on the site to pull from instead of just the homepage.
+async function findMenuPageHtml(websiteUri: string): Promise<string | null> {
+  const home = await fetchWithTimeout(websiteUri, 5000);
+  if (!home || !home.ok) return null;
+  const homeHtml = await home.text();
+
+  // Look for an explicit /menu link in the homepage
+  const linkMatches = Array.from(
+    homeHtml.matchAll(/href=["']([^"']+)["']/gi)
+  ).map((m) => m[1]);
+  const menuHref = linkMatches.find((h) => /menu/i.test(h) && !/pdf$/i.test(h));
+
+  if (menuHref) {
+    try {
+      const url = new URL(menuHref, websiteUri).toString();
+      const menuRes = await fetchWithTimeout(url, 5000);
+      if (menuRes && menuRes.ok) {
+        const html = await menuRes.text();
+        // Prefer the menu page if it has more text than the homepage
+        if (html.length > 1000) return html;
+      }
+    } catch {
+      // fall through to homepage
+    }
+  }
+  return homeHtml;
+}
+
+async function extractMenuViaLLM(
+  restaurantName: string,
+  text: string
+): Promise<string | null> {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) return null;
+
+  // Truncate to keep token usage sane.
+  const truncated = text.slice(0, 8000);
+
+  const prompt = `You are extracting a real menu for an AI phone-ordering agent.
+Restaurant: ${restaurantName}
+Source text (scraped from their website):
+"""
+${truncated}
+"""
+
+Return 5 to 8 of the most popular / signature menu items as ONE single line, comma-separated, with prices when available. Format each item as: "Item Name $X.XX". If a price is missing, omit the price for that item. Do NOT include categories, headers, descriptions, disclaimers, or any prose. If you cannot find any real menu items, respond with exactly: NONE`;
+
+  try {
+    const res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        temperature: 0.2,
+        max_tokens: 300,
+        messages: [
+          { role: 'system', content: 'You extract structured menu data from messy restaurant website text. Output one comma-separated line only.' },
+          { role: 'user', content: prompt },
+        ],
+      }),
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    const out: string = data?.choices?.[0]?.message?.content?.trim() || '';
+    if (!out || /^NONE$/i.test(out)) return null;
+    // Take first line only, in case the model adds anything extra.
+    return out.split('\n')[0].trim();
+  } catch {
+    return null;
+  }
+}
+
+// Async menu discovery: chain match → website scrape + LLM extract → cuisine fallback.
+// Bounded to ~8s total; never throws — always returns *some* menu string.
+export async function discoverMenuFor(
+  restaurantName: string,
+  cuisine: string,
+  websiteUri?: string | null
+): Promise<string> {
+  // 1. Chain match wins instantly.
+  const chain = chainMatch(restaurantName);
+  if (chain) return chain;
+
+  // 2. Cache hit.
+  const cacheKey = `${restaurantName}|${websiteUri || ''}`.toLowerCase();
+  const cached = MENU_CACHE.get(cacheKey);
+  if (cached && Date.now() - cached.ts < CACHE_TTL_MS) return cached.menu;
+
+  // 3. Website scrape + LLM.
+  if (websiteUri) {
+    try {
+      const html = await findMenuPageHtml(websiteUri);
+      if (html) {
+        const text = htmlToText(html);
+        if (text.length > 200) {
+          const extracted = await extractMenuViaLLM(restaurantName, text);
+          if (extracted && extracted.length > 10) {
+            MENU_CACHE.set(cacheKey, { menu: extracted, ts: Date.now() });
+            return extracted;
+          }
+        }
+      }
+    } catch (e) {
+      console.error('[discoverMenuFor] scrape/extract failed', e);
+    }
+  }
+
+  // 4. Cuisine fallback.
+  const fallback = stubMenuByCuisine(cuisine);
+  MENU_CACHE.set(cacheKey, { menu: fallback, ts: Date.now() });
+  return fallback;
+}

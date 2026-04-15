@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
-import { stubMenuFor } from '@/lib/demo-menu';
+import { discoverMenuFor } from '@/lib/demo-menu';
 
 // Outbound phone-call variant: Ringo dials the visitor's cell (Loman + edge).
 // Uses Retell's create-phone-call endpoint with dynamic variables so the agent adapts
@@ -25,6 +25,7 @@ export async function POST(req: NextRequest) {
       address,
       phone,
       hours,
+      website,
       toNumber,
     } = body;
 
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
       address: address || '',
       phone: phone || '',
       hours_today: (Array.isArray(hours) && hours[new Date().getDay()]) || '',
-      stub_menu: stubMenuFor(restaurantName, cuisineType),
+      stub_menu: await discoverMenuFor(restaurantName, cuisineType, website),
       demo_mode: 'true',
     };
 

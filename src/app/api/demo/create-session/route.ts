@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
-import { stubMenuFor } from '@/lib/demo-menu';
+import { discoverMenuFor } from '@/lib/demo-menu';
 
 // Creates a Retell Web Call for the visitor's demo.
 // Extends the legacy /api/demo-call route with: real Google Places data, bilingual support,
@@ -15,6 +15,7 @@ interface Body {
   address?: string;
   phone?: string;
   hours?: string[] | null;
+  website?: string | null;
   // Lead context
   customerName?: string;
 }
@@ -30,6 +31,7 @@ export async function POST(req: NextRequest) {
       address,
       phone,
       hours,
+      website,
       customerName,
     } = body;
 
@@ -57,7 +59,7 @@ export async function POST(req: NextRequest) {
       phone: phone || '',
       hours_today: (hours && hours[new Date().getDay()]) || '',
       customer_name: customerName || '',
-      stub_menu: stubMenuFor(restaurantName, cuisineType),
+      stub_menu: await discoverMenuFor(restaurantName, cuisineType, website),
       demo_mode: 'true',
     };
 

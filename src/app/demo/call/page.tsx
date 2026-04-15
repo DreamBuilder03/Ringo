@@ -11,6 +11,7 @@ type Place = {
   cuisineType: string;
   hours: string[] | null;
   photoUrl: string | null;
+  website?: string | null;
 };
 
 type CallState = 'idle' | 'connecting' | 'live' | 'ended' | 'error';
@@ -71,6 +72,7 @@ export default function CallPage() {
           address: place.address,
           phone: place.phone,
           hours: place.hours,
+          website: place.website,
         }),
       });
       const data = await res.json();
@@ -129,6 +131,7 @@ export default function CallPage() {
           address: place.address,
           phone: place.phone,
           hours: place.hours,
+          website: place.website,
           toNumber: phoneNumber,
         }),
       });
