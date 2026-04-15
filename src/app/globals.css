@@ -2,43 +2,119 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=DM+Serif+Display&display=swap');
+/* Ringo — Pure Monochrome (v2, 2026-04-14)
+ * Fraunces (display, variable with ital/opsz/wght/SOFT) + Inter (body, 300-700)
+ */
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,100..900,0..100;1,9..144,100..900,0..100&family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --background: #FFF8F0;
-  --foreground: #1A1A2E;
+  --background: #0A0A0A;
+  --foreground: #F3EEE3;
+  --coal:       #141414;
+  --graphite:   #1E1E1E;
+  --smoke:      #2E2E2E;
+  --ash:        #6B6B6B;
+  --stone:      #9C9C9C;
+  --chalk:      #C8C8C8;
+  --bone:       #F3EEE3;
+
+  --border-subtle: rgba(243, 238, 227, 0.06);
+  --border-hover:  rgba(243, 238, 227, 0.14);
+  --border-strong: rgba(243, 238, 227, 0.24);
+}
+
+html, body {
+  background: var(--background);
+  color: var(--foreground);
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: 'DM Sans', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-feature-settings: "cv11", "ss01", "ss03";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.65;
 }
 
+/* Fraunces display class — the money font */
+.font-display,
+.font-serif {
+  font-family: 'Fraunces', Georgia, serif;
+  font-feature-settings: "ss01", "ss02";
+}
+
+/* Tabular numbers for dashboards/logs */
+.tabular-nums,
+.font-mono {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Scrollbar — monochrome */
 ::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
-
 ::-webkit-scrollbar-track {
-  background: #FFF8F0;
+  background: #0A0A0A;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: #D4C8B8;
+  background: #2E2E2E;
   border-radius: 3px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: #C4B8A8;
-}
-
-@layer utilities {
-  .skeleton {
-    @apply animate-pulse rounded bg-ringo-border;
-  }
+  background: #6B6B6B;
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #D4C8B8 #FFF8F0;
+  scrollbar-color: #2E2E2E #0A0A0A;
+}
+
+/* Selection — monochrome */
+::selection {
+  background: rgba(243, 238, 227, 0.18);
+  color: #F3EEE3;
+}
+
+@layer utilities {
+  .skeleton {
+    @apply animate-pulse rounded bg-smoke;
+  }
+
+  /* Hairline border — the Ringo default divider */
+  .border-hairline {
+    border-color: rgba(243, 238, 227, 0.06);
+  }
+  .border-hairline-strong {
+    border-color: rgba(243, 238, 227, 0.24);
+  }
+
+  /* Money moment — Fraunces italic at scale */
+  .money-number {
+    font-family: 'Fraunces', Georgia, serif;
+    font-style: italic;
+    font-weight: 400;
+    font-variation-settings: "opsz" 144, "SOFT" 50;
+    letter-spacing: -0.035em;
+    line-height: 0.95;
+  }
+
+  /* Hero display — Fraunces roman, extreme optical size */
+  .hero-display {
+    font-family: 'Fraunces', Georgia, serif;
+    font-weight: 400;
+    font-variation-settings: "opsz" 144, "SOFT" 80;
+    letter-spacing: -0.035em;
+    line-height: 1.02;
+  }
+
+  /* Uppercase label — Inter small caps */
+  .eyebrow {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
 }

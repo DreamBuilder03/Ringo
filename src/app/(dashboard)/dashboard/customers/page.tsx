@@ -18,14 +18,14 @@ import {
 import type { Order, OrderStatus } from '@/types/database';
 
 const STATUS_CONFIG: Record<OrderStatus, { color: string; label: string }> = {
-  building: { color: 'bg-gray-500', label: 'Building' },
-  pending: { color: 'bg-yellow-500', label: 'Pending' },
-  payment_sent: { color: 'bg-blue-500', label: 'Payment Sent' },
-  paid: { color: 'bg-green-500', label: 'Paid' },
-  preparing: { color: 'bg-orange-500', label: 'Preparing' },
-  ready: { color: 'bg-green-500', label: 'Ready' },
-  completed: { color: 'bg-green-600', label: 'Completed' },
-  cancelled: { color: 'bg-red-500', label: 'Cancelled' },
+  building: { color: 'bg-chalk0', label: 'Building' },
+  pending: { color: 'bg-bone', label: 'Pending' },
+  payment_sent: { color: 'bg-bone', label: 'Payment Sent' },
+  paid: { color: 'bg-bone', label: 'Paid' },
+  preparing: { color: 'bg-bone', label: 'Preparing' },
+  ready: { color: 'bg-bone', label: 'Ready' },
+  completed: { color: 'bg-bone', label: 'Completed' },
+  cancelled: { color: 'bg-bone', label: 'Cancelled' },
 };
 
 type SortOption = 'spend' | 'count' | 'recent';
@@ -434,7 +434,7 @@ export default function CustomersPage() {
             className={cn(
               'px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap',
               sortBy === 'spend'
-                ? 'bg-ringo-teal text-white'
+                ? 'bg-ringo-teal text-bone'
                 : 'bg-ringo-card border border-ringo-border text-ringo-muted hover:text-foreground'
             )}
           >
@@ -445,7 +445,7 @@ export default function CustomersPage() {
             className={cn(
               'px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap',
               sortBy === 'count'
-                ? 'bg-ringo-teal text-white'
+                ? 'bg-ringo-teal text-bone'
                 : 'bg-ringo-card border border-ringo-border text-ringo-muted hover:text-foreground'
             )}
           >
@@ -456,7 +456,7 @@ export default function CustomersPage() {
             className={cn(
               'px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap',
               sortBy === 'recent'
-                ? 'bg-ringo-teal text-white'
+                ? 'bg-ringo-teal text-bone'
                 : 'bg-ringo-card border border-ringo-border text-ringo-muted hover:text-foreground'
             )}
           >

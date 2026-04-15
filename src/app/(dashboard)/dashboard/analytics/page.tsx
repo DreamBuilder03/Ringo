@@ -115,7 +115,7 @@ export default function AnalyticsPage() {
               className={cn(
                 'px-3 sm:px-4 py-2 text-xs font-semibold rounded-lg transition-all duration-200 flex-1 sm:flex-none',
                 range === tr.value
-                  ? 'bg-ringo-teal text-white shadow-sm'
+                  ? 'bg-ringo-teal text-bone shadow-sm'
                   : 'text-ringo-muted hover:text-foreground'
               )}
             >
@@ -144,7 +144,7 @@ export default function AnalyticsPage() {
               <div className="flex items-center gap-1.5 mt-2">
                 <span className={cn(
                   'flex items-center gap-0.5 rounded-full px-1.5 py-0.5 text-[10px] font-bold',
-                  stat.trend >= 0 ? 'bg-emerald-400/10 text-emerald-400' : 'bg-red-400/10 text-red-400'
+                  stat.trend >= 0 ? 'bg-bone/10 text-bone' : 'bg-bone/10 text-bone'
                 )}>
                   {stat.trend >= 0 ? <ArrowUpRight className="h-2.5 w-2.5" /> : <ArrowDownRight className="h-2.5 w-2.5" />}
                   {Math.abs(stat.trend)}%
@@ -166,7 +166,7 @@ export default function AnalyticsPage() {
                 <p className="text-[10px] text-ringo-muted mt-0.5">Call volume over time</p>
               </div>
             </div>
-            <MiniBarChart data={data.dailyCalls} color="#1D9E75" />
+            <MiniBarChart data={data.dailyCalls} color="#F3EEE3" />
           </div>
           <div className="rounded-2xl border border-ringo-border bg-ringo-card p-6">
             <div className="flex items-center justify-between mb-4">
@@ -175,7 +175,7 @@ export default function AnalyticsPage() {
                 <p className="text-[10px] text-ringo-muted mt-0.5">Revenue captured over time</p>
               </div>
             </div>
-            <MiniBarChart data={data.dailyRevenue} color="#6C63FF" />
+            <MiniBarChart data={data.dailyRevenue} color="#F3EEE3" />
           </div>
         </div>
       )}
@@ -183,8 +183,8 @@ export default function AnalyticsPage() {
       {/* Performance Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="rounded-2xl border border-ringo-border bg-ringo-card p-5 text-center">
-          <div className="mx-auto w-10 h-10 rounded-full bg-emerald-400/10 flex items-center justify-center mb-3">
-            <Target className="h-5 w-5 text-emerald-400" />
+          <div className="mx-auto w-10 h-10 rounded-full bg-bone/10 flex items-center justify-center mb-3">
+            <Target className="h-5 w-5 text-bone" />
           </div>
           <p className="text-2xl font-bold text-foreground">{data.answerRate}%</p>
           <p className="text-[10px] font-semibold uppercase tracking-wider text-ringo-muted mt-1">Answer Rate</p>
@@ -241,7 +241,7 @@ export default function AnalyticsPage() {
                     <p className="text-sm font-semibold text-foreground">{item.name}</p>
                     <div className="mt-1.5 h-1.5 rounded-full bg-ringo-border/30 overflow-hidden">
                       <div
-                        className="h-full rounded-full bg-gradient-to-r from-ringo-teal to-emerald-400"
+                        className="h-full rounded-full bg-gradient-to-r from-ringo-teal to-bone"
                         style={{ width: `${(item.count / maxCount) * 100}%` }}
                       />
                     </div>

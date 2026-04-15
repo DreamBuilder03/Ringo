@@ -291,8 +291,8 @@ export default function MenuManagementPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <div className="mx-auto w-16 h-16 rounded-2xl bg-red-100/50 flex items-center justify-center mb-4">
-            <AlertCircle className="h-8 w-8 text-red-600" />
+          <div className="mx-auto w-16 h-16 rounded-2xl bg-bone/50 flex items-center justify-center mb-4">
+            <AlertCircle className="h-8 w-8 text-bone" />
           </div>
           <h2 className="text-lg font-bold text-foreground mb-2">Error</h2>
           <p className="text-sm text-ringo-muted max-w-sm">{error}</p>
@@ -350,7 +350,7 @@ export default function MenuManagementPage() {
               onClick={() => setSelectedCategory(category)}
               className={`px-2.5 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${
                 selectedCategory === category
-                  ? 'bg-ringo-teal text-white'
+                  ? 'bg-ringo-teal text-bone'
                   : 'bg-ringo-card border border-ringo-border text-foreground hover:border-ringo-teal/50'
               }`}
             >
@@ -362,12 +362,12 @@ export default function MenuManagementPage() {
 
       {/* Error banner */}
       {error && (
-        <div className="flex items-center gap-3 rounded-lg border border-red-200/50 bg-red-50/50 p-4">
-          <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0" />
-          <p className="text-sm text-red-800">{error}</p>
+        <div className="flex items-center gap-3 rounded-lg border border-bone/50 bg-bone/50 p-4">
+          <AlertCircle className="h-5 w-5 text-bone flex-shrink-0" />
+          <p className="text-sm text-bone">{error}</p>
           <button
             onClick={() => setError('')}
-            className="ml-auto text-red-600 hover:text-red-800 transition-colors"
+            className="ml-auto text-bone hover:text-bone transition-colors"
           >
             <X className="h-4 w-4" />
           </button>
@@ -444,11 +444,11 @@ export default function MenuManagementPage() {
                   <button
                     onClick={() => handleToggleAvailable(item.id, item.available)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      item.available ? 'bg-emerald-600' : 'bg-ringo-border'
+                      item.available ? 'bg-bone' : 'bg-ringo-border'
                     }`}
                   >
                     <span
-                      className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                      className={`inline-block h-5 w-5 transform rounded-full bg-bone transition-transform ${
                         item.available ? 'translate-x-5' : 'translate-x-0.5'
                       }`}
                     />
@@ -484,7 +484,7 @@ export default function MenuManagementPage() {
 
       {/* Add/Edit Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-obsidian/50 backdrop-blur-sm p-4 overflow-y-auto">
           <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl my-auto">
             {/* Modal Header */}
             <div className="sticky top-0 flex items-center justify-between mb-6 pb-4 border-b border-ringo-border bg-ringo-card">
@@ -512,11 +512,11 @@ export default function MenuManagementPage() {
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., Classic Pepperoni"
                   className={`w-full rounded-lg border bg-ringo-card px-4 py-2.5 text-sm text-foreground placeholder:text-ringo-muted/50 transition-colors focus:outline-none focus:ring-2 focus:ring-ringo-teal/50 ${
-                    formFieldErrors.name ? 'border-red-500' : 'border-ringo-border focus:border-ringo-teal'
+                    formFieldErrors.name ? 'border-bone' : 'border-ringo-border focus:border-ringo-teal'
                   }`}
                 />
                 {formFieldErrors.name && (
-                  <p className="text-xs text-red-400 mt-1">{formFieldErrors.name}</p>
+                  <p className="text-xs text-bone mt-1">{formFieldErrors.name}</p>
                 )}
               </div>
 
@@ -561,12 +561,12 @@ export default function MenuManagementPage() {
                       step="0.01"
                       min="0"
                       className={`w-full rounded-lg border bg-ringo-card px-4 py-2.5 pl-8 text-sm text-foreground placeholder:text-ringo-muted/50 transition-colors focus:outline-none focus:ring-2 focus:ring-ringo-teal/50 ${
-                        formFieldErrors.price ? 'border-red-500' : 'border-ringo-border focus:border-ringo-teal'
+                        formFieldErrors.price ? 'border-bone' : 'border-ringo-border focus:border-ringo-teal'
                       }`}
                     />
                   </div>
                   {formFieldErrors.price && (
-                    <p className="text-xs text-red-400 mt-1">{formFieldErrors.price}</p>
+                    <p className="text-xs text-bone mt-1">{formFieldErrors.price}</p>
                   )}
                 </div>
               </div>
@@ -655,11 +655,11 @@ export default function MenuManagementPage() {
                 <button
                   onClick={() => setFormData({ ...formData, available: !formData.available })}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    formData.available ? 'bg-emerald-600' : 'bg-ringo-border'
+                    formData.available ? 'bg-bone' : 'bg-ringo-border'
                   }`}
                 >
                   <span
-                    className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${
+                    className={`inline-block h-5 w-5 transform rounded-full bg-bone transition-transform ${
                       formData.available ? 'translate-x-5' : 'translate-x-0.5'
                     }`}
                   />
@@ -693,11 +693,11 @@ export default function MenuManagementPage() {
 
       {/* Delete Confirmation Dialog */}
       {deleteConfirmId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-obsidian/50 backdrop-blur-sm p-4">
           <Card className="w-full max-w-sm rounded-2xl">
             <div className="mb-6">
-              <div className="mx-auto w-12 h-12 rounded-full bg-red-100/50 flex items-center justify-center mb-4">
-                <AlertCircle className="h-6 w-6 text-red-600" />
+              <div className="mx-auto w-12 h-12 rounded-full bg-bone/50 flex items-center justify-center mb-4">
+                <AlertCircle className="h-6 w-6 text-bone" />
               </div>
               <h2 className="text-lg font-bold text-foreground text-center mb-2">Delete Item?</h2>
               <p className="text-sm text-ringo-muted text-center">

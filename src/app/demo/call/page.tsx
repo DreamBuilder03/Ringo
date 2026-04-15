@@ -147,7 +147,7 @@ export default function CallPage() {
 
   if (!place) {
     return (
-      <div className="flex min-h-[calc(100vh-72px)] items-center justify-center text-sm text-white/50">
+      <div className="flex min-h-[calc(100vh-72px)] items-center justify-center text-sm text-bone/50">
         {error || 'Loading…'}
       </div>
     );
@@ -158,14 +158,14 @@ export default function CallPage() {
       <div className="halo" />
       <div className="mx-auto max-w-5xl px-6 py-16">
         <div className="fade-in mx-auto max-w-xl text-center">
-          <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs uppercase tracking-[0.14em] text-white/60">
+          <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-bone/10 bg-bone/[0.03] px-3 py-1.5 text-xs uppercase tracking-[0.14em] text-bone/60">
             <span className="live-dot" /> Ready when you are
           </div>
           <h1 className="display text-4xl leading-tight sm:text-5xl">
             Call {place.name}&apos;s<br />
-            <span className="italic text-white/70">AI phone agent</span>
+            <span className="italic text-bone/70">AI phone agent</span>
           </h1>
-          <p className="mt-4 text-white/60">
+          <p className="mt-4 text-bone/60">
             Try a live conversation with a Ringo host built for {place.cuisineType.toLowerCase()}.
           </p>
         </div>
@@ -187,7 +187,7 @@ export default function CallPage() {
             selected={language === 'multi'}
             onClick={() => setLanguage('multi')}
           />
-          <span className="mx-2 text-white/20">|</span>
+          <span className="mx-2 text-bone/20">|</span>
           <Toggle label="Browser call" selected={mode === 'browser'} onClick={() => setMode('browser')} />
           <Toggle label="Call my phone" selected={mode === 'phone'} onClick={() => setMode('phone')} />
         </div>
@@ -204,13 +204,13 @@ export default function CallPage() {
                     </svg>
                   </button>
                 ) : (
-                  <button onClick={endBrowserCall} className="call-btn mx-auto bg-red-400 text-white" aria-label="End call">
+                  <button onClick={endBrowserCall} className="call-btn mx-auto bg-bone text-bone" aria-label="End call">
                     <svg viewBox="0 0 24 24" fill="currentColor" className="h-8 w-8">
                       <path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85a.996.996 0 0 1-1.41 0l-2.1-2.1a.99.99 0 0 1 0-1.41A13.9 13.9 0 0 1 12 7c4.84 0 9.15 2.22 11.66 6.19.37.56.32 1.3-.18 1.79l-2.11 2.11a.996.996 0 0 1-1.41 0 10.83 10.83 0 0 0-2.66-1.85.97.97 0 0 1-.56-.9v-3.1A15.53 15.53 0 0 0 12 9Z" />
                     </svg>
                   </button>
                 )}
-                <p className="mt-6 text-sm text-white/60">
+                <p className="mt-6 text-sm text-bone/60">
                   {callState === 'idle' && 'Tap to start a live call'}
                   {callState === 'connecting' && 'Connecting…'}
                   {callState === 'live' && 'Call in progress'}
@@ -221,7 +221,7 @@ export default function CallPage() {
             ) : (
               <div className="space-y-4 text-left">
                 <label className="block">
-                  <span className="mb-2 block text-xs uppercase tracking-[0.12em] text-white/50">Your mobile number</span>
+                  <span className="mb-2 block text-xs uppercase tracking-[0.12em] text-bone/50">Your mobile number</span>
                   <input
                     className="input"
                     placeholder="(209) 555-1234"
@@ -237,8 +237,8 @@ export default function CallPage() {
                 >
                   {phoneSubmitting ? 'Dialing…' : `Call me as ${place.name}`}
                 </button>
-                {phoneResult && <p className="text-sm text-white/60">{phoneResult}</p>}
-                <p className="text-xs text-white/40">
+                {phoneResult && <p className="text-sm text-bone/60">{phoneResult}</p>}
+                <p className="text-xs text-bone/40">
                   Ringo will call from a local number. Standard carrier rates may apply.
                 </p>
               </div>
@@ -247,7 +247,7 @@ export default function CallPage() {
         </div>
 
         <div className="fade-in mx-auto mt-10 max-w-2xl">
-          <p className="mb-3 text-center text-xs uppercase tracking-[0.14em] text-white/50">
+          <p className="mb-3 text-center text-xs uppercase tracking-[0.14em] text-bone/50">
             Try one of these
           </p>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
@@ -260,10 +260,10 @@ export default function CallPage() {
           </div>
         </div>
 
-        <div className="fade-in mx-auto mt-16 max-w-xl text-center text-sm text-white/50">
+        <div className="fade-in mx-auto mt-16 max-w-xl text-center text-sm text-bone/50">
           <p>
             Want to make this your real phone line?{' '}
-            <a href="/book" className="underline hover:text-white">
+            <a href="/book" className="underline hover:text-bone">
               Book a 15-minute setup call
             </a>
             .

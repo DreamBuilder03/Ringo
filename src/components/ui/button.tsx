@@ -12,10 +12,10 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', loading, disabled, children, ...props }, ref) => {
     const variants = {
-      primary: 'bg-ringo-teal hover:bg-ringo-teal-light text-white shadow-lg shadow-ringo-teal/20',
+      primary: 'bg-ringo-teal hover:bg-ringo-teal-light text-bone shadow-lg shadow-ringo-teal/20',
       secondary: 'bg-ringo-card border border-ringo-border hover:bg-ringo-border/50 text-foreground',
       ghost: 'hover:bg-ringo-border/20 text-ringo-muted hover:text-foreground',
-      danger: 'bg-red-600 hover:bg-red-700 text-white',
+      danger: 'bg-bone hover:bg-bone text-bone',
     };
 
     const sizes = {

@@ -17,13 +17,13 @@ interface StatCardProps {
 
 const accentColors = {
   teal: {
-    bg: 'bg-[#C9A84C]/10',
-    text: 'text-[#C9A84C]',
-    gradient: 'from-[#C9A84C]/20 to-transparent',
-    glow: 'shadow-[#C9A84C]/10',
-    border: 'hover:border-[#C9A84C]/30',
-    ring: 'ring-[#C9A84C]/5',
-    spark: '#C9A84C',
+    bg: 'bg-[#F3EEE3]/10',
+    text: 'text-[#F3EEE3]',
+    gradient: 'from-[#F3EEE3]/20 to-transparent',
+    glow: 'shadow-[#F3EEE3]/10',
+    border: 'hover:border-[#F3EEE3]/30',
+    ring: 'ring-[#F3EEE3]/5',
+    spark: '#F3EEE3',
   },
   amber: {
     bg: 'bg-ringo-amber/10',
@@ -32,7 +32,7 @@ const accentColors = {
     glow: 'shadow-ringo-amber/10',
     border: 'hover:border-ringo-amber/30',
     ring: 'ring-ringo-amber/5',
-    spark: '#0C1A7D',
+    spark: '#F3EEE3',
   },
   purple: {
     bg: 'bg-ringo-purple-light/10',
@@ -41,16 +41,16 @@ const accentColors = {
     glow: 'shadow-ringo-purple-light/10',
     border: 'hover:border-ringo-purple-light/30',
     ring: 'ring-ringo-purple-light/5',
-    spark: '#1E34B8',
+    spark: '#9C9C9C',
   },
   emerald: {
-    bg: 'bg-[#C9A84C]/10',
-    text: 'text-[#C9A84C]',
-    gradient: 'from-[#C9A84C]/20 to-transparent',
-    glow: 'shadow-[#C9A84C]/10',
-    border: 'hover:border-[#C9A84C]/30',
-    ring: 'ring-[#C9A84C]/5',
-    spark: '#C9A84C',
+    bg: 'bg-[#F3EEE3]/10',
+    text: 'text-[#F3EEE3]',
+    gradient: 'from-[#F3EEE3]/20 to-transparent',
+    glow: 'shadow-[#F3EEE3]/10',
+    border: 'hover:border-[#F3EEE3]/30',
+    ring: 'ring-[#F3EEE3]/5',
+    spark: '#F3EEE3',
   },
 };
 
@@ -117,7 +117,7 @@ export function StatCard({
       className={cn(
         'relative group rounded-2xl border border-ringo-border bg-ringo-card/80 backdrop-blur-sm p-5 overflow-hidden',
         'transition-all duration-300',
-        'hover:shadow-xl hover:shadow-black/[0.08] hover:-translate-y-0.5',
+        'hover:shadow-xl hover:shadow-obsidian/[0.08] hover:-translate-y-0.5',
         'ring-1',
         colors.ring,
         colors.border,
@@ -128,7 +128,7 @@ export function StatCard({
       <div className={cn('absolute top-0 right-0 w-40 h-40 bg-gradient-to-bl rounded-full blur-3xl opacity-20 -translate-y-10 translate-x-10 group-hover:opacity-40 transition-opacity duration-500', colors.gradient)} />
 
       {/* Subtle inner shine */}
-      <div className="absolute inset-0 bg-gradient-to-b from-white/60 to-transparent opacity-50 pointer-events-none rounded-2xl" />
+      <div className="absolute inset-0 bg-gradient-to-b from-bone/60 to-transparent opacity-50 pointer-events-none rounded-2xl" />
 
       <div className="relative flex items-start justify-between gap-3">
         <div className="space-y-2 min-w-0 flex-1">
@@ -145,8 +145,8 @@ export function StatCard({
                 className={cn(
                   'inline-flex items-center rounded-full px-1.5 py-0.5 text-[10px] font-bold',
                   trend.positive
-                    ? 'bg-emerald-400/10 text-emerald-400'
-                    : 'bg-red-400/10 text-red-400'
+                    ? 'bg-bone/10 text-bone'
+                    : 'bg-bone/10 text-bone'
                 )}
               >
                 {trend.positive ? '↑' : '↓'} {Math.abs(trend.value)}%

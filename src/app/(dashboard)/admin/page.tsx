@@ -31,9 +31,9 @@ const healthConfig: Record<HealthStatus, {
   dot: string;
   icon: typeof Wifi;
 }> = {
-  green: { label: 'Healthy', bg: 'bg-emerald-400/10', text: 'text-emerald-400', border: 'border-emerald-400/20', dot: 'bg-emerald-400', icon: Wifi },
-  yellow: { label: 'Slow', bg: 'bg-amber-400/10', text: 'text-amber-400', border: 'border-amber-400/20', dot: 'bg-amber-400', icon: AlertTriangle },
-  red: { label: 'Offline', bg: 'bg-red-400/10', text: 'text-red-400', border: 'border-red-400/20', dot: 'bg-red-400', icon: WifiOff },
+  green: { label: 'Healthy', bg: 'bg-bone/10', text: 'text-bone', border: 'border-bone/20', dot: 'bg-bone', icon: Wifi },
+  yellow: { label: 'Slow', bg: 'bg-bone/10', text: 'text-bone', border: 'border-bone/20', dot: 'bg-bone', icon: AlertTriangle },
+  red: { label: 'Offline', bg: 'bg-bone/10', text: 'text-bone', border: 'border-bone/20', dot: 'bg-bone', icon: WifiOff },
 };
 
 export default function AdminPage() {
@@ -107,7 +107,7 @@ export default function AdminPage() {
         <div className="rounded-2xl border border-ringo-border bg-ringo-card p-5">
           <div className="flex items-center justify-between mb-3">
             <p className="text-[10px] font-bold uppercase tracking-widest text-ringo-muted">Calls Today</p>
-            <Phone className="h-4 w-4 text-emerald-400" />
+            <Phone className="h-4 w-4 text-bone" />
           </div>
           <p className="text-3xl font-bold text-foreground">{totalCallsToday}</p>
           <p className="text-[10px] text-ringo-muted mt-1">across all locations</p>
@@ -174,8 +174,8 @@ export default function AdminPage() {
               href={`/admin/restaurants/${restaurant.id}`}
               key={restaurant.id}
               className={cn(
-                'block rounded-2xl border bg-ringo-card p-5 transition-all duration-200 hover:shadow-lg hover:shadow-black/5 cursor-pointer',
-                restaurant.health_status === 'red' ? 'border-red-400/20' : 'border-ringo-border hover:border-ringo-teal/20'
+                'block rounded-2xl border bg-ringo-card p-5 transition-all duration-200 hover:shadow-lg hover:shadow-obsidian/5 cursor-pointer',
+                restaurant.health_status === 'red' ? 'border-bone/20' : 'border-ringo-border hover:border-ringo-teal/20'
               )}
             >
               <div className="flex items-center justify-between gap-4">

@@ -36,13 +36,13 @@ type PageState = 'loading' | 'error' | 'already_paid' | 'payment_form' | 'proces
 function OrderSkeleton() {
   return (
     <div className="space-y-4">
-      <div className="h-8 bg-gradient-to-r from-white/5 to-white/10 rounded-lg animate-pulse" />
+      <div className="h-8 bg-gradient-to-r from-bone/5 to-bone/10 rounded-lg animate-pulse" />
       <div className="space-y-3">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-4 bg-gradient-to-r from-white/5 to-white/10 rounded animate-pulse" />
+          <div key={i} className="h-4 bg-gradient-to-r from-bone/5 to-bone/10 rounded animate-pulse" />
         ))}
       </div>
-      <div className="h-32 bg-gradient-to-r from-white/5 to-white/10 rounded-lg animate-pulse" />
+      <div className="h-32 bg-gradient-to-r from-bone/5 to-bone/10 rounded-lg animate-pulse" />
     </div>
   );
 }
@@ -133,7 +133,7 @@ function PaymentForm({ order, onSuccess }: { order: Order; onSuccess: () => void
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Order Summary */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold text-white">Order Summary</h2>
+        <h2 className="text-lg font-semibold text-bone">Order Summary</h2>
 
         {/* Order items */}
         <div className="space-y-3 max-h-64 overflow-y-auto">
@@ -143,28 +143,28 @@ function PaymentForm({ order, onSuccess }: { order: Order; onSuccess: () => void
               className="flex justify-between items-start text-sm"
             >
               <div>
-                <p className="text-white font-medium">{item.name}</p>
-                <p className="text-white/60 text-xs">Qty: {item.quantity}</p>
+                <p className="text-bone font-medium">{item.name}</p>
+                <p className="text-bone/60 text-xs">Qty: {item.quantity}</p>
               </div>
-              <p className="text-white font-medium">
+              <p className="text-bone font-medium">
                 ${(item.price * item.quantity).toFixed(2)}
               </p>
             </div>
           ))}
         </div>
 
-        <div className="border-t border-white/10 pt-4 space-y-2">
+        <div className="border-t border-bone/10 pt-4 space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-white/70">Subtotal</span>
-            <span className="text-white">${order.subtotal.toFixed(2)}</span>
+            <span className="text-bone/70">Subtotal</span>
+            <span className="text-bone">${order.subtotal.toFixed(2)}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-white/70">Tax</span>
-            <span className="text-white">${order.tax.toFixed(2)}</span>
+            <span className="text-bone/70">Tax</span>
+            <span className="text-bone">${order.tax.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between items-center border-t border-white/10 pt-3 mt-3">
-            <span className="text-base font-semibold text-white">Total</span>
-            <span className="text-xl font-bold text-teal-400">
+          <div className="flex justify-between items-center border-t border-bone/10 pt-3 mt-3">
+            <span className="text-base font-semibold text-bone">Total</span>
+            <span className="text-xl font-bold text-bone">
               ${order.total.toFixed(2)}
             </span>
           </div>
@@ -173,21 +173,21 @@ function PaymentForm({ order, onSuccess }: { order: Order; onSuccess: () => void
 
       {/* Stripe Card Element */}
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-white">Card Details</label>
-        <div className="bg-white/[0.03] border border-white/[0.06] rounded-xl p-4 focus-within:border-teal-400/50 focus-within:bg-white/[0.05] transition-all">
+        <label className="block text-sm font-medium text-bone">Card Details</label>
+        <div className="bg-bone/[0.03] border border-bone/[0.06] rounded-xl p-4 focus-within:border-bone/50 focus-within:bg-bone/[0.05] transition-all">
           <CardElement
             options={{
               style: {
                 base: {
                   fontSize: '16px',
-                  color: '#ffffff',
+                  color: '#F3EEE3',
                   fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
                   '::placeholder': {
                     color: 'rgba(255, 255, 255, 0.4)',
                   },
                 },
                 invalid: {
-                  color: '#ef4444',
+                  color: '#F3EEE3',
                 },
               },
               hidePostalCode: true,
@@ -198,8 +198,8 @@ function PaymentForm({ order, onSuccess }: { order: Order; onSuccess: () => void
 
       {/* Error Message */}
       {errorMessage && (
-        <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-4">
-          <p className="text-red-400 text-sm">{errorMessage}</p>
+        <div className="bg-bone/10 border border-bone/30 rounded-lg p-4">
+          <p className="text-bone text-sm">{errorMessage}</p>
         </div>
       )}
 
@@ -207,7 +207,7 @@ function PaymentForm({ order, onSuccess }: { order: Order; onSuccess: () => void
       <button
         type="submit"
         disabled={!stripe || isProcessing}
-        className="w-full bg-teal-500 hover:bg-teal-600 disabled:bg-teal-500/50 disabled:cursor-not-allowed text-white font-semibold py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 min-h-[48px]"
+        className="w-full bg-bone hover:bg-bone disabled:bg-bone/50 disabled:cursor-not-allowed text-bone font-semibold py-3 px-4 rounded-xl transition-all duration-200 flex items-center justify-center gap-2 min-h-[48px]"
       >
         {isProcessing ? (
           <>
@@ -238,7 +238,7 @@ function PaymentForm({ order, onSuccess }: { order: Order; onSuccess: () => void
         )}
       </button>
 
-      <p className="text-xs text-white/50 text-center">
+      <p className="text-xs text-bone/50 text-center">
         Secure payment powered by Stripe
       </p>
     </form>
@@ -253,7 +253,7 @@ function SuccessState({ order }: { order: Order }) {
       <div className="flex justify-center">
         <div className="relative w-20 h-20">
           <svg
-            className="w-20 h-20 text-teal-400 animate-scale-in"
+            className="w-20 h-20 text-bone animate-scale-in"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -272,35 +272,35 @@ function SuccessState({ order }: { order: Order }) {
       </div>
 
       <div className="space-y-2">
-        <h2 className="text-2xl font-bold text-white">Payment Successful!</h2>
-        <p className="text-white/70">Your order has been placed and confirmed.</p>
+        <h2 className="text-2xl font-bold text-bone">Payment Successful!</h2>
+        <p className="text-bone/70">Your order has been placed and confirmed.</p>
       </div>
 
       {/* Order Details */}
-      <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-6 space-y-4 text-left">
+      <div className="bg-bone/[0.03] border border-bone/[0.06] rounded-2xl p-6 space-y-4 text-left">
         <div>
-          <p className="text-white/60 text-sm">Order ID</p>
-          <p className="text-white font-mono text-sm">{order.id}</p>
+          <p className="text-bone/60 text-sm">Order ID</p>
+          <p className="text-bone font-mono text-sm">{order.id}</p>
         </div>
         {order.restaurants && (
           <div>
-            <p className="text-white/60 text-sm">Restaurant</p>
-            <p className="text-white font-medium">{order.restaurants.name}</p>
+            <p className="text-bone/60 text-sm">Restaurant</p>
+            <p className="text-bone font-medium">{order.restaurants.name}</p>
           </div>
         )}
         <div>
-          <p className="text-white/60 text-sm">Total Paid</p>
-          <p className="text-white text-lg font-bold text-teal-400">
+          <p className="text-bone/60 text-sm">Total Paid</p>
+          <p className="text-bone text-lg font-bold text-bone">
             ${order.total.toFixed(2)}
           </p>
         </div>
         <div>
-          <p className="text-white/60 text-sm">Status</p>
-          <p className="text-white capitalize">{order.status}</p>
+          <p className="text-bone/60 text-sm">Status</p>
+          <p className="text-bone capitalize">{order.status}</p>
         </div>
       </div>
 
-      <p className="text-sm text-white/60">
+      <p className="text-sm text-bone/60">
         You'll receive a text update when your order is ready.
       </p>
     </div>
@@ -312,9 +312,9 @@ function ErrorState({ message }: { message: string }) {
   return (
     <div className="text-center space-y-6">
       <div className="flex justify-center">
-        <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center">
+        <div className="w-20 h-20 bg-bone/10 rounded-full flex items-center justify-center">
           <svg
-            className="w-10 h-10 text-red-400"
+            className="w-10 h-10 text-bone"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -330,13 +330,13 @@ function ErrorState({ message }: { message: string }) {
       </div>
 
       <div className="space-y-2">
-        <h2 className="text-2xl font-bold text-white">Unable to Process</h2>
-        <p className="text-white/70">{message}</p>
+        <h2 className="text-2xl font-bold text-bone">Unable to Process</h2>
+        <p className="text-bone/70">{message}</p>
       </div>
 
       <button
         onClick={() => window.location.reload()}
-        className="w-full bg-teal-500 hover:bg-teal-600 text-white font-semibold py-3 px-4 rounded-xl transition-all min-h-[48px]"
+        className="w-full bg-bone hover:bg-bone text-bone font-semibold py-3 px-4 rounded-xl transition-all min-h-[48px]"
       >
         Try Again
       </button>
@@ -395,26 +395,26 @@ function PaymentPageContent({ orderId }: { orderId: string }) {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white overflow-hidden">
+    <div className="min-h-screen bg-zinc-950 text-bone overflow-hidden">
       {/* Grid Background */}
       <div className="fixed inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:60px_60px] pointer-events-none" />
 
       {/* Gradient Orbs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-teal-500/5 rounded-full blur-3xl" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-bone/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-bone/5 rounded-full blur-3xl" />
       </div>
 
       {/* Main Content */}
       <div className="relative z-10 flex flex-col min-h-screen">
         {/* Header */}
-        <div className="border-b border-white/5 bg-zinc-950/80 backdrop-blur-sm">
+        <div className="border-b border-bone/5 bg-zinc-950/80 backdrop-blur-sm">
           <div className="max-w-md mx-auto px-4 py-6">
             <div className="flex items-center justify-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white font-bold text-sm">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-bone to-bone flex items-center justify-center text-bone font-bold text-sm">
                 ℜ
               </div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-teal-400 to-teal-500 bg-clip-text text-transparent">
+              <h1 className="text-xl font-bold bg-gradient-to-r from-bone to-bone bg-clip-text text-transparent">
                 Ringo
               </h1>
             </div>
@@ -425,7 +425,7 @@ function PaymentPageContent({ orderId }: { orderId: string }) {
         <div className="flex-1 flex items-center justify-center px-4 py-8">
           <div className="w-full max-w-md">
             {/* Glass Card */}
-            <div className="bg-white/[0.03] border border-white/[0.06] backdrop-blur-sm rounded-2xl p-6 sm:p-8">
+            <div className="bg-bone/[0.03] border border-bone/[0.06] backdrop-blur-sm rounded-2xl p-6 sm:p-8">
               {state === 'loading' && <OrderSkeleton />}
 
               {state === 'error' && <ErrorState message={errorMessage} />}
@@ -436,8 +436,8 @@ function PaymentPageContent({ orderId }: { orderId: string }) {
                 <>
                   {order.restaurants?.name && (
                     <div className="mb-6 text-center">
-                      <h2 className="text-xl font-bold text-white">{order.restaurants.name}</h2>
-                      <p className="text-white/50 text-sm mt-1">Complete your order payment</p>
+                      <h2 className="text-xl font-bold text-bone">{order.restaurants.name}</h2>
+                      <p className="text-bone/50 text-sm mt-1">Complete your order payment</p>
                     </div>
                   )}
                   <PaymentForm order={order} onSuccess={handlePaymentSuccess} />
@@ -449,11 +449,11 @@ function PaymentPageContent({ orderId }: { orderId: string }) {
 
             {/* Footer Branding */}
             <div className="mt-8 text-center">
-              <p className="text-xs text-white/40">
+              <p className="text-xs text-bone/40">
                 Powered by{' '}
-                <span className="text-white/60 font-semibold">Ringo</span>
+                <span className="text-bone/60 font-semibold">Ringo</span>
               </p>
-              <p className="text-xs text-white/30 mt-2">
+              <p className="text-xs text-bone/30 mt-2">
                 AI Voice Ordering for Restaurants
               </p>
             </div>

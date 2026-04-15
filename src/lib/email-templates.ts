@@ -3,7 +3,7 @@
  * All templates use inline CSS for email client compatibility
  */
 
-const BRAND_GOLD = '#C9A84C';
+const BRAND_GOLD = '#F3EEE3';
 const BRAND_DARK = '#0A0A0A';
 
 function emailWrapper(title: string, content: string) {
@@ -15,21 +15,21 @@ function emailWrapper(title: string, content: string) {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
-    .container { max-width: 600px; margin: 0 auto; background-color: #f5f5f5; }
+    .container { max-width: 600px; margin: 0 auto; background-color: #141414; }
     .header { background-color: ${BRAND_DARK}; color: ${BRAND_GOLD}; padding: 32px 24px; text-align: center; }
     .header h1 { margin: 0; font-size: 28px; font-weight: 700; }
-    .body { background-color: white; padding: 32px 24px; color: #333; }
+    .body { background-color: white; padding: 32px 24px; color: #2E2E2E; }
     .body h2 { margin-top: 0; color: ${BRAND_DARK}; font-size: 20px; font-weight: 600; }
     .body p { line-height: 1.6; margin: 12px 0; }
     .button { display: inline-block; background-color: ${BRAND_GOLD}; color: ${BRAND_DARK}; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin: 16px 0; }
-    .footer { background-color: #f9f9f9; padding: 24px; text-align: center; color: #666; font-size: 12px; border-top: 1px solid #e0e0e0; }
-    .stat-box { background-color: #f9f9f9; border-left: 4px solid ${BRAND_GOLD}; padding: 16px; margin: 16px 0; border-radius: 4px; }
-    .stat-label { font-size: 12px; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; }
+    .footer { background-color: #141414; padding: 24px; text-align: center; color: #6B6B6B; font-size: 12px; border-top: 1px solid #2E2E2E; }
+    .stat-box { background-color: #141414; border-left: 4px solid ${BRAND_GOLD}; padding: 16px; margin: 16px 0; border-radius: 4px; }
+    .stat-label { font-size: 12px; color: #9C9C9C; text-transform: uppercase; letter-spacing: 0.5px; margin: 0; }
     .stat-value { font-size: 32px; font-weight: 700; color: ${BRAND_DARK}; margin: 4px 0 0 0; }
-    .order-item { padding: 8px 0; border-bottom: 1px solid #e0e0e0; }
+    .order-item { padding: 8px 0; border-bottom: 1px solid #2E2E2E; }
     .order-item-last { padding: 8px 0; }
     .item-name { font-weight: 500; color: ${BRAND_DARK}; }
-    .item-meta { font-size: 12px; color: #999; }
+    .item-meta { font-size: 12px; color: #9C9C9C; }
   </style>
 </head>
 <body>
@@ -80,10 +80,10 @@ export function orderConfirmationEmail({
     <h2>Your Order is Ready for Payment</h2>
     <p>Hi there! Your order from <strong>${restaurantName}</strong> has been confirmed and is ready to pay.</p>
 
-    <div style="background-color: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; margin: 20px 0;">
+    <div style="background-color: #141414; border: 1px solid #2E2E2E; border-radius: 8px; padding: 16px; margin: 20px 0;">
       <h3 style="margin-top: 0; color: ${BRAND_DARK};">Order Summary</h3>
       ${itemsHtml}
-      <div style="padding-top: 12px; border-top: 2px solid #e0e0e0; margin-top: 12px;">
+      <div style="padding-top: 12px; border-top: 2px solid #2E2E2E; margin-top: 12px;">
         <div style="display: flex; justify-content: space-between; padding: 8px 0;">
           <span>Subtotal:</span>
           <strong>$${subtotal.toFixed(2)}</strong>
@@ -103,7 +103,7 @@ export function orderConfirmationEmail({
       <a href="${paymentUrl}" class="button">Pay Now</a>
     </center>
 
-    <p style="font-size: 12px; color: #999; margin-top: 24px;">Once you pay, your order goes straight to the kitchen. You'll be able to track it in real-time.</p>
+    <p style="font-size: 12px; color: #9C9C9C; margin-top: 24px;">Once you pay, your order goes straight to the kitchen. You'll be able to track it in real-time.</p>
   `;
 
   return emailWrapper('Payment Ready', content);
@@ -141,10 +141,10 @@ export function orderPaidEmail({
       <p class="stat-value" style="font-size: 18px; margin-top: 4px;">${orderId}</p>
     </div>
 
-    <div style="background-color: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; margin: 20px 0;">
+    <div style="background-color: #141414; border: 1px solid #2E2E2E; border-radius: 8px; padding: 16px; margin: 20px 0;">
       <h3 style="margin-top: 0; color: ${BRAND_DARK};">Order Details</h3>
       ${itemsHtml}
-      <div style="padding-top: 12px; border-top: 2px solid #e0e0e0; margin-top: 12px;">
+      <div style="padding-top: 12px; border-top: 2px solid #2E2E2E; margin-top: 12px;">
         <div style="display: flex; justify-content: space-between; font-size: 16px; color: ${BRAND_DARK};">
           <span>Total:</span>
           <strong>$${total.toFixed(2)}</strong>
@@ -152,7 +152,7 @@ export function orderPaidEmail({
       </div>
     </div>
 
-    <p style="font-size: 12px; color: #999;">This order has been sent to your POS system. Get cooking!</p>
+    <p style="font-size: 12px; color: #9C9C9C;">This order has been sent to your POS system. Get cooking!</p>
   `;
 
   return emailWrapper('New Paid Order', content);
@@ -181,7 +181,7 @@ export function dailySummaryEmail({
     .slice(0, 5)
     .map(
       (item) =>
-        `<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0;">
+        `<div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #141414;">
       <span>${item.name}</span>
       <strong>${item.quantity} sold</strong>
     </div>`
@@ -193,11 +193,11 @@ export function dailySummaryEmail({
     <p>Here's how <strong>${restaurantName}</strong> performed on ${new Date(date).toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}:</p>
 
     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0;">
-      <div class="stat-box" style="border-left-color: #4CAF50;">
+      <div class="stat-box" style="border-left-color: #F3EEE3;">
         <p class="stat-label">Calls Answered</p>
         <p class="stat-value">${totalCalls}</p>
       </div>
-      <div class="stat-box" style="border-left-color: #2196F3;">
+      <div class="stat-box" style="border-left-color: #F3EEE3;">
         <p class="stat-label">Orders Placed</p>
         <p class="stat-value">${ordersPlaced}</p>
       </div>
@@ -205,17 +205,17 @@ export function dailySummaryEmail({
         <p class="stat-label">Revenue</p>
         <p class="stat-value">$${revenue.toFixed(0)}</p>
       </div>
-      <div class="stat-box" style="border-left-color: #FF9800;">
+      <div class="stat-box" style="border-left-color: #F3EEE3;">
         <p class="stat-label">Upsell Revenue</p>
         <p class="stat-value">$${upsellRevenue.toFixed(0)}</p>
       </div>
     </div>
 
-    <div style="background-color: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; margin: 20px 0;">
+    <div style="background-color: #141414; border: 1px solid #2E2E2E; border-radius: 8px; padding: 16px; margin: 20px 0;">
       <h3 style="margin-top: 0; color: ${BRAND_DARK};">Answer Rate</h3>
       <div style="background-color: white; border-radius: 4px; overflow: hidden;">
-        <div style="height: 30px; background-color: #e0e0e0; display: flex; align-items: center;">
-          <div style="height: 100%; background-color: #4CAF50; width: ${answerRate}%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 12px;">
+        <div style="height: 30px; background-color: #2E2E2E; display: flex; align-items: center;">
+          <div style="height: 100%; background-color: #F3EEE3; width: ${answerRate}%; display: flex; align-items: center; justify-content: center; color: white; font-weight: 600; font-size: 12px;">
             ${answerRate}%
           </div>
         </div>
@@ -225,7 +225,7 @@ export function dailySummaryEmail({
     ${
       topItems.length > 0
         ? `
-    <div style="background-color: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; margin: 20px 0;">
+    <div style="background-color: #141414; border: 1px solid #2E2E2E; border-radius: 8px; padding: 16px; margin: 20px 0;">
       <h3 style="margin-top: 0; color: ${BRAND_DARK};">Top Items</h3>
       ${topItemsHtml}
     </div>
@@ -233,7 +233,7 @@ export function dailySummaryEmail({
         : ''
     }
 
-    <p style="text-align: center; color: #999; font-size: 12px; margin-top: 24px;">Check your dashboard for more detailed insights.</p>
+    <p style="text-align: center; color: #9C9C9C; font-size: 12px; margin-top: 24px;">Check your dashboard for more detailed insights.</p>
   `;
 
   return emailWrapper('Daily Summary', content);
@@ -257,8 +257,8 @@ export function failedCallAlertEmail({
     <h2>Missed Call Alert</h2>
     <p>A call came in to <strong>${restaurantName}</strong> but wasn't completed. Here are the details:</p>
 
-    <div style="background-color: #fff3cd; border-left: 4px solid #FFC107; padding: 16px; margin: 20px 0; border-radius: 4px;">
-      <p style="margin: 0; color: #856404;"><strong>This call was not successfully completed.</strong> The customer may need to call back or you may want to follow up.</p>
+    <div style="background-color: #141414; border-left: 4px solid #F3EEE3; padding: 16px; margin: 20px 0; border-radius: 4px;">
+      <p style="margin: 0; color: #6B6B6B;"><strong>This call was not successfully completed.</strong> The customer may need to call back or you may want to follow up.</p>
     </div>
 
     <div class="stat-box">
@@ -274,9 +274,9 @@ export function failedCallAlertEmail({
     ${
       transcript
         ? `
-    <div style="background-color: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; margin: 20px 0;">
+    <div style="background-color: #141414; border: 1px solid #2E2E2E; border-radius: 8px; padding: 16px; margin: 20px 0;">
       <h3 style="margin-top: 0; color: ${BRAND_DARK};">Call Transcript</h3>
-      <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #555; font-family: monospace; white-space: pre-wrap; word-wrap: break-word; max-height: 300px; overflow: auto;">
+      <p style="margin: 0; font-size: 13px; line-height: 1.6; color: #2E2E2E; font-family: monospace; white-space: pre-wrap; word-wrap: break-word; max-height: 300px; overflow: auto;">
         ${transcript}
       </p>
     </div>
@@ -284,7 +284,7 @@ export function failedCallAlertEmail({
         : ''
     }
 
-    <p style="font-size: 12px; color: #999;">Review the transcript and consider following up with the customer if they left important information.</p>
+    <p style="font-size: 12px; color: #9C9C9C;">Review the transcript and consider following up with the customer if they left important information.</p>
   `;
 
   return emailWrapper('Missed Call Alert', content);
@@ -301,7 +301,7 @@ export function welcomeEmail({
     <h2>Welcome to Ringo, ${ownerName}!</h2>
     <p>We're thrilled to have <strong>${restaurantName}</strong> on board. Your AI phone agent is being set up and will be ready in just a few minutes.</p>
 
-    <div style="background-color: #f0f9ff; border-left: 4px solid ${BRAND_GOLD}; padding: 16px; margin: 20px 0; border-radius: 4px;">
+    <div style="background-color: #141414; border-left: 4px solid ${BRAND_GOLD}; padding: 16px; margin: 20px 0; border-radius: 4px;">
       <p style="margin: 0; color: ${BRAND_DARK};"><strong>What's Next?</strong></p>
       <ul style="margin: 12px 0 0 0; padding-left: 20px;">
         <li style="margin: 6px 0;">Set up your Retell phone number in the dashboard</li>
@@ -315,7 +315,7 @@ export function welcomeEmail({
       <a href="https://app.useringo.ai/dashboard" class="button">Go to Dashboard</a>
     </center>
 
-    <div style="background-color: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 8px; padding: 16px; margin: 20px 0;">
+    <div style="background-color: #141414; border: 1px solid #2E2E2E; border-radius: 8px; padding: 16px; margin: 20px 0;">
       <h3 style="margin-top: 0; color: ${BRAND_DARK};">Quick Tips</h3>
       <ul style="margin: 12px 0; padding-left: 20px;">
         <li style="margin: 8px 0; font-size: 13px;"><strong>Test Your Agent:</strong> Call the Ringo number to see it in action</li>
@@ -324,7 +324,7 @@ export function welcomeEmail({
       </ul>
     </div>
 
-    <p style="text-align: center; color: #999; font-size: 12px; margin-top: 24px;">Questions? We're here to help at support@useringo.ai or (855) RINGO-AI</p>
+    <p style="text-align: center; color: #9C9C9C; font-size: 12px; margin-top: 24px;">Questions? We're here to help at support@useringo.ai or (855) RINGO-AI</p>
   `;
 
   return emailWrapper('Welcome to Ringo', content);

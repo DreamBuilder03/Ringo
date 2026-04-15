@@ -19,14 +19,14 @@ import {
 import type { Order, OrderStatus } from '@/types/database';
 
 const STATUS_CONFIG: Record<OrderStatus, { badge: string; color: string; label: string }> = {
-  building: { badge: 'default', color: 'bg-gray-500', label: 'Building' },
-  pending: { badge: 'warning', color: 'bg-yellow-500', label: 'Pending' },
-  payment_sent: { badge: 'info', color: 'bg-blue-500', label: 'Payment Sent' },
-  paid: { badge: 'success', color: 'bg-green-500', label: 'Paid' },
-  preparing: { badge: 'warning', color: 'bg-orange-500', label: 'Preparing' },
-  ready: { badge: 'success', color: 'bg-green-500', label: 'Ready' },
-  completed: { badge: 'success', color: 'bg-green-600', label: 'Completed' },
-  cancelled: { badge: 'danger', color: 'bg-red-500', label: 'Cancelled' },
+  building: { badge: 'default', color: 'bg-chalk0', label: 'Building' },
+  pending: { badge: 'warning', color: 'bg-bone', label: 'Pending' },
+  payment_sent: { badge: 'info', color: 'bg-bone', label: 'Payment Sent' },
+  paid: { badge: 'success', color: 'bg-bone', label: 'Paid' },
+  preparing: { badge: 'warning', color: 'bg-bone', label: 'Preparing' },
+  ready: { badge: 'success', color: 'bg-bone', label: 'Ready' },
+  completed: { badge: 'success', color: 'bg-bone', label: 'Completed' },
+  cancelled: { badge: 'danger', color: 'bg-bone', label: 'Cancelled' },
 };
 
 const STATUS_FILTERS = [
@@ -163,7 +163,7 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
 
               {order.payment_link_sent_at && (
                 <div className="flex items-start gap-3">
-                  <CreditCard className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+                  <CreditCard className="h-4 w-4 text-bone mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
                     <p className="text-ringo-muted text-xs">Payment Link Sent</p>
                     <p className="text-foreground">
@@ -175,7 +175,7 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
 
               {order.paid_at && (
                 <div className="flex items-start gap-3">
-                  <CreditCard className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                  <CreditCard className="h-4 w-4 text-bone mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
                     <p className="text-ringo-muted text-xs">Payment Received</p>
                     <p className="text-foreground">
@@ -187,7 +187,7 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
 
               {order.pos_pushed_at && (
                 <div className="flex items-start gap-3">
-                  <Zap className="h-4 w-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                  <Zap className="h-4 w-4 text-bone mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
                     <p className="text-ringo-muted text-xs">POS Pushed</p>
                     <p className="text-foreground">
@@ -392,7 +392,7 @@ export default function OrdersPage() {
             className={cn(
               'px-2 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap',
               statusFilter === filter.value
-                ? 'bg-ringo-teal text-white'
+                ? 'bg-ringo-teal text-bone'
                 : 'bg-ringo-card border border-ringo-border text-ringo-muted hover:text-foreground'
             )}
           >

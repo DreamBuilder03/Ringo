@@ -13,9 +13,9 @@ interface TranscriptViewerProps {
 }
 
 const outcomeConfig: Record<string, { label: string; bg: string; text: string }> = {
-  order_placed: { label: 'Order Placed', bg: 'bg-emerald-400/10 border-emerald-400/20', text: 'text-emerald-400' },
-  inquiry: { label: 'Inquiry', bg: 'bg-blue-400/10 border-blue-400/20', text: 'text-blue-400' },
-  missed: { label: 'Missed', bg: 'bg-red-400/10 border-red-400/20', text: 'text-red-400' },
+  order_placed: { label: 'Order Placed', bg: 'bg-bone/10 border-bone/20', text: 'text-bone' },
+  inquiry: { label: 'Inquiry', bg: 'bg-bone/10 border-bone/20', text: 'text-bone' },
+  missed: { label: 'Missed', bg: 'bg-bone/10 border-bone/20', text: 'text-bone' },
   upsell_only: { label: 'Upsell', bg: 'bg-ringo-amber/10 border-ringo-amber/20', text: 'text-ringo-amber' },
 };
 
@@ -37,8 +37,8 @@ export function TranscriptViewer({ call, onClose }: TranscriptViewerProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative w-full max-w-2xl max-h-[85vh] rounded-2xl border border-ringo-border bg-ringo-darker flex flex-col overflow-hidden animate-fade-in shadow-2xl shadow-black/50">
+      <div className="fixed inset-0 bg-obsidian/70 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-2xl max-h-[85vh] rounded-2xl border border-ringo-border bg-ringo-darker flex flex-col overflow-hidden animate-fade-in shadow-2xl shadow-obsidian/50">
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-ringo-border bg-gradient-to-r from-ringo-card to-ringo-darker">
           <div className="flex items-center gap-4">
@@ -76,7 +76,7 @@ export function TranscriptViewer({ call, onClose }: TranscriptViewerProps) {
               className="rounded-lg p-2 hover:bg-ringo-card transition-colors text-ringo-muted hover:text-foreground"
               title="Copy transcript"
             >
-              {copied ? <Check className="h-4 w-4 text-emerald-400" /> : <Copy className="h-4 w-4" />}
+              {copied ? <Check className="h-4 w-4 text-bone" /> : <Copy className="h-4 w-4" />}
             </button>
             <button
               onClick={onClose}

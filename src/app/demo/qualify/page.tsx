@@ -106,9 +106,9 @@ export default function QualifyPage() {
     <section className="relative overflow-x-hidden">
       <div className="halo" />
       <div className="mx-auto max-w-3xl px-6 py-16">
-        <div className="mb-10 h-[2px] w-full overflow-hidden rounded-full bg-white/5">
+        <div className="mb-10 h-[2px] w-full overflow-hidden rounded-full bg-bone/5">
           <div
-            className="h-full bg-white/80 transition-[width] duration-500 ease-out"
+            className="h-full bg-bone/80 transition-[width] duration-500 ease-out"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -134,7 +134,7 @@ export default function QualifyPage() {
               </div>
               {locations === '6+' && (
                 <div className="fade-in">
-                  <span className="mb-2 block text-xs uppercase tracking-[0.12em] text-white/50">
+                  <span className="mb-2 block text-xs uppercase tracking-[0.12em] text-bone/50">
                     Exactly how many?
                   </span>
                   <input
@@ -191,7 +191,7 @@ export default function QualifyPage() {
                       }}
                     >
                       {features.includes(f) && (
-                        <svg viewBox="0 0 24 24" fill="none" stroke="#0B0B0D" strokeWidth="3" className="h-3 w-3">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" strokeWidth="3" className="h-3 w-3">
                           <path d="M20 6 9 17l-5-5" />
                         </svg>
                       )}
@@ -234,11 +234,11 @@ export default function QualifyPage() {
             </div>
           )}
 
-          {error && <p className="mt-6 text-sm text-red-400">{error}</p>}
+          {error && <p className="mt-6 text-sm text-bone">{error}</p>}
 
           <div className="mt-10 flex items-center justify-between">
             <button
-              className="text-sm text-white/50 transition hover:text-white disabled:opacity-30"
+              className="text-sm text-bone/50 transition hover:text-bone disabled:opacity-30"
               disabled={stepIndex === 0 || submitting}
               onClick={() => {
                 const prev = (['locations', 'pos', 'features', 'contact'] as Step[])[stepIndex - 1];
@@ -265,7 +265,7 @@ function Question({ label, hint }: { label: string; hint?: string }) {
   return (
     <div>
       <h2 className="display text-3xl leading-tight sm:text-4xl">{label}</h2>
-      {hint ? <p className="mt-2 text-sm text-white/50">{hint}</p> : null}
+      {hint ? <p className="mt-2 text-sm text-bone/50">{hint}</p> : null}
     </div>
   );
 }
@@ -273,7 +273,7 @@ function Question({ label, hint }: { label: string; hint?: string }) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-xs uppercase tracking-[0.12em] text-white/50">{label}</span>
+      <span className="mb-2 block text-xs uppercase tracking-[0.12em] text-bone/50">{label}</span>
       {children}
     </label>
   );

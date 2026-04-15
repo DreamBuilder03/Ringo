@@ -100,9 +100,9 @@ async function sendEmail(lead: DemoLead, durationSec: number | null, transcript:
   if (!apiKey || !to) return;
 
   const html = `
-    <div style="font-family:Inter,system-ui,sans-serif;max-width:560px;color:#1A1A2E;">
+    <div style="font-family:Inter,system-ui,sans-serif;max-width:560px;color:#F3EEE3;">
       <h2 style="margin:0 0 8px">New demo lead — ${escape(lead.restaurant_name || 'Unknown')}</h2>
-      <p style="margin:0 0 16px;color:#555">Reach out while they're warm.</p>
+      <p style="margin:0 0 16px;color:#2E2E2E">Reach out while they're warm.</p>
       <table style="width:100%;border-collapse:collapse;font-size:14px;">
         ${row('Name', lead.full_name)}
         ${row('Phone', lead.phone)}
@@ -116,7 +116,7 @@ async function sendEmail(lead: DemoLead, durationSec: number | null, transcript:
         ${row('Demo length', fmtDuration(durationSec))}
         ${row('Language', lead.demo_language)}
       </table>
-      ${transcript ? `<h3 style="margin:24px 0 8px">Transcript</h3><pre style="white-space:pre-wrap;background:#f6f3ee;padding:12px;border-radius:8px;font-size:13px;">${escape(transcript.slice(0, 5000))}</pre>` : ''}
+      ${transcript ? `<h3 style="margin:24px 0 8px">Transcript</h3><pre style="white-space:pre-wrap;background:#141414;padding:12px;border-radius:8px;font-size:13px;">${escape(transcript.slice(0, 5000))}</pre>` : ''}
     </div>
   `;
 
@@ -137,7 +137,7 @@ async function sendEmail(lead: DemoLead, durationSec: number | null, transcript:
 }
 
 function row(label: string, value: string | null | undefined): string {
-  return `<tr><td style="padding:6px 10px;background:#f6f3ee;color:#555;width:140px">${label}</td><td style="padding:6px 10px">${escape(value || '—')}</td></tr>`;
+  return `<tr><td style="padding:6px 10px;background:#141414;color:#2E2E2E;width:140px">${label}</td><td style="padding:6px 10px">${escape(value || '—')}</td></tr>`;
 }
 function escape(s: string): string {
   return s.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));

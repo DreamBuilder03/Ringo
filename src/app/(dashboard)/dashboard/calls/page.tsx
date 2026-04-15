@@ -72,7 +72,7 @@ export default function CallsPage() {
               className={cn(
                 'px-2 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap',
                 filter === f.value
-                  ? 'bg-ringo-teal text-white'
+                  ? 'bg-ringo-teal text-bone'
                   : 'bg-ringo-card border border-ringo-border text-ringo-muted hover:text-foreground'
               )}
             >

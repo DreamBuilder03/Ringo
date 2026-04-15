@@ -173,7 +173,7 @@ export default function DashboardPage() {
           </div>
           <h2 className="text-lg font-bold text-foreground mb-2">Getting Started</h2>
           <p className="text-sm text-ringo-muted max-w-sm">{error}</p>
-          <a href="/onboarding" className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-xl bg-[#C9A84C] text-[#0A0A0A] text-sm font-semibold">
+          <a href="/onboarding" className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-xl bg-[#F3EEE3] text-[#0A0A0A] text-sm font-semibold">
             Complete Setup <ArrowUpRight className="h-3.5 w-3.5" />
           </a>
         </div>
@@ -186,9 +186,9 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Gold status banner */}
-      <div className="rounded-xl bg-[#C9A84C]/10 border border-[#C9A84C]/20 px-4 py-2.5 flex items-center gap-2 mb-4">
-        <div className="w-2 h-2 rounded-full bg-[#C9A84C] animate-pulse" />
-        <span className="text-sm font-semibold text-[#C9A84C]">Ringo is live and handling your calls</span>
+      <div className="rounded-xl bg-[#F3EEE3]/10 border border-[#F3EEE3]/20 px-4 py-2.5 flex items-center gap-2 mb-4">
+        <div className="w-2 h-2 rounded-full bg-[#F3EEE3] animate-pulse" />
+        <span className="text-sm font-semibold text-[#F3EEE3]">Ringo is live and handling your calls</span>
       </div>
 
       {/* Welcome header */}
@@ -196,9 +196,9 @@ export default function DashboardPage() {
         <div className="min-w-0">
           <div className="flex items-center gap-2 sm:gap-3 mb-1 flex-wrap">
             <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">Dashboard</h1>
-            <div className="flex items-center gap-1.5 rounded-full bg-[#C9A84C]/10 border border-[#C9A84C]/20 px-2.5 py-1 shadow-sm shadow-[#C9A84C]/10">
-              <div className="h-1.5 w-1.5 rounded-full bg-[#C9A84C] animate-pulse" />
-              <span className="text-[10px] font-bold text-[#C9A84C]">LIVE</span>
+            <div className="flex items-center gap-1.5 rounded-full bg-[#F3EEE3]/10 border border-[#F3EEE3]/20 px-2.5 py-1 shadow-sm shadow-[#F3EEE3]/10">
+              <div className="h-1.5 w-1.5 rounded-full bg-[#F3EEE3] animate-pulse" />
+              <span className="text-[10px] font-bold text-[#F3EEE3]">LIVE</span>
             </div>
           </div>
           <p className="text-sm text-ringo-muted">{restaurantName} &middot; {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
@@ -206,12 +206,12 @@ export default function DashboardPage() {
 
         {hasData && (
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
-            <div className="flex items-center gap-1.5 rounded-xl bg-ringo-card/80 backdrop-blur-sm border border-ringo-border px-2 sm:px-3 py-2 shadow-sm ring-1 ring-black/[0.02] text-xs sm:text-sm">
-              <Target className="h-3 sm:h-3.5 w-3 sm:w-3.5 text-[#C9A84C] flex-shrink-0" />
+            <div className="flex items-center gap-1.5 rounded-xl bg-ringo-card/80 backdrop-blur-sm border border-ringo-border px-2 sm:px-3 py-2 shadow-sm ring-1 ring-obsidian/[0.02] text-xs sm:text-sm">
+              <Target className="h-3 sm:h-3.5 w-3 sm:w-3.5 text-[#F3EEE3] flex-shrink-0" />
               <span className="text-xs font-semibold text-foreground">{stats.answerRate}%</span>
               <span className="text-[10px] text-ringo-muted hidden sm:inline">answer rate</span>
             </div>
-            <div className="flex items-center gap-1.5 rounded-xl bg-ringo-card/80 backdrop-blur-sm border border-ringo-border px-2 sm:px-3 py-2 shadow-sm ring-1 ring-black/[0.02] text-xs sm:text-sm">
+            <div className="flex items-center gap-1.5 rounded-xl bg-ringo-card/80 backdrop-blur-sm border border-ringo-border px-2 sm:px-3 py-2 shadow-sm ring-1 ring-obsidian/[0.02] text-xs sm:text-sm">
               <Activity className="h-3 sm:h-3.5 w-3 sm:w-3.5 text-ringo-amber flex-shrink-0" />
               <span className="text-xs font-semibold text-foreground">{stats.ordersTaken}/{stats.totalCalls}</span>
               <span className="text-[10px] text-ringo-muted hidden sm:inline">converted</span>
@@ -223,7 +223,7 @@ export default function DashboardPage() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="sm:col-span-2 lg:col-span-2">
-          <div className="bg-[rgba(201,168,76,0.12)] border border-[#C9A84C]/20 rounded-2xl p-1">
+          <div className="bg-[rgba(243,238,227,0.12)] border border-[#F3EEE3]/20 rounded-2xl p-1">
             <StatCard
               title="Revenue"
               value={formatCurrency(stats.revenue)}
@@ -276,14 +276,14 @@ export default function DashboardPage() {
               )}
             </div>
             {hasData && (
-              <a href="/dashboard/calls" className="text-xs font-semibold text-[#C9A84C] hover:text-[#F5E196] transition-colors flex items-center gap-1 group">
+              <a href="/dashboard/calls" className="text-xs font-semibold text-[#F3EEE3] hover:text-[#C8C8C8] transition-colors flex items-center gap-1 group">
                 View all <ArrowUpRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </a>
             )}
           </div>
           {!hasData ? (
-            <div className="rounded-2xl border border-[#C9A84C]/20 bg-[#C9A84C]/5 p-8 text-center">
-              <Phone className="w-8 h-8 text-[#C9A84C] mx-auto mb-3" />
+            <div className="rounded-2xl border border-[#F3EEE3]/20 bg-[#F3EEE3]/5 p-8 text-center">
+              <Phone className="w-8 h-8 text-[#F3EEE3] mx-auto mb-3" />
               <p className="text-base font-semibold text-foreground mb-1">Ringo is ready</p>
               <p className="text-sm text-ringo-muted">Your first call will appear here in real time the moment it comes in.</p>
             </div>
@@ -299,17 +299,17 @@ export default function DashboardPage() {
 
       {/* AI Insights Card */}
       {hasData && (
-        <div className="rounded-2xl border border-[#C9A84C]/20 bg-ringo-card/80 backdrop-blur-sm p-6 ring-1 ring-[#C9A84C]/5 shadow-sm relative overflow-hidden">
+        <div className="rounded-2xl border border-[#F3EEE3]/20 bg-ringo-card/80 backdrop-blur-sm p-6 ring-1 ring-[#F3EEE3]/5 shadow-sm relative overflow-hidden">
           {/* Decorative gradient */}
-          <div className="absolute top-0 left-0 w-48 h-48 bg-gradient-to-br from-[#C9A84C]/10 to-transparent rounded-full blur-3xl -translate-x-12 -translate-y-12 pointer-events-none" />
+          <div className="absolute top-0 left-0 w-48 h-48 bg-gradient-to-br from-[#F3EEE3]/10 to-transparent rounded-full blur-3xl -translate-x-12 -translate-y-12 pointer-events-none" />
           <div className="relative flex items-start gap-4">
-            <div className="rounded-xl bg-[#C9A84C]/15 p-3 flex-shrink-0 shadow-sm shadow-[#C9A84C]/10">
-              <Zap className="h-6 w-6 text-[#C9A84C]" />
+            <div className="rounded-xl bg-[#F3EEE3]/15 p-3 flex-shrink-0 shadow-sm shadow-[#F3EEE3]/10">
+              <Zap className="h-6 w-6 text-[#F3EEE3]" />
             </div>
             <div>
               <h3 className="text-base font-bold text-foreground mb-1">AI Insights</h3>
               <p className="text-sm text-ringo-muted leading-relaxed">
-                <span className="text-[#C9A84C] font-semibold">Performance:</span>{' '}
+                <span className="text-[#F3EEE3] font-semibold">Performance:</span>{' '}
                 Your AI agent handled {stats.totalCalls} calls today with a {stats.answerRate}% answer rate, capturing {formatCurrency(stats.revenue + stats.upsellRevenue)} in total revenue.
                 {stats.upsellRevenue > 0 && (
                   <> Upselling added an extra {formatCurrency(stats.upsellRevenue)} to your bottom line.</>

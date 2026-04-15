@@ -73,7 +73,7 @@ export function LocationSwitcher() {
     return (
       <div className="mt-3 rounded-xl bg-ringo-card/50 border border-ringo-border p-3">
         <div className="flex items-center gap-2">
-          <MapPin className="h-3.5 w-3.5 text-[#C9A84C]" />
+          <MapPin className="h-3.5 w-3.5 text-[#F3EEE3]" />
           <p className="text-xs font-semibold text-foreground truncate">
             {restaurants[0].name}
           </p>
@@ -90,7 +90,7 @@ export function LocationSwitcher() {
         className="w-full flex items-center justify-between gap-2 rounded-xl bg-ringo-card/50 border border-ringo-border px-3 py-2.5 hover:bg-ringo-card transition-colors"
       >
         <div className="flex items-center gap-2 min-w-0">
-          <MapPin className="h-3.5 w-3.5 text-[#C9A84C] shrink-0" />
+          <MapPin className="h-3.5 w-3.5 text-[#F3EEE3] shrink-0" />
           <span className="text-xs font-semibold text-foreground truncate">
             {currentRestaurant?.name || 'Select location'}
           </span>
@@ -113,7 +113,7 @@ export function LocationSwitcher() {
                 className={cn(
                   'w-full text-left px-3 py-2.5 transition-colors',
                   currentRestaurant?.id === r.id
-                    ? 'bg-[#C9A84C]/10 text-[#C9A84C]'
+                    ? 'bg-[#F3EEE3]/10 text-[#F3EEE3]'
                     : 'text-ringo-muted hover:bg-ringo-card/60 hover:text-foreground'
                 )}
               >

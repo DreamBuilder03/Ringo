@@ -50,10 +50,10 @@ export function getCallOutcomeLabel(outcome: string): string {
 
 export function getCallOutcomeColor(outcome: string): string {
   const colors: Record<string, string> = {
-    order_placed: 'text-emerald-400 bg-emerald-400/10',
-    inquiry: 'text-blue-400 bg-blue-400/10',
-    missed: 'text-red-400 bg-red-400/10',
-    upsell_only: 'text-amber-400 bg-amber-400/10',
+    order_placed: 'text-bone bg-bone/10',
+    inquiry: 'text-bone bg-bone/10',
+    missed: 'text-bone bg-bone/10',
+    upsell_only: 'text-bone bg-bone/10',
   };
-  return colors[outcome] || 'text-gray-400 bg-gray-400/10';
+  return colors[outcome] || 'text-stone bg-stone/10';
 }

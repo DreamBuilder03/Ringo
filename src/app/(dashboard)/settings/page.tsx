@@ -397,16 +397,16 @@ export default function SettingsPage() {
           className={cn(
             'rounded-2xl border p-4 flex items-start gap-3 animate-in fade-in slide-in-from-top-2',
             alert.type === 'success'
-              ? 'border-emerald-400/20 bg-emerald-400/[0.03]'
-              : 'border-red-400/20 bg-red-400/[0.03]'
+              ? 'border-bone/20 bg-bone/[0.03]'
+              : 'border-bone/20 bg-bone/[0.03]'
           )}
         >
           {alert.type === 'success' ? (
-            <Check className="h-5 w-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+            <Check className="h-5 w-5 text-bone flex-shrink-0 mt-0.5" />
           ) : (
-            <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0 mt-0.5" />
+            <AlertCircle className="h-5 w-5 text-bone flex-shrink-0 mt-0.5" />
           )}
-          <p className={cn('text-sm font-medium flex-1', alert.type === 'success' ? 'text-emerald-400' : 'text-red-400')}>
+          <p className={cn('text-sm font-medium flex-1', alert.type === 'success' ? 'text-bone' : 'text-bone')}>
             {alert.message}
           </p>
           <button
@@ -460,15 +460,15 @@ export default function SettingsPage() {
                 className={cn(
                   'rounded-2xl border p-5 transition-all duration-200',
                   connected
-                    ? 'border-emerald-400/20 bg-emerald-400/[0.03]'
+                    ? 'border-bone/20 bg-bone/[0.03]'
                     : 'border-ringo-border bg-ringo-card hover:border-ringo-border/80'
                 )}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4 flex-1">
-                    <div className={cn('rounded-xl p-3', connected ? 'bg-emerald-400/10' : 'bg-ringo-border/30')}>
+                    <div className={cn('rounded-xl p-3', connected ? 'bg-bone/10' : 'bg-ringo-border/30')}>
                       {connected ? (
-                        <Wifi className="h-5 w-5 text-emerald-400" />
+                        <Wifi className="h-5 w-5 text-bone" />
                       ) : (
                         <WifiOff className="h-5 w-5 text-ringo-muted" />
                       )}
@@ -477,7 +477,7 @@ export default function SettingsPage() {
                       <div className="flex items-center gap-2.5">
                         <p className="text-sm font-bold text-foreground">{pos.name}</p>
                         {connected && (
-                          <span className="flex items-center gap-1 rounded-full bg-emerald-400/10 border border-emerald-400/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400">
+                          <span className="flex items-center gap-1 rounded-full bg-bone/10 border border-bone/20 px-2 py-0.5 text-[10px] font-bold text-bone">
                             <Check className="h-2.5 w-2.5" /> Connected
                           </span>
                         )}
@@ -490,7 +490,7 @@ export default function SettingsPage() {
                       variant="ghost"
                       size="sm"
                       onClick={handleDisconnectPOS}
-                      className="text-red-400/60 hover:text-red-400"
+                      className="text-bone/60 hover:text-bone"
                     >
                       Disconnect
                     </Button>
@@ -708,8 +708,8 @@ export default function SettingsPage() {
       </div>
 
       {/* Danger Zone */}
-      <div className="rounded-2xl border border-red-400/20 bg-red-400/[0.03] p-6">
-        <h3 className="text-sm font-bold text-red-400 mb-1">Danger Zone</h3>
+      <div className="rounded-2xl border border-bone/20 bg-bone/[0.03] p-6">
+        <h3 className="text-sm font-bold text-bone mb-1">Danger Zone</h3>
         <p className="text-xs text-ringo-muted mb-4">These actions are permanent and cannot be undone.</p>
         <div className="flex gap-3">
           <Button variant="danger" size="sm">
@@ -718,7 +718,7 @@ export default function SettingsPage() {
           <Button
             variant="ghost"
             size="sm"
-            className="text-red-400/60 hover:text-red-400"
+            className="text-bone/60 hover:text-bone"
           >
             Delete Account
           </Button>

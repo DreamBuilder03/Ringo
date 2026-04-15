@@ -246,14 +246,14 @@ export default function OnboardingPage() {
 
       {/* Gradient blobs */}
       <div className="fixed top-20 left-1/4 w-[400px] h-[400px] bg-ringo-teal/5 rounded-full blur-[120px] pointer-events-none" />
-      <div className="fixed bottom-20 right-1/4 w-[300px] h-[300px] bg-purple-500/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed bottom-20 right-1/4 w-[300px] h-[300px] bg-bone/5 rounded-full blur-[120px] pointer-events-none" />
 
       <main className="relative flex flex-col items-center justify-center min-h-screen px-4 py-12">
         <div className="w-full max-w-xl">
           {/* Logo */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-ringo-teal mb-2">Ringo</h1>
-            <p className="text-sm text-white/40">Set up your AI phone agent in under 2 minutes</p>
+            <p className="text-sm text-bone/40">Set up your AI phone agent in under 2 minutes</p>
           </div>
 
           {/* Step Progress */}
@@ -264,10 +264,10 @@ export default function OnboardingPage() {
                   className={cn(
                     'flex items-center justify-center h-10 w-10 rounded-xl text-xs font-bold transition-all duration-500',
                     i < step
-                      ? 'bg-ringo-teal text-white shadow-lg shadow-ringo-teal/20'
+                      ? 'bg-ringo-teal text-bone shadow-lg shadow-ringo-teal/20'
                       : i === step
                       ? 'bg-ringo-teal/10 text-ringo-teal border-2 border-ringo-teal/50'
-                      : 'bg-white/[0.04] text-white/20 border border-white/[0.06]'
+                      : 'bg-bone/[0.04] text-bone/20 border border-bone/[0.06]'
                   )}
                 >
                   {i < step ? <Check className="h-4 w-4" /> : <s.icon className="h-4 w-4" />}
@@ -275,7 +275,7 @@ export default function OnboardingPage() {
                 {i < steps.length - 1 && (
                   <div className={cn(
                     'w-8 sm:w-12 h-0.5 rounded-full transition-all duration-500',
-                    i < step ? 'bg-ringo-teal' : 'bg-white/[0.06]'
+                    i < step ? 'bg-ringo-teal' : 'bg-bone/[0.06]'
                   )} />
                 )}
               </div>
@@ -283,7 +283,7 @@ export default function OnboardingPage() {
           </div>
 
           {/* Step Content Card */}
-          <div className="rounded-2xl border border-white/[0.08] bg-white/[0.02] backdrop-blur-sm p-8 shadow-2xl shadow-black/20 animate-fade-in">
+          <div className="rounded-2xl border border-bone/[0.08] bg-bone/[0.02] backdrop-blur-sm p-8 shadow-2xl shadow-obsidian/20 animate-fade-in">
 
             {/* Step 0: Account */}
             {step === 0 && (
@@ -292,8 +292,8 @@ export default function OnboardingPage() {
                   <div className="mx-auto h-14 w-14 rounded-2xl bg-ringo-teal/10 flex items-center justify-center mb-4">
                     <UserPlus className="h-7 w-7 text-ringo-teal" />
                   </div>
-                  <h2 className="text-xl font-bold text-white">Create your account</h2>
-                  <p className="text-sm text-white/40 mt-1">This will be your Ringo dashboard login</p>
+                  <h2 className="text-xl font-bold text-bone">Create your account</h2>
+                  <p className="text-sm text-bone/40 mt-1">This will be your Ringo dashboard login</p>
                 </div>
                 <Input
                   id="fullName"
@@ -324,7 +324,7 @@ export default function OnboardingPage() {
                 />
 
                 {error && (
-                  <div className="rounded-xl bg-red-400/10 border border-red-400/20 px-4 py-3 text-sm text-red-400">
+                  <div className="rounded-xl bg-bone/10 border border-bone/20 px-4 py-3 text-sm text-bone">
                     {error}
                   </div>
                 )}
@@ -339,7 +339,7 @@ export default function OnboardingPage() {
                   Create Account <ArrowRight className="h-4 w-4" />
                 </Button>
 
-                <p className="text-center text-xs text-white/30">
+                <p className="text-center text-xs text-bone/30">
                   Already have an account?{' '}
                   <button onClick={() => router.push('/login')} className="text-ringo-teal hover:text-ringo-teal-light transition-colors">
                     Sign in
@@ -355,8 +355,8 @@ export default function OnboardingPage() {
                   <div className="mx-auto h-14 w-14 rounded-2xl bg-ringo-amber/10 flex items-center justify-center mb-4">
                     <Utensils className="h-7 w-7 text-ringo-amber" />
                   </div>
-                  <h2 className="text-xl font-bold text-white">Your restaurant</h2>
-                  <p className="text-sm text-white/40 mt-1">Ringo will use this to answer calls accurately</p>
+                  <h2 className="text-xl font-bold text-bone">Your restaurant</h2>
+                  <p className="text-sm text-bone/40 mt-1">Ringo will use this to answer calls accurately</p>
                 </div>
                 <Input
                   id="restaurantName"
@@ -385,7 +385,7 @@ export default function OnboardingPage() {
                 />
 
                 <div className="flex gap-3 pt-2">
-                  <Button variant="ghost" onClick={() => setStep(0)} className="flex-1 border border-white/[0.08]">
+                  <Button variant="ghost" onClick={() => setStep(0)} className="flex-1 border border-bone/[0.08]">
                     <ArrowLeft className="h-4 w-4" /> Back
                   </Button>
                   <Button
@@ -403,11 +403,11 @@ export default function OnboardingPage() {
             {step === 2 && (
               <div className="space-y-5">
                 <div className="text-center mb-2">
-                  <div className="mx-auto h-14 w-14 rounded-2xl bg-violet-400/10 flex items-center justify-center mb-4">
-                    <Phone className="h-7 w-7 text-violet-400" />
+                  <div className="mx-auto h-14 w-14 rounded-2xl bg-bone/10 flex items-center justify-center mb-4">
+                    <Phone className="h-7 w-7 text-bone" />
                   </div>
-                  <h2 className="text-xl font-bold text-white">Connect your POS</h2>
-                  <p className="text-sm text-white/40 mt-1">Orders go straight to your kitchen — zero manual entry</p>
+                  <h2 className="text-xl font-bold text-bone">Connect your POS</h2>
+                  <p className="text-sm text-bone/40 mt-1">Orders go straight to your kitchen — zero manual entry</p>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   {POS_OPTIONS.map((pos) => (
@@ -418,12 +418,12 @@ export default function OnboardingPage() {
                         'rounded-xl border p-4 text-left transition-all duration-200',
                         form.posType === pos.value
                           ? 'border-ringo-teal/50 bg-ringo-teal/[0.05] shadow-lg shadow-ringo-teal/10'
-                          : 'border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12] hover:bg-white/[0.04]'
+                          : 'border-bone/[0.06] bg-bone/[0.02] hover:border-bone/[0.12] hover:bg-bone/[0.04]'
                       )}
                     >
-                      <p className="text-sm font-bold text-white">{pos.label}</p>
+                      <p className="text-sm font-bold text-bone">{pos.label}</p>
                       {pos.value !== 'none' && (
-                        <p className="text-[10px] text-white/30 mt-0.5">Auto-sync orders</p>
+                        <p className="text-[10px] text-bone/30 mt-0.5">Auto-sync orders</p>
                       )}
                       {form.posType === pos.value && (
                         <Check className="h-3.5 w-3.5 text-ringo-teal mt-1" />
@@ -431,12 +431,12 @@ export default function OnboardingPage() {
                     </button>
                   ))}
                 </div>
-                <p className="text-[10px] text-white/20 text-center">
+                <p className="text-[10px] text-bone/20 text-center">
                   Don&apos;t worry — you can connect your POS later from Settings.
                 </p>
 
                 <div className="flex gap-3 pt-2">
-                  <Button variant="ghost" onClick={() => setStep(1)} className="flex-1 border border-white/[0.08]">
+                  <Button variant="ghost" onClick={() => setStep(1)} className="flex-1 border border-bone/[0.08]">
                     <ArrowLeft className="h-4 w-4" /> Back
                   </Button>
                   <Button onClick={() => setStep(3)} className="flex-1">
@@ -453,8 +453,8 @@ export default function OnboardingPage() {
                   <div className="mx-auto h-14 w-14 rounded-2xl bg-ringo-teal/10 flex items-center justify-center mb-4">
                     <Sparkles className="h-7 w-7 text-ringo-teal" />
                   </div>
-                  <h2 className="text-xl font-bold text-white">Choose your plan</h2>
-                  <p className="text-sm text-white/40 mt-1">14-day free trial on all plans. No credit card needed.</p>
+                  <h2 className="text-xl font-bold text-bone">Choose your plan</h2>
+                  <p className="text-sm text-bone/40 mt-1">14-day free trial on all plans. No credit card needed.</p>
                 </div>
 
                 <div className="space-y-3">
@@ -466,27 +466,27 @@ export default function OnboardingPage() {
                         'w-full rounded-xl border p-5 text-left transition-all duration-200 relative',
                         form.planTier === plan.tier
                           ? 'border-ringo-teal/50 bg-ringo-teal/[0.05] shadow-lg shadow-ringo-teal/10'
-                          : 'border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12]'
+                          : 'border-bone/[0.06] bg-bone/[0.02] hover:border-bone/[0.12]'
                       )}
                     >
                       {plan.popular && (
-                        <span className="absolute -top-2.5 right-4 rounded-full bg-ringo-teal px-3 py-0.5 text-[10px] font-bold text-white shadow-lg shadow-ringo-teal/30">
+                        <span className="absolute -top-2.5 right-4 rounded-full bg-ringo-teal px-3 py-0.5 text-[10px] font-bold text-bone shadow-lg shadow-ringo-teal/30">
                           RECOMMENDED
                         </span>
                       )}
                       <div className="flex items-center justify-between mb-2">
                         <div>
-                          <p className="text-base font-bold text-white">{plan.name}</p>
-                          <p className="text-xs text-white/30">{plan.desc}</p>
+                          <p className="text-base font-bold text-bone">{plan.name}</p>
+                          <p className="text-xs text-bone/30">{plan.desc}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-xl font-bold text-white">{plan.price}</p>
-                          {plan.price !== 'Custom' && <p className="text-[10px] text-white/30">/month</p>}
+                          <p className="text-xl font-bold text-bone">{plan.price}</p>
+                          {plan.price !== 'Custom' && <p className="text-[10px] text-bone/30">/month</p>}
                         </div>
                       </div>
                       <div className="flex flex-wrap gap-2">
                         {plan.features.map((f) => (
-                          <span key={f} className="text-[10px] font-medium text-white/40 bg-white/[0.04] rounded-full px-2.5 py-0.5">
+                          <span key={f} className="text-[10px] font-medium text-bone/40 bg-bone/[0.04] rounded-full px-2.5 py-0.5">
                             {f}
                           </span>
                         ))}
@@ -496,13 +496,13 @@ export default function OnboardingPage() {
                 </div>
 
                 {error && (
-                  <div className="rounded-xl bg-red-400/10 border border-red-400/20 px-4 py-3 text-sm text-red-400">
+                  <div className="rounded-xl bg-bone/10 border border-bone/20 px-4 py-3 text-sm text-bone">
                     {error}
                   </div>
                 )}
 
                 <div className="flex gap-3 pt-2">
-                  <Button variant="ghost" onClick={() => setStep(2)} className="flex-1 border border-white/[0.08]">
+                  <Button variant="ghost" onClick={() => setStep(2)} className="flex-1 border border-bone/[0.08]">
                     <ArrowLeft className="h-4 w-4" /> Back
                   </Button>
                   <Button onClick={handleComplete} loading={loading} className="flex-1">
@@ -517,17 +517,17 @@ export default function OnboardingPage() {
               <div className="text-center py-6 space-y-6">
                 <div className="relative mx-auto w-24 h-24">
                   <div className="absolute inset-0 bg-ringo-teal/15 rounded-full blur-xl" />
-                  <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-ringo-teal to-green-500 flex items-center justify-center shadow-2xl shadow-ringo-teal/30">
-                    <Check className="h-12 w-12 text-white" />
+                  <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-ringo-teal to-bone flex items-center justify-center shadow-2xl shadow-ringo-teal/30">
+                    <Check className="h-12 w-12 text-bone" />
                   </div>
                 </div>
 
                 <div>
-                  <h2 className="text-2xl font-bold text-white">
+                  <h2 className="text-2xl font-bold text-bone">
                     Welcome aboard, {form.fullName.split(' ')[0]}!
                   </h2>
-                  <p className="text-sm text-white/40 mt-2 max-w-sm mx-auto">
-                    Your AI agent for <strong className="text-white">{form.restaurantName}</strong> is being set up. You&apos;ll be live in minutes.
+                  <p className="text-sm text-bone/40 mt-2 max-w-sm mx-auto">
+                    Your AI agent for <strong className="text-bone">{form.restaurantName}</strong> is being set up. You&apos;ll be live in minutes.
                   </p>
                 </div>
 
@@ -535,11 +535,11 @@ export default function OnboardingPage() {
                   {[
                     { icon: Zap, label: 'Instant setup', color: 'text-ringo-teal', bg: 'bg-ringo-teal/10' },
                     { icon: PhoneCall, label: '24/7 answering', color: 'text-ringo-amber', bg: 'bg-ringo-amber/10' },
-                    { icon: TrendingUp, label: 'Smart upsells', color: 'text-violet-400', bg: 'bg-violet-400/10' },
+                    { icon: TrendingUp, label: 'Smart upsells', color: 'text-bone', bg: 'bg-bone/10' },
                   ].map((item) => (
-                    <div key={item.label} className="rounded-xl bg-white/[0.03] border border-white/[0.06] p-3">
+                    <div key={item.label} className="rounded-xl bg-bone/[0.03] border border-bone/[0.06] p-3">
                       <item.icon className={cn('h-5 w-5 mx-auto mb-1.5', item.color)} />
-                      <p className="text-[10px] font-semibold text-white/40">{item.label}</p>
+                      <p className="text-[10px] font-semibold text-bone/40">{item.label}</p>
                     </div>
                   ))}
                 </div>
@@ -557,7 +557,7 @@ export default function OnboardingPage() {
 
           {/* Trust bar */}
           {step < 4 && (
-            <div className="flex items-center justify-center gap-6 mt-8 text-[10px] text-white/20 font-semibold">
+            <div className="flex items-center justify-center gap-6 mt-8 text-[10px] text-bone/20 font-semibold">
               <div className="flex items-center gap-1.5">
                 <Shield className="h-3 w-3" />
                 <span>256-bit encryption</span>

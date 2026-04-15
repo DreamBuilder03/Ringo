@@ -55,7 +55,7 @@ export default async function OrderConfirmedPage({
           <div className="border-b border-ringo-border bg-background/80 backdrop-blur-sm">
             <div className="max-w-md mx-auto px-4 py-6">
               <div className="flex items-center justify-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-ringo-teal to-ringo-teal-light flex items-center justify-center text-white font-bold text-sm">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-ringo-teal to-ringo-teal-light flex items-center justify-center text-bone font-bold text-sm">
                   ℜ
                 </div>
                 <h1 className="text-xl font-bold bg-gradient-to-r from-ringo-teal to-ringo-teal-light bg-clip-text text-transparent">
@@ -126,7 +126,7 @@ export default async function OrderConfirmedPage({
         <div className="border-b border-ringo-border bg-background/80 backdrop-blur-sm">
           <div className="max-w-md mx-auto px-4 py-6">
             <div className="flex items-center justify-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-ringo-teal to-ringo-teal-light flex items-center justify-center text-white font-bold text-sm">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-ringo-teal to-ringo-teal-light flex items-center justify-center text-bone font-bold text-sm">
                 ℜ
               </div>
               <h1 className="text-xl font-bold bg-gradient-to-r from-ringo-teal to-ringo-teal-light bg-clip-text text-transparent">

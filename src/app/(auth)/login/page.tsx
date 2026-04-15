@@ -58,7 +58,7 @@ export default function LoginPage() {
             <p className="text-sm text-ringo-muted mt-2">Sign in to your dashboard</p>
           </div>
 
-          <div className="rounded-2xl border border-ringo-border bg-ringo-card backdrop-blur-sm p-8 shadow-lg shadow-black/5">
+          <div className="rounded-2xl border border-ringo-border bg-ringo-card backdrop-blur-sm p-8 shadow-lg shadow-obsidian/5">
             <form onSubmit={handleLogin} className="space-y-5">
               <Input
                 id="email"
@@ -80,7 +80,7 @@ export default function LoginPage() {
               />
 
               {error && (
-                <div className="rounded-xl bg-red-100 border border-red-300 px-4 py-3 text-sm text-red-700">
+                <div className="rounded-xl bg-bone border border-bone px-4 py-3 text-sm text-bone">
                   {error}
                 </div>
               )}

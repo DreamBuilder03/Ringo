@@ -15,26 +15,26 @@ const outcomeConfig = {
   order_placed: {
     icon: ShoppingCart,
     label: 'Order Placed',
-    bg: 'bg-emerald-100',
-    text: 'text-emerald-700',
-    border: 'border-emerald-300',
-    dot: 'bg-emerald-500',
+    bg: 'bg-bone',
+    text: 'text-bone',
+    border: 'border-bone',
+    dot: 'bg-bone',
   },
   inquiry: {
     icon: HelpCircle,
     label: 'Inquiry',
-    bg: 'bg-blue-100',
-    text: 'text-blue-700',
-    border: 'border-blue-300',
-    dot: 'bg-blue-500',
+    bg: 'bg-bone',
+    text: 'text-bone',
+    border: 'border-bone',
+    dot: 'bg-bone',
   },
   missed: {
     icon: PhoneOff,
     label: 'Missed',
-    bg: 'bg-red-100',
-    text: 'text-red-700',
-    border: 'border-red-300',
-    dot: 'bg-red-500',
+    bg: 'bg-bone',
+    text: 'text-bone',
+    border: 'border-bone',
+    dot: 'bg-bone',
   },
   upsell_only: {
     icon: ArrowUpRight,
@@ -49,7 +49,7 @@ const outcomeConfig = {
 export function CallLogTable({ calls, onSelectCall, compact }: CallLogTableProps) {
   if (calls.length === 0) {
     return (
-      <div className="rounded-2xl border border-ringo-border bg-ringo-card/80 backdrop-blur-sm p-12 text-center ring-1 ring-black/[0.02]">
+      <div className="rounded-2xl border border-ringo-border bg-ringo-card/80 backdrop-blur-sm p-12 text-center ring-1 ring-obsidian/[0.02]">
         <div className="mx-auto w-12 h-12 rounded-full bg-ringo-border/30 flex items-center justify-center mb-3">
           <Phone className="h-5 w-5 text-ringo-muted" />
         </div>
@@ -60,7 +60,7 @@ export function CallLogTable({ calls, onSelectCall, compact }: CallLogTableProps
   }
 
   return (
-    <div className="rounded-2xl border border-ringo-border bg-ringo-card/80 backdrop-blur-sm overflow-hidden ring-1 ring-black/[0.02] shadow-sm">
+    <div className="rounded-2xl border border-ringo-border bg-ringo-card/80 backdrop-blur-sm overflow-hidden ring-1 ring-obsidian/[0.02] shadow-sm">
       {/* Table header - hidden on mobile */}
       <div className="hidden md:grid grid-cols-12 gap-4 px-5 py-3 border-b border-ringo-border bg-ringo-darker/50">
         <div className="col-span-3 text-[10px] font-bold uppercase tracking-widest text-ringo-muted">

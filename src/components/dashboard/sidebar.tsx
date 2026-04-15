@@ -117,7 +117,7 @@ export function Sidebar({ role }: SidebarProps) {
       {/* Overlay */}
       {mobileOpen && (
         <div
-          className="lg:hidden fixed inset-0 z-30 bg-black/60 backdrop-blur-sm"
+          className="lg:hidden fixed inset-0 z-30 bg-obsidian/60 backdrop-blur-sm"
           onClick={() => setMobileOpen(false)}
         />
       )}
@@ -155,22 +155,22 @@ export function Sidebar({ role }: SidebarProps) {
           </div>
 
           {/* Live Agent Status */}
-          <div className="mt-4 rounded-xl bg-gradient-to-r from-[#C9A84C]/10 to-[#C9A84C]/5 border border-[#C9A84C]/20 p-3">
+          <div className="mt-4 rounded-xl bg-gradient-to-r from-[#F3EEE3]/10 to-[#F3EEE3]/5 border border-[#F3EEE3]/20 p-3">
             <div className="flex items-center gap-2.5">
               <div className="relative">
-                <div className="h-8 w-8 rounded-lg bg-[#C9A84C]/20 flex items-center justify-center">
-                  <Headphones className="h-4 w-4 text-[#C9A84C]" />
+                <div className="h-8 w-8 rounded-lg bg-[#F3EEE3]/20 flex items-center justify-center">
+                  <Headphones className="h-4 w-4 text-[#F3EEE3]" />
                 </div>
                 <div className={cn(
                   'absolute -top-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-ringo-darker transition-all duration-1000',
-                  agentPulse ? 'bg-[#C9A84C] shadow-lg shadow-[#C9A84C]/50' : 'bg-[#C9A84C]'
+                  agentPulse ? 'bg-[#F3EEE3] shadow-lg shadow-[#F3EEE3]/50' : 'bg-[#F3EEE3]'
                 )} />
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-xs font-semibold text-foreground">AI Agent Active</p>
                 <p className="text-[10px] text-ringo-muted">Answering calls 24/7</p>
               </div>
-              <Activity className="h-4 w-4 text-[#C9A84C] animate-pulse" />
+              <Activity className="h-4 w-4 text-[#F3EEE3] animate-pulse" />
             </div>
           </div>
 
@@ -194,13 +194,13 @@ export function Sidebar({ role }: SidebarProps) {
                 className={cn(
                   'group flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition-all duration-200 min-h-[44px]',
                   isActive
-                    ? 'bg-[#C9A84C]/10 text-[#C9A84C] shadow-sm'
+                    ? 'bg-[#F3EEE3]/10 text-[#F3EEE3] shadow-sm'
                     : 'text-ringo-muted hover:bg-ringo-card/80 hover:text-foreground'
                 )}
               >
                 <div className={cn(
                   'rounded-lg p-1.5 transition-colors',
-                  isActive ? 'bg-[#C9A84C]/20' : 'bg-ringo-border/30 group-hover:bg-ringo-border/50'
+                  isActive ? 'bg-[#F3EEE3]/20' : 'bg-ringo-border/30 group-hover:bg-ringo-border/50'
                 )}>
                   <Icon className="h-4 w-4" />
                 </div>
@@ -208,12 +208,12 @@ export function Sidebar({ role }: SidebarProps) {
                   <p className="font-medium">{link.label}</p>
                   <p className={cn(
                     'text-[10px] transition-colors',
-                    isActive ? 'text-[#C9A84C]/70' : 'text-ringo-muted/60'
+                    isActive ? 'text-[#F3EEE3]/70' : 'text-ringo-muted/60'
                   )}>
                     {link.description}
                   </p>
                 </div>
-                {isActive && <ChevronRight className="h-3.5 w-3.5 text-[#C9A84C]/50" />}
+                {isActive && <ChevronRight className="h-3.5 w-3.5 text-[#F3EEE3]/50" />}
               </Link>
             );
           })}
@@ -225,7 +225,7 @@ export function Sidebar({ role }: SidebarProps) {
           <div className="rounded-xl bg-ringo-card/50 border border-ringo-border p-3">
             <div className="flex items-center justify-between mb-2">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-ringo-muted">Today&apos;s Calls</p>
-              <span className="text-xs font-bold text-[#C9A84C]">
+              <span className="text-xs font-bold text-[#F3EEE3]">
                 {todayCalls} / {callLimit >= 9999 ? '∞' : callLimit}
               </span>
             </div>
@@ -234,8 +234,8 @@ export function Sidebar({ role }: SidebarProps) {
                 className={cn(
                   'h-full rounded-full transition-all duration-500',
                   todayCalls / callLimit > 0.9
-                    ? 'bg-gradient-to-r from-red-600 to-red-700'
-                    : 'bg-gradient-to-r from-[#C9A84C] to-[#F5E196]'
+                    ? 'bg-gradient-to-r from-bone to-bone'
+                    : 'bg-gradient-to-r from-[#F3EEE3] to-[#C8C8C8]'
                 )}
                 style={{ width: `${Math.min((todayCalls / callLimit) * 100, 100)}%` }}
               />
@@ -244,7 +244,7 @@ export function Sidebar({ role }: SidebarProps) {
 
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-ringo-muted hover:bg-red-500/10 hover:text-red-400 transition-all duration-200"
+            className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-ringo-muted hover:bg-bone/10 hover:text-bone transition-all duration-200"
           >
             <LogOut className="h-4 w-4" />
             Sign Out

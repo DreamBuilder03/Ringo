@@ -163,18 +163,34 @@ export async function POST(request: NextRequest) {
       // Don't fail the webhook if email fails
     }
 
-    // Push to Square POS (non-blocking)
+    // Push to the restaurant's POS (non-blocking). Route by pos_type — Square
+    // payment links may be used even when the merchant runs Clover/Toast/SpotOn.
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://useringo.ai';
-    fetch(`${baseUrl}/api/pos/square`, {
+    const { data: posLookup } = await supabase
+      .from('restaurants')
+      .select('pos_type')
+      .eq('id', order.restaurant_id)
+      .single();
+    const posType = (posLookup as { pos_type?: string } | null)?.pos_type || 'square';
+    const posPath = ['square', 'clover', 'toast', 'spoton'].includes(posType)
+      ? `/api/pos/${posType}`
+      : '/api/pos/square';
+
+    // Each POS route accepts slightly different payload shapes. We pass the
+    // superset — unused fields are ignored.
+    fetch(`${baseUrl}${posPath}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        // Square expects orderId/restaurantId (camelCase); Clover expects order_id/restaurant_id (snake_case).
         orderId: order.id,
+        order_id: order.id,
+        restaurantId: order.restaurant_id,
+        restaurant_id: order.restaurant_id,
         items: order.items,
         subtotal: order.subtotal,
         tax: order.tax,
         total: order.total,
-        restaurantId: order.restaurant_id,
       }),
     }).then(async (res) => {
       if (res.ok) {
@@ -185,12 +201,12 @@ export async function POST(request: NextRequest) {
             status: 'preparing',
           })
           .eq('id', order.id);
-        console.log(`[Square Webhook] Order ${order.id} pushed to POS, status → preparing`);
+        console.log(`[Square Webhook] Order ${order.id} pushed to ${posType} POS, status → preparing`);
       } else {
-        console.error(`[Square Webhook] POS push failed for order ${order.id}: ${res.status}`);
+        console.error(`[Square Webhook] POS push failed for order ${order.id} (${posType}): ${res.status}`);
       }
     }).catch((err) => {
-      console.error(`[Square Webhook] POS push error for order ${order.id}:`, err);
+      console.error(`[Square Webhook] POS push error for order ${order.id} (${posType}):`, err);
     });
 
     // Update call record

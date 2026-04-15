@@ -113,10 +113,10 @@ export default function RestaurantDetailPage({ params }: { params: { id: string 
   }
 
   const outcomeColors: Record<string, string> = {
-    order_placed: 'text-emerald-400 bg-emerald-400/10',
-    inquiry: 'text-blue-400 bg-blue-400/10',
-    missed: 'text-red-400 bg-red-400/10',
-    upsell_only: 'text-amber-400 bg-amber-400/10',
+    order_placed: 'text-bone bg-bone/10',
+    inquiry: 'text-bone bg-bone/10',
+    missed: 'text-bone bg-bone/10',
+    upsell_only: 'text-bone bg-bone/10',
   };
 
   return (
@@ -134,8 +134,8 @@ export default function RestaurantDetailPage({ params }: { params: { id: string 
             <span className={cn(
               'inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-bold',
               restaurant.retell_agent_id
-                ? 'bg-emerald-400/10 text-emerald-400 border border-emerald-400/20'
-                : 'bg-red-400/10 text-red-400 border border-red-400/20'
+                ? 'bg-bone/10 text-bone border border-bone/20'
+                : 'bg-bone/10 text-bone border border-bone/20'
             )}>
               {restaurant.retell_agent_id ? <Wifi className="h-3 w-3" /> : <WifiOff className="h-3 w-3" />}
               {restaurant.retell_agent_id ? 'AI Active' : 'No Agent'}
@@ -160,7 +160,7 @@ export default function RestaurantDetailPage({ params }: { params: { id: string 
         <div className="rounded-2xl border border-ringo-border bg-ringo-card p-5">
           <div className="flex items-center justify-between mb-3">
             <p className="text-[10px] font-bold uppercase tracking-widest text-ringo-muted">Revenue Today</p>
-            <DollarSign className="h-4 w-4 text-emerald-400" />
+            <DollarSign className="h-4 w-4 text-bone" />
           </div>
           <p className="text-3xl font-bold text-foreground">{formatCurrency(restaurant.revenue_today)}</p>
         </div>

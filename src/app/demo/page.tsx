@@ -99,7 +99,7 @@ export default function DemoHero() {
       <div className="grain" />
       <div className="relative mx-auto flex max-w-4xl flex-col items-center px-6 pb-24 pt-20 md:pt-28">
         <div className="fade-in flex flex-col items-center text-center">
-          <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs uppercase tracking-[0.14em] text-white/60">
+          <span className="mb-6 inline-flex items-center gap-2 rounded-full border border-bone/10 bg-bone/[0.03] px-3 py-1.5 text-xs uppercase tracking-[0.14em] text-bone/60">
             <span className="live-dot" /> Live demo, under a minute
           </span>
           <h1
@@ -107,9 +107,9 @@ export default function DemoHero() {
           >
             Hear Ringo answer
             <br />
-            <span className="italic text-white/70">your</span> restaurant.
+            <span className="italic text-bone/70">your</span> restaurant.
           </h1>
-          <p className="mt-5 max-w-xl text-[15px] text-white/60 sm:text-base">
+          <p className="mt-5 max-w-xl text-[15px] text-bone/60 sm:text-base">
             Type your restaurant&apos;s name. We&apos;ll spin up a live AI host that sounds like <em className="italic">you</em> — then call you for a real test run.
           </p>
         </div>
@@ -118,7 +118,7 @@ export default function DemoHero() {
           <div className="relative">
             <div className="relative flex items-center">
               <svg
-                className="pointer-events-none absolute left-5 h-5 w-5 text-white/40"
+                className="pointer-events-none absolute left-5 h-5 w-5 text-bone/40"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -139,7 +139,7 @@ export default function DemoHero() {
                 aria-label="Search for your restaurant"
               />
               {loading && (
-                <svg className="absolute right-5 h-5 w-5 animate-spin text-white/40" viewBox="0 0 24 24" fill="none">
+                <svg className="absolute right-5 h-5 w-5 animate-spin text-bone/40" viewBox="0 0 24 24" fill="none">
                   <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.25" strokeWidth="3" />
                   <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
                 </svg>
@@ -159,19 +159,19 @@ export default function DemoHero() {
                     }}
                   >
                     <div className="text-[15px] font-medium">{s.mainText}</div>
-                    <div className="text-sm text-white/50">{s.secondaryText}</div>
+                    <div className="text-sm text-bone/50">{s.secondaryText}</div>
                   </div>
                 ))}
               </div>
             )}
           </div>
 
-          <p className="mt-4 text-center text-xs text-white/40">
+          <p className="mt-4 text-center text-xs text-bone/40">
             Powered by Google. We only use your search to personalize the demo.
           </p>
         </div>
 
-        <div className="fade-in mt-12 flex flex-wrap items-center justify-center gap-6 text-xs text-white/50">
+        <div className="fade-in mt-12 flex flex-wrap items-center justify-center gap-6 text-xs text-bone/50">
           <div className="flex items-center gap-2">
             <Check /> Bilingual: English &amp; Spanish
           </div>
