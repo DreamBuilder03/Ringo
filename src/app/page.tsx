@@ -8,16 +8,12 @@ import {
   PhoneCall,
   ArrowRight,
   Check,
-  Zap,
   BarChart3,
-  Star,
   ChevronDown,
   MessageSquare,
   Sparkles,
   Menu,
   X,
-  TrendingUp,
-  DollarSign,
   Activity,
   Mic,
   ShoppingCart,
@@ -29,12 +25,9 @@ import {
 } from "lucide-react";
 
 /* ═══════════════════════════════════════════════════════════════════════
-   BRAND COLORS — Championship Gold System
+   BRAND PALETTE — Pure Monochrome (v2, 2026-04-14)
+   Obsidian → Bone axis only. No hue anywhere. See tailwind.config.ts.
    ═══════════════════════════════════════════════════════════════════════ */
-const GOLD = "#F3EEE3";
-const CHAMPAGNE = "#C8C8C8";
-const BG_DARK = "#0A0A0A";
-const CARD_DARK = "#0A0A0A";
 
 /* ═══════════════════════════════════════════════════════════════════════
    SCROLL ANIMATION HOOK
