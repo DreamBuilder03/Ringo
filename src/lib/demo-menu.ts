@@ -143,16 +143,20 @@ async function extractMenuViaLLM(
   if (!apiKey) return null;
 
   // Truncate to keep token usage sane.
-  const truncated = text.slice(0, 8000);
+  const truncated = text.slice(0, 12000);
 
-  const prompt = `You are extracting a real menu for an AI phone-ordering agent.
-Restaurant: ${restaurantName}
-Source text (scraped from their website):
+  const prompt = `You are building the menu an AI phone-ordering agent will offer callers at ${restaurantName}.
+
+Scraped website text:
 """
 ${truncated}
 """
 
-Return 5 to 8 of the most popular / signature menu items as ONE single line, comma-separated, with prices when available. Format each item as: "Item Name $X.XX". If a price is missing, omit the price for that item. Do NOT include categories, headers, descriptions, disclaimers, or any prose. If you cannot find any real menu items, respond with exactly: NONE`;
+Extract AT LEAST 8 and ideally 10-14 real menu items from this text. Include a good variety: appetizers, entrees, signature/popular items, sides, drinks, desserts when present. For a Mexican restaurant include multiple taco varieties (al pastor, asada, chicken, fish, etc.), burritos, tortas, quesadillas — not just one of each. Match the tone and breadth of the actual menu.
+
+Format: ONE single line, comma-separated. Each item as "Item Name $X.XX" (omit price if not shown). No categories, no headers, no prose.
+
+CRITICAL: If the page text is thin (navigation-only, or just a few words), still extract whatever looks like food items and invent reasonable variety for a ${restaurantName}-style restaurant so the agent has something to offer. Never return fewer than 5 items. Never return NONE unless the text is completely unrelated to food.`;
 
   try {
     const res = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -163,8 +167,8 @@ Return 5 to 8 of the most popular / signature menu items as ONE single line, com
       },
       body: JSON.stringify({
         model: 'gpt-4o-mini',
-        temperature: 0.2,
-        max_tokens: 300,
+        temperature: 0.3,
+        max_tokens: 600,
         messages: [
           { role: 'system', content: 'You extract structured menu data from messy restaurant website text. Output one comma-separated line only.' },
           { role: 'user', content: prompt },
@@ -176,7 +180,11 @@ Return 5 to 8 of the most popular / signature menu items as ONE single line, com
     const out: string = data?.choices?.[0]?.message?.content?.trim() || '';
     if (!out || /^NONE$/i.test(out)) return null;
     // Take first line only, in case the model adds anything extra.
-    return out.split('\n')[0].trim();
+    const line = out.split('\n')[0].trim();
+    // Validate: need at least 5 comma-separated items.
+    const count = line.split(',').filter((s) => s.trim().length > 2).length;
+    if (count < 5) return null;
+    return line;
   } catch {
     return null;
   }
