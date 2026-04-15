@@ -329,3 +329,94 @@ export function welcomeEmail({
 
   return emailWrapper('Welcome to Ringo', content);
 }
+
+/**
+ * Monthly ROI report — the retention/renewal driver.
+ *
+ * Goal: every 1st of the month, show the owner *in dollars* why Ringo pays for
+ * itself. We lead with total revenue captured, then subtract the subscription
+ * cost, then surface the signature pay-before-prep savings (no-shows avoided)
+ * so they internalize the "Ringo saves me money Loman can't" story.
+ */
+export function monthlyRoiEmail({
+  restaurantName,
+  monthLabel,            // e.g. "March 2026"
+  totalCalls,
+  ordersPlaced,
+  orderRevenue,
+  upsellRevenue,
+  avoidedNoShowRevenue,  // $ of paid-before-prep tickets that would've ghosted pre-Ringo
+  monthlyCost,           // their Ringo subscription $ for the month
+}: {
+  restaurantName: string;
+  monthLabel: string;
+  totalCalls: number;
+  ordersPlaced: number;
+  orderRevenue: number;
+  upsellRevenue: number;
+  avoidedNoShowRevenue: number;
+  monthlyCost: number;
+}): string {
+  const captured = orderRevenue + upsellRevenue;
+  const totalValue = captured + avoidedNoShowRevenue;
+  const netGain = totalValue - monthlyCost;
+  const roiMultiple = monthlyCost > 0 ? (totalValue / monthlyCost).toFixed(1) : '—';
+  const fmt = (n: number) =>
+    '$' + Math.round(n).toLocaleString('en-US');
+
+  const content = `
+    <h2>${restaurantName} — ROI for ${monthLabel}</h2>
+    <p>Here's what Ringo did for you last month.</p>
+
+    <div class="stat-box">
+      <p class="stat-label">Total value delivered</p>
+      <p class="stat-value">${fmt(totalValue)}</p>
+      <p style="margin: 4px 0 0 0; font-size: 13px; color: #6B6B6B;">
+        ${roiMultiple}× your ${fmt(monthlyCost)} subscription
+      </p>
+    </div>
+
+    <div style="display: block; margin: 20px 0;">
+      <div style="padding: 12px 0; border-bottom: 1px solid #E5E5E5;">
+        <span style="color: #6B6B6B;">Calls handled</span>
+        <span style="float: right; font-weight: 600; color: ${BRAND_DARK};">${totalCalls.toLocaleString()}</span>
+      </div>
+      <div style="padding: 12px 0; border-bottom: 1px solid #E5E5E5;">
+        <span style="color: #6B6B6B;">Orders placed</span>
+        <span style="float: right; font-weight: 600; color: ${BRAND_DARK};">${ordersPlaced.toLocaleString()}</span>
+      </div>
+      <div style="padding: 12px 0; border-bottom: 1px solid #E5E5E5;">
+        <span style="color: #6B6B6B;">Order revenue captured</span>
+        <span style="float: right; font-weight: 600; color: ${BRAND_DARK};">${fmt(orderRevenue)}</span>
+      </div>
+      <div style="padding: 12px 0; border-bottom: 1px solid #E5E5E5;">
+        <span style="color: #6B6B6B;">Upsell revenue (AI-driven)</span>
+        <span style="float: right; font-weight: 600; color: ${BRAND_DARK};">${fmt(upsellRevenue)}</span>
+      </div>
+      <div style="padding: 12px 0;">
+        <span style="color: #6B6B6B;">Wasted food avoided (pay-before-prep)</span>
+        <span style="float: right; font-weight: 600; color: ${BRAND_DARK};">${fmt(avoidedNoShowRevenue)}</span>
+      </div>
+    </div>
+
+    <div style="background-color: #F7F4EC; border-left: 4px solid ${BRAND_GOLD}; padding: 16px; margin: 24px 0; border-radius: 4px;">
+      <p style="margin: 0; font-size: 13px; color: #6B6B6B;">Net gain this month</p>
+      <p style="margin: 4px 0 0 0; font-size: 24px; font-weight: 700; color: ${BRAND_DARK};">${fmt(netGain)}</p>
+      <p style="margin: 8px 0 0 0; font-size: 12px; color: #6B6B6B;">
+        Ringo's pay-before-prep is what separates us from every other voice AI —
+        no other vendor stops the kitchen from firing tickets that never get picked up.
+      </p>
+    </div>
+
+    <center>
+      <a href="https://www.useringo.ai/dashboard/analytics" class="button">See full analytics</a>
+    </center>
+
+    <p style="text-align: center; color: #9C9C9C; font-size: 12px; margin-top: 24px;">
+      Know a restaurant that could use this? Refer them and we'll credit you one month free.<br/>
+      Reply to this email and we'll make it happen.
+    </p>
+  `;
+
+  return emailWrapper(`Your ${monthLabel} ROI`, content);
+}

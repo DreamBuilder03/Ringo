@@ -522,7 +522,8 @@ export default function HomePage() {
 
   const navLinks = [
     { label: "Features", href: "#features" },
-    { label: "How It Works", href: "#how-it-works" },
+    { label: "How it works", href: "#how-it-works" },
+    { label: "Integrations", href: "#integrations" },
     { label: "Pricing", href: "#pricing" },
   ];
 
@@ -554,31 +555,39 @@ export default function HomePage() {
       `}</style>
 
       {/* ═══════════════ 1. NAVIGATION ═══════════════ */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
+      <nav className={`fixed top-0 left-0 right-0 z-50 transition-[background,border,backdrop-filter,box-shadow] duration-300 ${
         scrolled
-          ? "bg-[#0A0A0A]/90 backdrop-blur-xl border-b border-bone/[0.06] shadow-lg shadow-obsidian/10"
-          : "bg-transparent"
+          ? "bg-[#0A0A0A]/85 backdrop-blur-xl border-b border-bone/[0.06] shadow-lg shadow-obsidian/10"
+          : "bg-transparent border-b border-transparent"
       }`}>
-        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <Link href="/" className="flex items-center">
+        <div className={`max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 flex items-center justify-between transition-[height] duration-300 ${scrolled ? "h-14" : "h-20"}`}>
+          <Link href="/" className="flex items-center gap-2 group">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/ringo-logo.png" alt="Ringo" className="h-9 w-auto brightness-0 invert" />
+            <img src="/ringo-logo.png" alt="Ringo" className="h-8 w-auto brightness-0 invert transition-transform duration-300 group-hover:scale-[1.03]" />
           </Link>
 
-          <div className="hidden md:flex items-center gap-7">
+          <div className="hidden lg:flex items-center gap-1 bg-bone/[0.03] border border-bone/[0.06] rounded-full px-2 py-1.5">
             {navLinks.map((link) => (
-              <Link key={link.label} href={link.href} className="text-bone/50 hover:text-bone transition-colors text-sm font-medium">
+              <Link
+                key={link.label}
+                href={link.href}
+                className="text-bone/60 hover:text-bone px-3.5 py-1.5 rounded-full text-[13px] font-medium tracking-tight transition-[color,background-color] duration-200 hover:bg-bone/[0.05]"
+              >
                 {link.label}
               </Link>
             ))}
           </div>
 
-          <div className="hidden md:flex items-center gap-3">
-            <Link href="/login" className="text-bone/60 hover:text-bone transition-colors text-sm font-medium px-4 py-2">
+          <div className="hidden md:flex items-center gap-2">
+            <Link href="/login" className="text-bone/60 hover:text-bone transition-colors text-[13px] font-medium px-4 py-2">
               Log in
             </Link>
-            <Link href="#pricing" className="bg-[#F3EEE3] hover:bg-[#C8C8C8] text-[#0A0A0A] px-5 py-2 rounded-lg text-sm font-semibold transition-all hover:shadow-lg hover:shadow-[#F3EEE3]/20">
-              Get Started
+            <Link
+              href="#demo"
+              className="group relative inline-flex items-center gap-1.5 bg-[#F3EEE3] text-[#0A0A0A] px-4 py-2 rounded-full text-[13px] font-semibold transition-[transform,box-shadow] duration-200 hover:shadow-[0_0_0_4px_rgba(243,238,227,0.12)] active:scale-[0.98]"
+            >
+              Schedule a demo
+              <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
             </Link>
           </div>
 
@@ -597,8 +606,8 @@ export default function HomePage() {
             ))}
             <hr className="border-bone/[0.08] my-2" />
             <Link href="/login" className="block text-bone/60 hover:text-bone py-2.5 text-sm font-medium">Log in</Link>
-            <Link href="#pricing" className="block bg-[#F3EEE3] text-[#0A0A0A] text-center py-2.5 rounded-lg text-sm font-semibold mt-2">
-              Get Started
+            <Link href="#demo" className="block bg-[#F3EEE3] text-[#0A0A0A] text-center py-2.5 rounded-full text-sm font-semibold mt-2">
+              Schedule a demo
             </Link>
           </div>
         )}
@@ -618,13 +627,32 @@ export default function HomePage() {
             </div>
           </div>
 
-          <h1 className="text-center text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-bone leading-[1.08] tracking-tight mb-6 max-w-4xl mx-auto" style={{ fontFamily: "'Fraunces', serif" }}>
-            Never miss a phone order{" "}
-            <span className="bg-gradient-to-r from-[#F3EEE3] via-[#C8C8C8] to-[#F3EEE3] bg-clip-text text-transparent">again</span>
+          <h1 className="text-center text-4xl sm:text-5xl md:text-6xl lg:text-[72px] font-normal text-bone leading-[1.04] tracking-[-0.035em] mb-3 max-w-4xl mx-auto" style={{ fontFamily: "'Fraunces', serif", fontVariationSettings: "'opsz' 144, 'SOFT' 40" }}>
+            The phone rings.
+            <br className="hidden sm:block" />
+            <span className="text-bone/50"> Ringo recovers</span>
           </h1>
 
-          <p className="text-center text-lg md:text-xl text-bone/50 max-w-2xl mx-auto leading-relaxed mb-14">
-            Ringo answers every call, takes orders, upsells intelligently, and sends payment links — 24/7. Your AI employee that never calls in sick.
+          <div className="text-center mb-6 relative">
+            <span
+              className="block money-number text-[#F3EEE3] leading-[0.9]"
+              style={{
+                fontFamily: "'Fraunces', serif",
+                fontStyle: "italic",
+                fontVariationSettings: "'opsz' 144, 'SOFT' 50",
+                fontSize: "clamp(96px, 18vw, 180px)",
+                letterSpacing: "-0.045em",
+              }}
+            >
+              <AnimatedCounter target={31050} prefix="$" />
+            </span>
+            <p className="text-bone/40 text-xs uppercase tracking-[0.22em] mt-2 font-medium">
+              recovered per location, every month
+            </p>
+          </div>
+
+          <p className="text-center text-lg md:text-xl text-bone/55 max-w-2xl mx-auto leading-relaxed mb-14">
+            Ringo answers every call, takes orders, upsells, and collects payment before the kitchen starts prep — 24/7. The AI employee that never calls in sick.
           </p>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center max-w-5xl mx-auto">
@@ -641,17 +669,37 @@ export default function HomePage() {
       </section>
 
       {/* ═══════════════ 3. PAIN STATS BAR ═══════════════ */}
-      <section className="bg-[#0A0A0A] py-14 px-5 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <section className="bg-[#0A0A0A] py-20 md:py-28 px-5 sm:px-6 lg:px-8 border-t border-bone/[0.06]">
+        <div className="max-w-6xl mx-auto">
+          <RevealSection>
+            <div className="text-center mb-16 max-w-2xl mx-auto">
+              <p className="eyebrow text-bone/50 mb-4">The leak</p>
+              <h2 className="text-3xl md:text-4xl lg:text-[44px] font-normal text-bone leading-[1.1] tracking-[-0.025em]" style={{ fontFamily: "'Fraunces', serif", fontVariationSettings: "'opsz' 96, 'SOFT' 50" }}>
+                Every missed call is money in the trash.
+              </h2>
+            </div>
+          </RevealSection>
+          <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-bone/[0.06] border border-bone/[0.06] rounded-2xl overflow-hidden bg-gradient-to-b from-[#141414] to-[#0A0A0A]">
             {[
-              { value: "30%", label: "of restaurant calls go unanswered during peak hours" },
-              { value: "$37K", label: "average annual revenue lost to missed phone orders" },
-              { value: "62%", label: "of callers won\u2019t call back if no one picks up" },
+              { target: 30, prefix: "", suffix: "%", label: "of restaurant calls go unanswered during peak hours" },
+              { target: 23, prefix: "$", suffix: "", label: "average ticket on a phone order walking away" },
+              { target: 31050, prefix: "$", suffix: "", label: "average monthly revenue lost to missed calls" },
             ].map((stat) => (
-              <div key={stat.value} className="text-center">
-                <p className="text-4xl md:text-5xl font-bold text-[#F3EEE3] mb-2">{stat.value}</p>
-                <p className="text-sm text-[#6B6B6B] leading-relaxed">{stat.label}</p>
+              <div key={stat.label} className="p-8 md:p-12 text-center md:text-left">
+                <span
+                  className="block text-bone"
+                  style={{
+                    fontFamily: "'Fraunces', serif",
+                    fontStyle: "italic",
+                    fontVariationSettings: "'opsz' 144, 'SOFT' 50",
+                    fontSize: "clamp(64px, 9vw, 112px)",
+                    letterSpacing: "-0.045em",
+                    lineHeight: 0.95,
+                  }}
+                >
+                  <AnimatedCounter target={stat.target} prefix={stat.prefix} suffix={stat.suffix} />
+                </span>
+                <p className="text-sm text-bone/50 leading-relaxed mt-5 max-w-[240px] mx-auto md:mx-0">{stat.label}</p>
               </div>
             ))}
           </div>
