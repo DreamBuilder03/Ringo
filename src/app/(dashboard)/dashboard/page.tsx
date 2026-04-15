@@ -21,6 +21,7 @@ import { DashboardSkeleton } from '@/components/ui/skeleton';
 import { formatCurrency } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
 import { getUserRestaurant, getDashboardStats, getRecentCalls, getMonthlyStats, getPeakHours } from '@/lib/queries';
+import { useRestaurantStore } from '@/stores/restaurant-store';
 import type { Call } from '@/types/database';
 
 export default function DashboardPage() {
@@ -32,12 +33,20 @@ export default function DashboardPage() {
   const [heatmapData, setHeatmapData] = useState<Record<string, Record<number, number>>>({});
   const [restaurantName, setRestaurantName] = useState('');
   const [error, setError] = useState('');
+  const currentRestaurant = useRestaurantStore((s) => s.currentRestaurant);
+  const setCurrentRestaurant = useRestaurantStore((s) => s.setCurrentRestaurant);
 
   useEffect(() => {
     async function loadDashboard() {
       try {
         const supabase = createClient();
-        const restaurant = await getUserRestaurant(supabase);
+        // Prefer the currently-selected location from the switcher; fall back
+        // to the user's default restaurant on first load (seeds the store).
+        let restaurant = currentRestaurant;
+        if (!restaurant) {
+          restaurant = await getUserRestaurant(supabase);
+          if (restaurant) setCurrentRestaurant(restaurant);
+        }
 
         if (!restaurant) {
           setError('No restaurant found. Complete onboarding first.');
@@ -158,7 +167,8 @@ export default function DashboardPage() {
     }
 
     loadDashboard();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentRestaurant?.id]);
 
   if (loading) {
     return <DashboardSkeleton />;

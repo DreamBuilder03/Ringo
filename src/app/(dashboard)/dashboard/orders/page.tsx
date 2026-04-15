@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { getUserRestaurant } from '@/lib/queries';
+import { useRestaurantStore } from '@/stores/restaurant-store';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -234,13 +235,19 @@ export default function OrdersPage() {
   const pageSize = 20;
   const supabaseRef = useRef(createClient());
   const subscriptionRef = useRef<any>(null);
+  const currentRestaurant = useRestaurantStore((s) => s.currentRestaurant);
+  const setCurrentRestaurant = useRestaurantStore((s) => s.setCurrentRestaurant);
 
   // Load orders
   useEffect(() => {
     async function loadOrders() {
       setLoading(true);
       const supabase = supabaseRef.current;
-      const restaurant = await getUserRestaurant(supabase);
+      let restaurant = currentRestaurant;
+      if (!restaurant) {
+        restaurant = await getUserRestaurant(supabase);
+        if (restaurant) setCurrentRestaurant(restaurant);
+      }
       if (!restaurant) {
         setLoading(false);
         return;
@@ -273,13 +280,17 @@ export default function OrdersPage() {
     }
 
     loadOrders();
-  }, [statusFilter, searchPhone, page]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter, searchPhone, page, currentRestaurant?.id]);
 
   // Subscribe to real-time changes
   useEffect(() => {
     async function subscribeToOrders() {
       const supabase = supabaseRef.current;
-      const restaurant = await getUserRestaurant(supabase);
+      let restaurant = currentRestaurant;
+      if (!restaurant) {
+        restaurant = await getUserRestaurant(supabase);
+      }
       if (!restaurant) return;
 
       if (subscriptionRef.current) {
@@ -299,7 +310,10 @@ export default function OrdersPage() {
           () => {
             // Reload orders on any change
             const loadOrders = async () => {
-              const restaurant = await getUserRestaurant(supabase);
+              let restaurant = currentRestaurant;
+              if (!restaurant) {
+                restaurant = await getUserRestaurant(supabase);
+              }
               if (!restaurant) return;
 
               let query = supabase
@@ -336,7 +350,8 @@ export default function OrdersPage() {
         subscriptionRef.current.unsubscribe();
       }
     };
-  }, [statusFilter, searchPhone, page]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [statusFilter, searchPhone, page, currentRestaurant?.id]);
 
   const toggleExpanded = (orderId: string) => {
     setExpandedOrderIds((prev) => {

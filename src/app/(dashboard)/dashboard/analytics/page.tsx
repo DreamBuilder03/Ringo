@@ -18,6 +18,7 @@ import {
 import { cn, formatCurrency } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
 import { getUserRestaurant, getAnalytics } from '@/lib/queries';
+import { useRestaurantStore } from '@/stores/restaurant-store';
 
 type TimeRange = '7d' | '30d' | '90d';
 
@@ -53,12 +54,18 @@ export default function AnalyticsPage() {
   const [range, setRange] = useState<TimeRange>('30d');
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const currentRestaurant = useRestaurantStore((s) => s.currentRestaurant);
+  const setCurrentRestaurant = useRestaurantStore((s) => s.setCurrentRestaurant);
 
   useEffect(() => {
     async function load() {
       setLoading(true);
       const supabase = createClient();
-      const restaurant = await getUserRestaurant(supabase);
+      let restaurant = currentRestaurant;
+      if (!restaurant) {
+        restaurant = await getUserRestaurant(supabase);
+        if (restaurant) setCurrentRestaurant(restaurant);
+      }
       if (!restaurant) {
         setLoading(false);
         return;
@@ -69,7 +76,8 @@ export default function AnalyticsPage() {
       setLoading(false);
     }
     load();
-  }, [range]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [range, currentRestaurant?.id]);
 
   if (loading) {
     return (

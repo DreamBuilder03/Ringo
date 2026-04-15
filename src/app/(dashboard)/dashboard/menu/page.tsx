@@ -17,6 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { createClient } from '@/lib/supabase/client';
 import { getUserRestaurant } from '@/lib/queries';
+import { useRestaurantStore } from '@/stores/restaurant-store';
 import type { MenuItem, MenuModifier } from '@/types/database';
 
 interface MenuItemForm {
@@ -59,13 +60,19 @@ export default function MenuManagementPage() {
   const [error, setError] = useState('');
 
   const supabase = createClient();
+  const currentRestaurant = useRestaurantStore((s) => s.currentRestaurant);
+  const setCurrentRestaurant = useRestaurantStore((s) => s.setCurrentRestaurant);
 
   // Load restaurant and menu items
   useEffect(() => {
     async function loadData() {
       try {
         setLoading(true);
-        const restaurant = await getUserRestaurant(supabase);
+        let restaurant = currentRestaurant;
+        if (!restaurant) {
+          restaurant = await getUserRestaurant(supabase);
+          if (restaurant) setCurrentRestaurant(restaurant);
+        }
 
         if (!restaurant) {
           setError('No restaurant found. Please complete onboarding first.');
@@ -96,7 +103,8 @@ export default function MenuManagementPage() {
     }
 
     loadData();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentRestaurant?.id]);
 
   // Get unique categories
   const categories = ['All', ...Array.from(new Set(menuItems

@@ -5,6 +5,7 @@ import { CallLogTable } from '@/components/dashboard/call-log-table';
 import { TranscriptViewer } from '@/components/dashboard/transcript-viewer';
 import { createClient } from '@/lib/supabase/client';
 import { getUserRestaurant, getRecentCalls } from '@/lib/queries';
+import { useRestaurantStore } from '@/stores/restaurant-store';
 import { Phone, Filter, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Call } from '@/types/database';
@@ -24,12 +25,18 @@ export default function CallsPage() {
   const [filter, setFilter] = useState('all');
   const [page, setPage] = useState(0);
   const pageSize = 25;
+  const currentRestaurant = useRestaurantStore((s) => s.currentRestaurant);
+  const setCurrentRestaurant = useRestaurantStore((s) => s.setCurrentRestaurant);
 
   useEffect(() => {
     async function loadCalls() {
       setLoading(true);
       const supabase = createClient();
-      const restaurant = await getUserRestaurant(supabase);
+      let restaurant = currentRestaurant;
+      if (!restaurant) {
+        restaurant = await getUserRestaurant(supabase);
+        if (restaurant) setCurrentRestaurant(restaurant);
+      }
       if (!restaurant) {
         setLoading(false);
         return;
@@ -49,7 +56,8 @@ export default function CallsPage() {
     }
 
     loadCalls();
-  }, [filter, page]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filter, page, currentRestaurant?.id]);
 
   const totalPages = Math.ceil(total / pageSize);
 

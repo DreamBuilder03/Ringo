@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import { getUserRestaurant } from '@/lib/queries';
+import { useRestaurantStore } from '@/stores/restaurant-store';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { cn, formatCurrency } from '@/lib/utils';
@@ -257,13 +258,19 @@ export default function CustomersPage() {
   const [sortBy, setSortBy] = useState<SortOption>('spend');
   const [expandedPhones, setExpandedPhones] = useState<Set<string>>(new Set());
   const supabaseRef = useRef(createClient());
+  const currentRestaurant = useRestaurantStore((s) => s.currentRestaurant);
+  const setCurrentRestaurant = useRestaurantStore((s) => s.setCurrentRestaurant);
 
   // Load customers
   useEffect(() => {
     async function loadCustomers() {
       setLoading(true);
       const supabase = supabaseRef.current;
-      const restaurant = await getUserRestaurant(supabase);
+      let restaurant = currentRestaurant;
+      if (!restaurant) {
+        restaurant = await getUserRestaurant(supabase);
+        if (restaurant) setCurrentRestaurant(restaurant);
+      }
       if (!restaurant) {
         setLoading(false);
         return;
@@ -320,7 +327,8 @@ export default function CustomersPage() {
     }
 
     loadCustomers();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentRestaurant?.id]);
 
   // Apply filters and sorting
   useEffect(() => {
