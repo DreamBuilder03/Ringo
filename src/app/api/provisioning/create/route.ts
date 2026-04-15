@@ -15,6 +15,12 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
 //
 // Requires these env vars:
 //   TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN
+//   TWILIO_SIP_TRUNK_SID             — the TK... SID of the Elastic SIP Trunk
+//                                      purchased numbers should be assigned to
+//   TWILIO_SIP_TRUNK_TERMINATION_URI — e.g. "ringo.pstn.twilio.com" — passed
+//                                      to Retell so it knows where to SIP calls
+//   TWILIO_SIP_TRUNK_USERNAME, TWILIO_SIP_TRUNK_PASSWORD  (optional, only if
+//                                      the trunk uses credential auth vs IP ACL)
 //   RETELL_API_KEY
 //   RINGO_TEMPLATE_AGENT_ID  (the shared Ringo — Default Restaurant agent)
 //   NEXT_PUBLIC_APP_URL
@@ -80,15 +86,22 @@ async function twilioBuyLocalNumber(areaCode: string): Promise<{
     throw new Error(`No Twilio numbers available in area code ${areaCode}`);
   }
 
-  // Step 2: purchase it. We'll wire it to Retell in step 3 below, but we
-  // can set a safe fallback VoiceUrl now so the number isn't silent during
-  // the few seconds between purchase and Retell attachment.
+  // Step 2: purchase it. If TWILIO_SIP_TRUNK_SID is configured, assign the
+  // number to our Elastic SIP Trunk at purchase time — that's what routes
+  // inbound calls to Retell via the trunk's termination URI. If no trunk
+  // is configured (legacy), fall back to a safe VoiceUrl so the number
+  // isn't silent.
+  const trunkSid = process.env.TWILIO_SIP_TRUNK_SID;
   const buyBody = new URLSearchParams({
     PhoneNumber: phoneNumber,
     FriendlyName: `Ringo — provisioned ${new Date().toISOString()}`,
-    VoiceUrl: `${appUrl}/api/twilio/voice-fallback`,
-    VoiceMethod: 'POST',
   });
+  if (trunkSid) {
+    buyBody.set('TrunkSid', trunkSid);
+  } else {
+    buyBody.set('VoiceUrl', `${appUrl}/api/twilio/voice-fallback`);
+    buyBody.set('VoiceMethod', 'POST');
+  }
   const buyRes = await fetch(
     `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/IncomingPhoneNumbers.json`,
     {
@@ -187,29 +200,43 @@ async function retellCloneAgent(params: {
 
 async function retellRegisterPhoneNumber(params: {
   twilioPhoneNumber: string;
-  twilioAccountSid: string;
-  twilioAuthToken: string;
   agentId: string;
 }): Promise<{ retellPhoneNumberId: string }> {
   const apiKey = process.env.RETELL_API_KEY;
   if (!apiKey) throw new Error('Missing RETELL_API_KEY');
 
-  // Use /import-phone-number — for attaching an existing Twilio number we
-  // already own. /create-phone-number is for buying a new number through
-  // Retell directly and 500s when called with twilio creds.
+  // Retell deprecated the twilio_account_sid/twilio_auth_token path on
+  // /import-phone-number. Now numbers must be routed via a SIP trunk and
+  // you pass the trunk's termination URI so Retell knows where to send
+  // calls. The number itself is assigned to that trunk at purchase time
+  // (see twilioBuyLocalNumber, TrunkSid).
+  const terminationUri = process.env.TWILIO_SIP_TRUNK_TERMINATION_URI;
+  if (!terminationUri) {
+    throw new Error(
+      'Missing TWILIO_SIP_TRUNK_TERMINATION_URI — set up a Twilio Elastic SIP Trunk and add its termination URI (e.g. ringo.pstn.twilio.com) to Vercel env vars.'
+    );
+  }
+
+  const body: Record<string, unknown> = {
+    phone_number: params.twilioPhoneNumber,
+    termination_uri: terminationUri,
+    inbound_agent_id: params.agentId,
+    nickname: `Ringo ${params.twilioPhoneNumber}`,
+  };
+  // Optional SIP auth — only include if both are set (some trunks use ACL
+  // instead of credentials, in which case these are empty).
+  if (process.env.TWILIO_SIP_TRUNK_USERNAME && process.env.TWILIO_SIP_TRUNK_PASSWORD) {
+    body.sip_trunk_auth_username = process.env.TWILIO_SIP_TRUNK_USERNAME;
+    body.sip_trunk_auth_password = process.env.TWILIO_SIP_TRUNK_PASSWORD;
+  }
+
   const res = await fetch('https://api.retellai.com/import-phone-number', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      phone_number: params.twilioPhoneNumber,
-      twilio_account_sid: params.twilioAccountSid,
-      twilio_auth_token: params.twilioAuthToken,
-      inbound_agent_id: params.agentId,
-      nickname: `Ringo ${params.twilioPhoneNumber}`,
-    }),
+    body: JSON.stringify(body),
   });
   if (!res.ok) {
     throw new Error(`Retell import-phone-number failed: ${res.status} ${await res.text()}`);
@@ -298,12 +325,8 @@ export async function POST(req: NextRequest) {
     // Step 3 — Register Twilio number with Retell, pointing at the new agent
     let retellPhoneNumberId = r.retell_phone_number_id;
     if (!retellPhoneNumberId) {
-      const accountSid = process.env.TWILIO_ACCOUNT_SID!;
-      const authToken = process.env.TWILIO_AUTH_TOKEN!;
       const registered = await retellRegisterPhoneNumber({
         twilioPhoneNumber: twilioPhoneNumber!,
-        twilioAccountSid: accountSid,
-        twilioAuthToken: authToken,
         agentId: retellAgentId,
       });
       retellPhoneNumberId = registered.retellPhoneNumberId;
