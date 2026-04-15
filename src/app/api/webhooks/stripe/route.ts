@@ -117,6 +117,28 @@ export async function POST(request: Request) {
           console.log(
             `[${t0}] [stripe] checkout completed for restaurant ${restaurantId} (sub ${subscription.id}, status ${subscription.status})`
           );
+
+          // Kick off auto-provisioning (Twilio number + Retell agent) fire-and-forget.
+          // We don't block the webhook on it — if it fails, the row is marked
+          // provisioning_status='failed' and the admin can retry.
+          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://useringo.ai';
+          fetch(`${baseUrl}/api/provisioning/create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ restaurant_id: restaurantId }),
+          })
+            .then((res) => {
+              if (!res.ok) {
+                console.error(
+                  `[stripe] provisioning kickoff non-OK for ${restaurantId}: ${res.status}`
+                );
+              } else {
+                console.log(`[stripe] provisioning kicked off for ${restaurantId}`);
+              }
+            })
+            .catch((e) => {
+              console.error(`[stripe] provisioning kickoff failed for ${restaurantId}:`, e);
+            });
         }
         break;
       }
