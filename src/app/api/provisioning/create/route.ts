@@ -194,7 +194,10 @@ async function retellRegisterPhoneNumber(params: {
   const apiKey = process.env.RETELL_API_KEY;
   if (!apiKey) throw new Error('Missing RETELL_API_KEY');
 
-  const res = await fetch('https://api.retellai.com/create-phone-number', {
+  // Use /import-phone-number — for attaching an existing Twilio number we
+  // already own. /create-phone-number is for buying a new number through
+  // Retell directly and 500s when called with twilio creds.
+  const res = await fetch('https://api.retellai.com/import-phone-number', {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -202,16 +205,14 @@ async function retellRegisterPhoneNumber(params: {
     },
     body: JSON.stringify({
       phone_number: params.twilioPhoneNumber,
-      termination_uri: undefined, // Retell imports the Twilio number via these creds:
-      inbound_agent_id: params.agentId,
-      nickname: `Ringo ${params.twilioPhoneNumber}`,
-      // Retell's import-Twilio-number endpoint accepts these auth params:
       twilio_account_sid: params.twilioAccountSid,
       twilio_auth_token: params.twilioAuthToken,
+      inbound_agent_id: params.agentId,
+      nickname: `Ringo ${params.twilioPhoneNumber}`,
     }),
   });
   if (!res.ok) {
-    throw new Error(`Retell create-phone-number failed: ${res.status} ${await res.text()}`);
+    throw new Error(`Retell import-phone-number failed: ${res.status} ${await res.text()}`);
   }
   const data = (await res.json()) as { phone_number: string; phone_number_id?: string };
   return { retellPhoneNumberId: data.phone_number_id || data.phone_number };
