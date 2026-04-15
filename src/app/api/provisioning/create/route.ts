@@ -126,11 +126,30 @@ async function retellCloneAgent(params: {
   const template = (await getRes.json()) as Record<string, unknown>;
 
   // Step 2: build a POST body — strip read-only fields and rename.
+  // Retell rejects create-agent payloads that include any version-tracking
+  // field with value > 0, plus other server-managed fields that only exist
+  // on persisted agents. Strip them all defensively.
   const body = { ...template } as Record<string, unknown>;
   delete body.agent_id;
   delete body.last_modification_timestamp;
   delete body.is_published;
   delete body.version;
+  delete body.agent_version;
+  delete body.version_title;
+  delete body.published_version;
+  delete body.last_published_version;
+  delete body.created_at;
+  delete body.updated_at;
+  delete body.channel;
+  delete body.response_engine_version;
+  // Final safety net — strip any remaining top-level field whose name contains
+  // "version" or "timestamp" (case-insensitive). Retell's API has churned these
+  // names before; this prevents a future field rename from breaking us.
+  for (const key of Object.keys(body)) {
+    if (/version|timestamp/i.test(key)) {
+      delete body[key];
+    }
+  }
   body.agent_name = `${params.restaurantName} — Ringo`;
   // Stamp metadata so we can find the agent later
   body.metadata = {
