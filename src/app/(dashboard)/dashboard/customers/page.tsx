@@ -429,7 +429,7 @@ export default function CustomersPage() {
             placeholder="Search by phone number..."
             value={searchPhone}
             onChange={(e) => setSearchPhone(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-smoke bg-coal text-foreground placeholder:text-ash focus:outline-none focus:ring-2 focus:ring-bone/30 focus:border-bone/40 transition-all"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-smoke bg-coal text-foreground placeholder:text-ash focus:outline-none focus:ring-2 focus:ring-bone/30 focus:border-bone/40 transition-colors transition-opacity"
           />
         </div>
       )}
@@ -440,7 +440,7 @@ export default function CustomersPage() {
           <button
             onClick={() => setSortBy('spend')}
             className={cn(
-              'px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap',
+              'px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors transition-opacity whitespace-nowrap',
               sortBy === 'spend'
                 ? 'bg-bone text-obsidian'
                 : 'bg-coal border border-smoke text-ringo-muted hover:text-foreground'
@@ -451,7 +451,7 @@ export default function CustomersPage() {
           <button
             onClick={() => setSortBy('count')}
             className={cn(
-              'px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap',
+              'px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors transition-opacity whitespace-nowrap',
               sortBy === 'count'
                 ? 'bg-bone text-obsidian'
                 : 'bg-coal border border-smoke text-ringo-muted hover:text-foreground'
@@ -462,7 +462,7 @@ export default function CustomersPage() {
           <button
             onClick={() => setSortBy('recent')}
             className={cn(
-              'px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap',
+              'px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors transition-opacity whitespace-nowrap',
               sortBy === 'recent'
                 ? 'bg-bone text-obsidian'
                 : 'bg-coal border border-smoke text-ringo-muted hover:text-foreground'

@@ -413,7 +413,7 @@ export default function MenuManagementPage() {
             <button
               key={category}
               onClick={() => setSelectedCategory(category)}
-              className={`px-2.5 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${
+              className={`px-2.5 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-colors transition-opacity flex-shrink-0 ${
                 selectedCategory === category
                   ? 'bg-bone text-obsidian'
                   : 'bg-coal border border-smoke text-bone hover:border-bone/30'
@@ -564,7 +564,7 @@ export default function MenuManagementPage() {
             <div className="flex gap-2">
               <button
                 onClick={() => setImportFormat('text')}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors transition-opacity ${
                   importFormat === 'text' ? 'bg-bone text-obsidian' : 'bg-smoke/40 text-ash hover:text-bone'
                 }`}
               >
@@ -572,7 +572,7 @@ export default function MenuManagementPage() {
               </button>
               <button
                 onClick={() => setImportFormat('csv')}
-                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors transition-opacity ${
                   importFormat === 'csv' ? 'bg-bone text-obsidian' : 'bg-smoke/40 text-ash hover:text-bone'
                 }`}
               >
@@ -604,8 +604,8 @@ export default function MenuManagementPage() {
             {importResult && (
               <div className={`rounded-lg px-3 py-2 text-sm ${
                 importResult.success
-                  ? 'bg-green-500/10 text-green-400 border border-green-500/20'
-                  : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                  ? 'bg-bone/10 text-bone border border-bone/20'
+                  : 'bg-ash/10 text-ash border border-ash/20'
               }`}>
                 {importResult.success ? (
                   <span className="flex items-center gap-1.5">
