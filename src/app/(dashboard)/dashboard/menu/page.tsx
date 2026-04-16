@@ -403,7 +403,7 @@ export default function MenuManagementPage() {
             placeholder="Search items..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full rounded-lg border border-ringo-border bg-ringo-card px-4 py-2.5 pl-10 text-sm text-foreground placeholder:text-ringo-muted/50 transition-colors focus:outline-none focus:ring-2 focus:ring-ringo-teal/50 focus:border-ringo-teal"
+            className="w-full rounded-lg border border-smoke bg-coal px-4 py-2.5 pl-10 text-sm text-bone placeholder:text-ash/60 transition-colors focus:outline-none focus:ring-2 focus:ring-bone/30 focus:border-bone/40"
           />
         </div>
 
@@ -415,8 +415,8 @@ export default function MenuManagementPage() {
               onClick={() => setSelectedCategory(category)}
               className={`px-2.5 sm:px-3 py-2 rounded-lg text-xs sm:text-sm font-medium whitespace-nowrap transition-all flex-shrink-0 ${
                 selectedCategory === category
-                  ? 'bg-ringo-teal text-bone'
-                  : 'bg-ringo-card border border-ringo-border text-foreground hover:border-ringo-teal/50'
+                  ? 'bg-bone text-obsidian'
+                  : 'bg-coal border border-smoke text-bone hover:border-bone/30'
               }`}
             >
               {category}
@@ -427,7 +427,7 @@ export default function MenuManagementPage() {
 
       {/* Error banner */}
       {error && (
-        <div className="flex items-center gap-3 rounded-lg border border-bone/50 bg-bone/50 p-4">
+        <div className="flex items-center gap-3 rounded-lg border border-smoke bg-graphite p-4">
           <AlertCircle className="h-5 w-5 text-bone flex-shrink-0" />
           <p className="text-sm text-bone">{error}</p>
           <button
@@ -441,9 +441,9 @@ export default function MenuManagementPage() {
 
       {/* Menu Items Grid */}
       {filteredItems.length === 0 ? (
-        <div className="rounded-xl border border-ringo-teal/20 bg-ringo-teal/5 p-12 text-center">
-          <div className="mx-auto w-16 h-16 rounded-2xl bg-ringo-teal/20 flex items-center justify-center mb-4">
-            <UtensilsCrossed className="h-8 w-8 text-ringo-teal" />
+        <div className="rounded-xl border border-smoke bg-coal p-12 text-center">
+          <div className="mx-auto w-16 h-16 rounded-2xl bg-graphite flex items-center justify-center mb-4">
+            <UtensilsCrossed className="h-8 w-8 text-bone" />
           </div>
           <h3 className="text-lg font-semibold text-foreground mb-2">No menu items yet</h3>
           <p className="text-sm text-ringo-muted mb-6 max-w-sm mx-auto">
@@ -480,7 +480,7 @@ export default function MenuManagementPage() {
               </div>
 
               {/* Price */}
-              <div className="text-lg font-bold text-ringo-teal mb-2">
+              <div className="text-lg font-bold text-bone mb-2">
                 ${Number(item.price).toFixed(2)}
               </div>
 
@@ -509,11 +509,11 @@ export default function MenuManagementPage() {
                   <button
                     onClick={() => handleToggleAvailable(item.id, item.available)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                      item.available ? 'bg-bone' : 'bg-ringo-border'
+                      item.available ? 'bg-bone' : 'bg-smoke'
                     }`}
                   >
                     <span
-                      className={`inline-block h-5 w-5 transform rounded-full bg-bone transition-transform ${
+                      className={`inline-block h-5 w-5 transform rounded-full bg-obsidian transition-transform ${
                         item.available ? 'translate-x-5' : 'translate-x-0.5'
                       }`}
                     />
@@ -553,7 +553,7 @@ export default function MenuManagementPage() {
           <div className="w-full max-w-lg bg-ringo-card border border-ringo-border rounded-2xl shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                <FileText className="h-5 w-5 text-ringo-teal" />
+                <FileText className="h-5 w-5 text-bone" />
                 Import Menu
               </h2>
               <button onClick={() => setShowImport(false)} className="p-1 rounded-lg hover:bg-ringo-border/30 transition-colors">
@@ -565,7 +565,7 @@ export default function MenuManagementPage() {
               <button
                 onClick={() => setImportFormat('text')}
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                  importFormat === 'text' ? 'bg-ringo-teal text-bone' : 'bg-ringo-border/30 text-ringo-muted hover:text-foreground'
+                  importFormat === 'text' ? 'bg-bone text-obsidian' : 'bg-smoke/40 text-ash hover:text-bone'
                 }`}
               >
                 Paste Text
@@ -573,7 +573,7 @@ export default function MenuManagementPage() {
               <button
                 onClick={() => setImportFormat('csv')}
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                  importFormat === 'csv' ? 'bg-ringo-teal text-bone' : 'bg-ringo-border/30 text-ringo-muted hover:text-foreground'
+                  importFormat === 'csv' ? 'bg-bone text-obsidian' : 'bg-smoke/40 text-ash hover:text-bone'
                 }`}
               >
                 CSV
@@ -588,7 +588,7 @@ export default function MenuManagementPage() {
                 ? "Paste your menu here...\n\nBurritos\nCarne Asada Burrito - $12.99\nChicken Burrito - $10.99\n\nTacos\nStreet Taco - $3.50\nFish Taco - $4.25"
                 : "name,category,price,description\nCarne Asada Burrito,Burritos,12.99,Grilled steak with rice and beans\nChicken Burrito,Burritos,10.99,Grilled chicken with rice and beans"
               }
-              className="w-full rounded-lg border border-ringo-border bg-ringo-surface px-3 py-2.5 text-sm text-foreground placeholder:text-ringo-muted/40 font-mono resize-none focus:outline-none focus:ring-2 focus:ring-ringo-teal/50"
+              className="w-full rounded-lg border border-smoke bg-coal px-3 py-2.5 text-sm text-bone placeholder:text-ash/60 font-mono resize-none focus:outline-none focus:ring-2 focus:ring-bone/30 focus:border-bone/40"
             />
 
             <label className="flex items-center gap-2 text-sm text-ringo-muted cursor-pointer">
@@ -669,8 +669,8 @@ export default function MenuManagementPage() {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   placeholder="e.g., Classic Pepperoni"
-                  className={`w-full rounded-lg border bg-ringo-card px-4 py-2.5 text-sm text-foreground placeholder:text-ringo-muted/50 transition-colors focus:outline-none focus:ring-2 focus:ring-ringo-teal/50 ${
-                    formFieldErrors.name ? 'border-bone' : 'border-ringo-border focus:border-ringo-teal'
+                  className={`w-full rounded-lg border bg-coal px-4 py-2.5 text-sm text-bone placeholder:text-ash/60 transition-colors focus:outline-none focus:ring-2 focus:ring-bone/30 ${
+                    formFieldErrors.name ? 'border-bone/70' : 'border-smoke focus:border-bone/40'
                   }`}
                 />
                 {formFieldErrors.name && (
@@ -691,7 +691,7 @@ export default function MenuManagementPage() {
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                     placeholder="e.g., Pizza"
                     list="categories-list"
-                    className="w-full rounded-lg border border-ringo-border bg-ringo-card px-4 py-2.5 text-sm text-foreground placeholder:text-ringo-muted/50 transition-colors focus:outline-none focus:ring-2 focus:ring-ringo-teal/50 focus:border-ringo-teal"
+                    className="w-full rounded-lg border border-smoke bg-coal px-4 py-2.5 text-sm text-bone placeholder:text-ash/60 transition-colors focus:outline-none focus:ring-2 focus:ring-bone/30 focus:border-bone/40"
                   />
                   <datalist id="categories-list">
                     {categories
@@ -718,8 +718,8 @@ export default function MenuManagementPage() {
                       placeholder="0.00"
                       step="0.01"
                       min="0"
-                      className={`w-full rounded-lg border bg-ringo-card px-4 py-2.5 pl-8 text-sm text-foreground placeholder:text-ringo-muted/50 transition-colors focus:outline-none focus:ring-2 focus:ring-ringo-teal/50 ${
-                        formFieldErrors.price ? 'border-bone' : 'border-ringo-border focus:border-ringo-teal'
+                      className={`w-full rounded-lg border bg-coal px-4 py-2.5 pl-8 text-sm text-bone placeholder:text-ash/60 transition-colors focus:outline-none focus:ring-2 focus:ring-bone/30 ${
+                        formFieldErrors.price ? 'border-bone/70' : 'border-smoke focus:border-bone/40'
                       }`}
                     />
                   </div>
@@ -739,7 +739,7 @@ export default function MenuManagementPage() {
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="Describe your item..."
                   rows={3}
-                  className="w-full rounded-lg border border-ringo-border bg-ringo-card px-4 py-2.5 text-sm text-foreground placeholder:text-ringo-muted/50 transition-colors focus:outline-none focus:ring-2 focus:ring-ringo-teal/50 focus:border-ringo-teal resize-none"
+                  className="w-full rounded-lg border border-smoke bg-coal px-4 py-2.5 text-sm text-bone placeholder:text-ash/60 transition-colors focus:outline-none focus:ring-2 focus:ring-bone/30 focus:border-bone/40 resize-none"
                 />
               </div>
 
@@ -781,7 +781,7 @@ export default function MenuManagementPage() {
                     value={modifierInput.name}
                     onChange={(e) => setModifierInput({ ...modifierInput, name: e.target.value })}
                     placeholder="Modifier name"
-                    className="flex-1 rounded-lg border border-ringo-border bg-ringo-card px-3 py-2 text-sm text-foreground placeholder:text-ringo-muted/50 transition-colors focus:outline-none focus:ring-2 focus:ring-ringo-teal/50 focus:border-ringo-teal"
+                    className="flex-1 rounded-lg border border-smoke bg-coal px-3 py-2 text-sm text-bone placeholder:text-ash/60 transition-colors focus:outline-none focus:ring-2 focus:ring-bone/30 focus:border-bone/40"
                   />
                   <input
                     type="number"
@@ -790,7 +790,7 @@ export default function MenuManagementPage() {
                     placeholder="Price"
                     step="0.01"
                     min="0"
-                    className="w-24 rounded-lg border border-ringo-border bg-ringo-card px-3 py-2 text-sm text-foreground placeholder:text-ringo-muted/50 transition-colors focus:outline-none focus:ring-2 focus:ring-ringo-teal/50 focus:border-ringo-teal"
+                    className="w-24 rounded-lg border border-smoke bg-coal px-3 py-2 text-sm text-bone placeholder:text-ash/60 transition-colors focus:outline-none focus:ring-2 focus:ring-bone/30 focus:border-bone/40"
                   />
                   <Button
                     variant="secondary"
@@ -813,11 +813,11 @@ export default function MenuManagementPage() {
                 <button
                   onClick={() => setFormData({ ...formData, available: !formData.available })}
                   className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    formData.available ? 'bg-bone' : 'bg-ringo-border'
+                    formData.available ? 'bg-bone' : 'bg-smoke'
                   }`}
                 >
                   <span
-                    className={`inline-block h-5 w-5 transform rounded-full bg-bone transition-transform ${
+                    className={`inline-block h-5 w-5 transform rounded-full bg-obsidian transition-transform ${
                       formData.available ? 'translate-x-5' : 'translate-x-0.5'
                     }`}
                   />

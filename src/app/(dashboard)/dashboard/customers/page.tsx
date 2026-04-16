@@ -89,7 +89,7 @@ function CustomerCard({ customer, isExpanded, onToggle }: CustomerCardProps) {
     <Card className="overflow-hidden">
       <button
         onClick={onToggle}
-        className="w-full p-4 hover:bg-ringo-card/50 transition-colors text-left"
+        className="w-full p-4 hover:bg-graphite/40 transition-colors text-left"
       >
         <div className="flex items-start justify-between gap-4">
           {/* Left side: Phone, badge, stats */}
@@ -100,7 +100,7 @@ function CustomerCard({ customer, isExpanded, onToggle }: CustomerCardProps) {
                   e.stopPropagation();
                   setShowFullPhone(!showFullPhone);
                 }}
-                className="font-mono text-sm font-semibold text-foreground hover:text-ringo-teal transition-colors"
+                className="font-mono text-sm font-semibold text-foreground hover:text-bone transition-colors"
               >
                 {showFullPhone ? customer.phone : maskPhoneNumber(customer.phone)}
               </button>
@@ -134,7 +134,7 @@ function CustomerCard({ customer, isExpanded, onToggle }: CustomerCardProps) {
           <div className="flex flex-col items-end gap-2">
             <div className="text-right">
               <p className="text-sm text-ringo-muted">Total Spend</p>
-              <p className="text-lg font-bold text-ringo-teal">
+              <p className="text-lg font-bold text-bone">
                 {formatCurrency(customer.totalSpend)}
               </p>
             </div>
@@ -147,7 +147,7 @@ function CustomerCard({ customer, isExpanded, onToggle }: CustomerCardProps) {
 
       {/* Expanded details */}
       {isExpanded && (
-        <div className="border-t border-ringo-border px-4 py-4 space-y-4 bg-ringo-card/30">
+        <div className="border-t border-smoke px-4 py-4 space-y-4 bg-graphite/20">
           {/* Most ordered items */}
           {customer.mostOrderedItems.length > 0 && (
             <div>
@@ -156,7 +156,7 @@ function CustomerCard({ customer, isExpanded, onToggle }: CustomerCardProps) {
                 {customer.mostOrderedItems.map((item, i) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between p-2 rounded-lg text-sm bg-ringo-card/50"
+                    className="flex items-center justify-between p-2 rounded-lg text-sm bg-graphite/30"
                   >
                     <span className="text-foreground">{item.name}</span>
                     <span className="text-ringo-muted text-xs">Ordered {item.count}x</span>
@@ -176,7 +176,7 @@ function CustomerCard({ customer, isExpanded, onToggle }: CustomerCardProps) {
                   return (
                     <div
                       key={order.id}
-                      className="p-3 rounded-lg bg-ringo-card/50 border border-ringo-border/30"
+                      className="p-3 rounded-lg bg-graphite/30 border border-smoke/70"
                     >
                       <div className="flex items-start justify-between gap-2 mb-2">
                         <div>
@@ -429,7 +429,7 @@ export default function CustomersPage() {
             placeholder="Search by phone number..."
             value={searchPhone}
             onChange={(e) => setSearchPhone(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-ringo-border bg-ringo-card text-foreground placeholder-ringo-muted focus:outline-none focus:ring-2 focus:ring-ringo-teal/50 transition-all"
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-smoke bg-coal text-foreground placeholder:text-ash focus:outline-none focus:ring-2 focus:ring-bone/30 focus:border-bone/40 transition-all"
           />
         </div>
       )}
@@ -442,8 +442,8 @@ export default function CustomersPage() {
             className={cn(
               'px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap',
               sortBy === 'spend'
-                ? 'bg-ringo-teal text-bone'
-                : 'bg-ringo-card border border-ringo-border text-ringo-muted hover:text-foreground'
+                ? 'bg-bone text-obsidian'
+                : 'bg-coal border border-smoke text-ringo-muted hover:text-foreground'
             )}
           >
             Highest Spend
@@ -453,8 +453,8 @@ export default function CustomersPage() {
             className={cn(
               'px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap',
               sortBy === 'count'
-                ? 'bg-ringo-teal text-bone'
-                : 'bg-ringo-card border border-ringo-border text-ringo-muted hover:text-foreground'
+                ? 'bg-bone text-obsidian'
+                : 'bg-coal border border-smoke text-ringo-muted hover:text-foreground'
             )}
           >
             Most Orders
@@ -464,8 +464,8 @@ export default function CustomersPage() {
             className={cn(
               'px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap',
               sortBy === 'recent'
-                ? 'bg-ringo-teal text-bone'
-                : 'bg-ringo-card border border-ringo-border text-ringo-muted hover:text-foreground'
+                ? 'bg-bone text-obsidian'
+                : 'bg-coal border border-smoke text-ringo-muted hover:text-foreground'
             )}
           >
             Most Recent
@@ -475,19 +475,19 @@ export default function CustomersPage() {
 
       {/* Customers list */}
       {loading ? (
-        <div className="rounded-2xl border border-ringo-border bg-ringo-card p-12 text-center">
-          <div className="h-8 w-8 mx-auto border-2 border-ringo-teal/30 border-t-ringo-teal rounded-full animate-spin mb-3" />
+        <div className="rounded-2xl border border-smoke bg-coal p-12 text-center">
+          <div className="h-8 w-8 mx-auto border-2 border-bone/20 border-t-bone rounded-full animate-spin mb-3" />
           <p className="text-sm text-ringo-muted">Loading customers...</p>
         </div>
       ) : !hasCustomers ? (
-        <div className="rounded-2xl border border-ringo-border bg-ringo-card p-12 text-center">
+        <div className="rounded-2xl border border-smoke bg-coal p-12 text-center">
           <p className="text-sm text-ringo-muted">
             No customers yet. When orders start coming in, your customer base
             will appear here.
           </p>
         </div>
       ) : filteredCustomers.length === 0 ? (
-        <div className="rounded-2xl border border-ringo-border bg-ringo-card p-12 text-center">
+        <div className="rounded-2xl border border-smoke bg-coal p-12 text-center">
           <p className="text-sm text-ringo-muted">
             No customers match your search.
           </p>

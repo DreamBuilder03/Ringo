@@ -62,7 +62,7 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
     <Card className="overflow-hidden">
       <button
         onClick={onToggle}
-        className="w-full p-4 hover:bg-ringo-card/50 transition-colors text-left"
+        className="w-full p-4 hover:bg-graphite/40 transition-colors text-left"
       >
         <div className="flex items-start justify-between gap-4">
           {/* Left side: ID, Status, Phone */}
@@ -100,7 +100,7 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
 
       {/* Expanded details */}
       {isExpanded && (
-        <div className="border-t border-ringo-border px-4 py-4 space-y-4 bg-ringo-card/30">
+        <div className="border-t border-smoke px-4 py-4 space-y-4 bg-graphite/20">
           {/* Items */}
           <div>
             <h4 className="text-sm font-semibold text-foreground mb-3">Items</h4>
@@ -110,14 +110,14 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
                   key={i}
                   className={cn(
                     'flex items-start justify-between p-2 rounded-lg text-sm',
-                    item.is_upsell ? 'bg-ringo-teal/10 border border-ringo-teal/30' : 'bg-ringo-card/50'
+                    item.is_upsell ? 'bg-bone/10 border border-bone/30' : 'bg-graphite/30'
                   )}
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-foreground font-medium">{item.name}</span>
                       {item.is_upsell && (
-                        <Zap className="h-3 w-3 text-ringo-teal" />
+                        <Zap className="h-3 w-3 text-bone" />
                       )}
                     </div>
                     <span className="text-xs text-ringo-muted">x{item.quantity}</span>
@@ -131,7 +131,7 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
           </div>
 
           {/* Pricing breakdown */}
-          <div className="bg-ringo-card/50 rounded-lg p-3 space-y-2">
+          <div className="bg-graphite/30 rounded-lg p-3 space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-ringo-muted">Subtotal</span>
               <span className="text-foreground font-medium">{formatCurrency(order.subtotal)}</span>
@@ -140,9 +140,9 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
               <span className="text-ringo-muted">Tax</span>
               <span className="text-foreground font-medium">{formatCurrency(order.tax)}</span>
             </div>
-            <div className="border-t border-ringo-border pt-2 flex justify-between">
+            <div className="border-t border-smoke pt-2 flex justify-between">
               <span className="text-sm font-semibold text-foreground">Total</span>
-              <span className="text-sm font-bold text-ringo-teal">{formatCurrency(order.total)}</span>
+              <span className="text-sm font-bold text-bone">{formatCurrency(order.total)}</span>
             </div>
           </div>
 
@@ -152,7 +152,7 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
             <div className="space-y-2 text-sm">
               {order.created_at && (
                 <div className="flex items-start gap-3">
-                  <Clock className="h-4 w-4 text-ringo-teal mt-0.5 flex-shrink-0" />
+                  <Clock className="h-4 w-4 text-bone mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
                     <p className="text-ringo-muted text-xs">Created</p>
                     <p className="text-foreground">
@@ -391,7 +391,7 @@ export default function OrdersPage() {
             setSearchPhone(e.target.value);
             setPage(0);
           }}
-          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-ringo-border bg-ringo-card text-foreground placeholder-ringo-muted focus:outline-none focus:ring-2 focus:ring-ringo-teal/50 transition-all"
+          className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-smoke bg-coal text-foreground placeholder:text-ash focus:outline-none focus:ring-2 focus:ring-bone/30 focus:border-bone/40 transition-all"
         />
       </div>
 
@@ -407,8 +407,8 @@ export default function OrdersPage() {
             className={cn(
               'px-2 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap',
               statusFilter === filter.value
-                ? 'bg-ringo-teal text-bone'
-                : 'bg-ringo-card border border-ringo-border text-ringo-muted hover:text-foreground'
+                ? 'bg-bone text-obsidian'
+                : 'bg-coal border border-smoke text-ringo-muted hover:text-foreground'
             )}
           >
             {filter.label}
@@ -418,12 +418,12 @@ export default function OrdersPage() {
 
       {/* Orders list */}
       {loading ? (
-        <div className="rounded-2xl border border-ringo-border bg-ringo-card p-12 text-center">
-          <div className="h-8 w-8 mx-auto border-2 border-ringo-teal/30 border-t-ringo-teal rounded-full animate-spin mb-3" />
+        <div className="rounded-2xl border border-smoke bg-coal p-12 text-center">
+          <div className="h-8 w-8 mx-auto border-2 border-bone/20 border-t-bone rounded-full animate-spin mb-3" />
           <p className="text-sm text-ringo-muted">Loading orders...</p>
         </div>
       ) : !hasOrders ? (
-        <div className="rounded-2xl border border-ringo-border bg-ringo-card p-12 text-center">
+        <div className="rounded-2xl border border-smoke bg-coal p-12 text-center">
           <p className="text-sm text-ringo-muted">No orders yet</p>
         </div>
       ) : (
@@ -445,7 +445,7 @@ export default function OrdersPage() {
           <button
             onClick={() => setPage(Math.max(0, page - 1))}
             disabled={page === 0}
-            className="px-3 py-2 rounded-lg text-xs font-semibold bg-ringo-card border border-ringo-border text-ringo-muted disabled:opacity-30 min-h-[44px] min-w-[44px]"
+            className="px-3 py-2 rounded-lg text-xs font-semibold bg-coal border border-smoke text-ringo-muted disabled:opacity-30 min-h-[44px] min-w-[44px]"
           >
             Previous
           </button>
@@ -455,7 +455,7 @@ export default function OrdersPage() {
           <button
             onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
             disabled={page >= totalPages - 1}
-            className="px-3 py-2 rounded-lg text-xs font-semibold bg-ringo-card border border-ringo-border text-ringo-muted disabled:opacity-30 min-h-[44px] min-w-[44px]"
+            className="px-3 py-2 rounded-lg text-xs font-semibold bg-coal border border-smoke text-ringo-muted disabled:opacity-30 min-h-[44px] min-w-[44px]"
           >
             Next
           </button>
