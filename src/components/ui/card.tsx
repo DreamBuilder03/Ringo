@@ -9,8 +9,8 @@ export function Card({ className, hover, children, ...props }: CardProps) {
   return (
     <div
       className={cn(
-        'rounded-xl border border-ringo-border bg-ringo-card p-6',
-        hover && 'transition-colors hover:border-ringo-teal/30',
+        'rounded-xl border border-smoke bg-coal p-6',
+        hover && 'transition-[opacity,border-color,transform] duration-200 ease-out hover:border-bone/30 hover:-translate-y-0.5',
         className
       )}
       {...props}
@@ -30,7 +30,7 @@ export function CardHeader({ className, children, ...props }: HTMLAttributes<HTM
 
 export function CardTitle({ className, children, ...props }: HTMLAttributes<HTMLHeadingElement>) {
   return (
-    <h3 className={cn('text-lg font-semibold text-foreground', className)} {...props}>
+    <h3 className={cn('text-lg font-semibold text-bone', className)} {...props}>
       {children}
     </h3>
   );
@@ -38,7 +38,7 @@ export function CardTitle({ className, children, ...props }: HTMLAttributes<HTML
 
 export function CardDescription({ className, children, ...props }: HTMLAttributes<HTMLParagraphElement>) {
   return (
-    <p className={cn('text-sm text-ringo-muted', className)} {...props}>
+    <p className={cn('text-sm text-stone', className)} {...props}>
       {children}
     </p>
   );

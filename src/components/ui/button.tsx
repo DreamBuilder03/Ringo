@@ -12,10 +12,10 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 const Button = forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant = 'primary', size = 'md', loading, disabled, children, ...props }, ref) => {
     const variants = {
-      primary: 'bg-ringo-teal hover:bg-ringo-teal-light text-bone shadow-lg shadow-ringo-teal/20',
-      secondary: 'bg-ringo-card border border-ringo-border hover:bg-ringo-border/50 text-foreground',
-      ghost: 'hover:bg-ringo-border/20 text-ringo-muted hover:text-foreground',
-      danger: 'bg-bone hover:bg-bone text-bone',
+      primary: 'bg-bone text-obsidian hover:opacity-90 active:opacity-80 shadow-bone',
+      secondary: 'bg-coal border border-smoke text-bone hover:opacity-90 active:opacity-80',
+      ghost: 'text-stone hover:text-bone hover:bg-bone/10 active:bg-bone/15',
+      danger: 'bg-graphite border border-smoke text-bone hover:opacity-90 active:opacity-80',
     };
 
     const sizes = {
@@ -29,7 +29,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || loading}
         className={cn(
-          'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ringo-teal/50 disabled:opacity-50 disabled:cursor-not-allowed',
+          'inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-[transform,opacity,background-color,color,border-color] duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-bone/40 focus-visible:ring-offset-2 focus-visible:ring-offset-obsidian active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed',
           variants[variant],
           sizes[size],
           className

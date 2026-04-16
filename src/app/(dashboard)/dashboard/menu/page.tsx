@@ -10,6 +10,9 @@ import {
   Search,
   UtensilsCrossed,
   AlertCircle,
+  Upload,
+  FileText,
+  CheckCircle2,
 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -58,6 +61,12 @@ export default function MenuManagementPage() {
   const [modifierInput, setModifierInput] = useState({ name: '', price: '' });
   const [saveLoading, setSaveLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showImport, setShowImport] = useState(false);
+  const [importFormat, setImportFormat] = useState<'text' | 'csv'>('text');
+  const [importData, setImportData] = useState('');
+  const [importReplace, setImportReplace] = useState(false);
+  const [importLoading, setImportLoading] = useState(false);
+  const [importResult, setImportResult] = useState<{ success: boolean; count: number; error?: string } | null>(null);
 
   const supabase = createClient();
   const currentRestaurant = useRestaurantStore((s) => s.currentRestaurant);
@@ -119,6 +128,43 @@ export default function MenuManagementPage() {
       (item.description?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
     return matchesCategory && matchesSearch;
   });
+
+  // Handle menu import
+  async function handleImport() {
+    if (!importData.trim() || !restaurantId) return;
+    setImportLoading(true);
+    setImportResult(null);
+    try {
+      const res = await fetch('/api/menu/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          restaurant_id: restaurantId,
+          format: importFormat,
+          data: importData,
+          replace: importReplace,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setImportResult({ success: false, count: 0, error: json.error });
+      } else {
+        setImportResult({ success: true, count: json.imported });
+        // Reload menu items
+        const { data } = await supabase
+          .from('menu_items')
+          .select('*')
+          .eq('restaurant_id', restaurantId)
+          .order('category', { ascending: true })
+          .order('name', { ascending: true });
+        setMenuItems((data || []) as MenuItem[]);
+        setImportData('');
+      }
+    } catch {
+      setImportResult({ success: false, count: 0, error: 'Network error' });
+    }
+    setImportLoading(false);
+  }
 
   // Validate form
   const validateForm = (): boolean => {
@@ -322,19 +368,30 @@ export default function MenuManagementPage() {
           </div>
           <p className="text-sm text-ringo-muted">Manage your restaurant menu and item details</p>
         </div>
-        <Button
-          variant="primary"
-          size="md"
-          onClick={() => {
-            setFormData(emptyForm);
-            setFormFieldErrors(formErrors);
-            setShowModal(true);
-          }}
-          className="gap-2"
-        >
-          <Plus className="h-4 w-4" />
-          Add Item
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={() => { setShowImport(true); setImportResult(null); }}
+            className="gap-2"
+          >
+            <Upload className="h-4 w-4" />
+            Import Menu
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => {
+              setFormData(emptyForm);
+              setFormFieldErrors(formErrors);
+              setShowModal(true);
+            }}
+            className="gap-2"
+          >
+            <Plus className="h-4 w-4" />
+            Add Item
+          </Button>
+        </div>
       </div>
 
       {/* Search and Filter */}
@@ -487,6 +544,99 @@ export default function MenuManagementPage() {
               </div>
             </Card>
           ))}
+        </div>
+      )}
+
+      {/* Import Modal */}
+      {showImport && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-obsidian/50 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="w-full max-w-lg bg-ringo-card border border-ringo-border rounded-2xl shadow-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                <FileText className="h-5 w-5 text-ringo-teal" />
+                Import Menu
+              </h2>
+              <button onClick={() => setShowImport(false)} className="p-1 rounded-lg hover:bg-ringo-border/30 transition-colors">
+                <X className="h-5 w-5 text-ringo-muted" />
+              </button>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                onClick={() => setImportFormat('text')}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  importFormat === 'text' ? 'bg-ringo-teal text-bone' : 'bg-ringo-border/30 text-ringo-muted hover:text-foreground'
+                }`}
+              >
+                Paste Text
+              </button>
+              <button
+                onClick={() => setImportFormat('csv')}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  importFormat === 'csv' ? 'bg-ringo-teal text-bone' : 'bg-ringo-border/30 text-ringo-muted hover:text-foreground'
+                }`}
+              >
+                CSV
+              </button>
+            </div>
+
+            <textarea
+              value={importData}
+              onChange={(e) => setImportData(e.target.value)}
+              rows={10}
+              placeholder={importFormat === 'text'
+                ? "Paste your menu here...\n\nBurritos\nCarne Asada Burrito - $12.99\nChicken Burrito - $10.99\n\nTacos\nStreet Taco - $3.50\nFish Taco - $4.25"
+                : "name,category,price,description\nCarne Asada Burrito,Burritos,12.99,Grilled steak with rice and beans\nChicken Burrito,Burritos,10.99,Grilled chicken with rice and beans"
+              }
+              className="w-full rounded-lg border border-ringo-border bg-ringo-surface px-3 py-2.5 text-sm text-foreground placeholder:text-ringo-muted/40 font-mono resize-none focus:outline-none focus:ring-2 focus:ring-ringo-teal/50"
+            />
+
+            <label className="flex items-center gap-2 text-sm text-ringo-muted cursor-pointer">
+              <input
+                type="checkbox"
+                checked={importReplace}
+                onChange={(e) => setImportReplace(e.target.checked)}
+                className="rounded border-ringo-border"
+              />
+              Replace existing menu (delete all current items first)
+            </label>
+
+            {importResult && (
+              <div className={`rounded-lg px-3 py-2 text-sm ${
+                importResult.success
+                  ? 'bg-green-500/10 text-green-400 border border-green-500/20'
+                  : 'bg-red-500/10 text-red-400 border border-red-500/20'
+              }`}>
+                {importResult.success ? (
+                  <span className="flex items-center gap-1.5">
+                    <CheckCircle2 className="h-4 w-4" />
+                    Imported {importResult.count} items successfully
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1.5">
+                    <AlertCircle className="h-4 w-4" />
+                    {importResult.error}
+                  </span>
+                )}
+              </div>
+            )}
+
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="secondary" size="md" onClick={() => setShowImport(false)}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                size="md"
+                onClick={handleImport}
+                disabled={importLoading || !importData.trim()}
+                className="gap-2"
+              >
+                {importLoading ? 'Importing...' : 'Import'}
+                <Upload className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </div>
       )}
 

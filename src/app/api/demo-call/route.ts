@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { rateLimit } from '@/lib/rate-limit';
+
+const limiter = rateLimit({ max: 5, windowMs: 60_000, message: 'Too many demo calls — please wait a moment.' });
 
 interface CreateWebCallRequest {
   restaurantName: string;
@@ -17,7 +20,10 @@ interface DemoCallResponse {
   demo_mode?: boolean;
 }
 
-export async function POST(req: NextRequest): Promise<NextResponse<DemoCallResponse | { error: string }>> {
+export async function POST(req: NextRequest) {
+  const blocked = limiter(req);
+  if (blocked) return blocked;
+
   try {
     const body: CreateWebCallRequest = await req.json();
     const { restaurantName, cuisineType, customerName } = body;

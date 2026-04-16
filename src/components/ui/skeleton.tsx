@@ -10,7 +10,7 @@ export function Skeleton({ className }: SkeletonProps) {
 
 export function StatCardSkeleton() {
   return (
-    <div className="rounded-xl border border-ringo-border bg-ringo-card p-6 space-y-3">
+    <div className="rounded-xl border border-smoke bg-coal p-6 space-y-3">
       <Skeleton className="h-3 w-24" />
       <Skeleton className="h-8 w-32" />
       <Skeleton className="h-3 w-16" />
@@ -20,7 +20,7 @@ export function StatCardSkeleton() {
 
 export function TableRowSkeleton() {
   return (
-    <div className="flex items-center gap-4 px-4 py-3 border-b border-ringo-border">
+    <div className="flex items-center gap-4 px-4 py-3 border-b border-smoke">
       <Skeleton className="h-4 w-20" />
       <Skeleton className="h-4 w-16" />
       <Skeleton className="h-4 w-24" />
@@ -38,7 +38,7 @@ export function DashboardSkeleton() {
           <StatCardSkeleton key={i} />
         ))}
       </div>
-      <div className="rounded-xl border border-ringo-border bg-ringo-card p-6 space-y-3">
+      <div className="rounded-xl border border-smoke bg-coal p-6 space-y-3">
         <Skeleton className="h-5 w-32" />
         {Array.from({ length: 5 }).map((_, i) => (
           <TableRowSkeleton key={i} />

@@ -216,17 +216,17 @@ export default function OnboardingPage() {
     {
       tier: 'starter',
       name: 'Starter',
-      price: '$299',
-      desc: 'Voice AI only',
-      features: ['Voice AI Agent', '100 calls/day', 'Basic analytics'],
+      price: '$799',
+      desc: 'Voice AI ordering',
+      features: ['Voice AI Agent', 'SMS payment links', 'Dashboard & analytics', 'Bilingual (EN/ES)'],
       popular: false,
     },
     {
       tier: 'growth',
       name: 'Growth',
-      price: '$599',
-      desc: 'Voice + Chat AI',
-      features: ['Voice + Chat AI', '250 calls/day', 'Smart upselling', 'Custom voice'],
+      price: '$1,499',
+      desc: 'Full automation',
+      features: ['Everything in Starter', 'POS integration', 'Smart upselling', 'Priority support', 'Custom voice'],
       popular: true,
     },
     {
@@ -234,7 +234,7 @@ export default function OnboardingPage() {
       name: 'Enterprise',
       price: 'Custom',
       desc: 'Multi-location',
-      features: ['Unlimited calls', 'Dedicated manager', 'Custom integrations'],
+      features: ['Everything in Growth', 'Unlimited calls', 'Dedicated manager', 'Custom integrations'],
       popular: false,
     },
   ];

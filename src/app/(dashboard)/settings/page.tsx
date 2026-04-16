@@ -39,8 +39,8 @@ const settingSections = [
 ];
 
 const planNames: Record<string, { name: string; price: string }> = {
-  starter: { name: 'Starter', price: '$299/month' },
-  growth: { name: 'Growth', price: '$599/month' },
+  starter: { name: 'Starter', price: '$799/month' },
+  growth: { name: 'Growth', price: '$1,499/month' },
   pro: { name: 'Enterprise', price: 'Custom' },
 };
 

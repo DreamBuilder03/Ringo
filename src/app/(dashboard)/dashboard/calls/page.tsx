@@ -66,7 +66,7 @@ export default function CallsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-foreground">Call Log</h1>
-          <p className="text-sm text-ringo-muted mt-1">
+          <p className="text-sm text-stone mt-1">
             {total > 0 ? `${total} total calls` : 'No calls yet'}
           </p>
         </div>
@@ -78,10 +78,10 @@ export default function CallsPage() {
               key={f.value}
               onClick={() => { setFilter(f.value); setPage(0); }}
               className={cn(
-                'px-2 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap',
+                'px-2 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-[opacity,background-color,color,border-color] duration-200 whitespace-nowrap',
                 filter === f.value
-                  ? 'bg-ringo-teal text-bone'
-                  : 'bg-ringo-card border border-ringo-border text-ringo-muted hover:text-foreground'
+                  ? 'bg-bone text-obsidian'
+                  : 'bg-coal border border-smoke text-stone hover:text-bone'
               )}
             >
               {f.label}
@@ -91,9 +91,9 @@ export default function CallsPage() {
       </div>
 
       {loading ? (
-        <div className="rounded-2xl border border-ringo-border bg-ringo-card p-12 text-center">
-          <div className="h-8 w-8 mx-auto border-2 border-ringo-teal/30 border-t-ringo-teal rounded-full animate-spin mb-3" />
-          <p className="text-sm text-ringo-muted">Loading calls...</p>
+        <div className="rounded-2xl border border-smoke bg-coal p-12 text-center">
+          <div className="h-8 w-8 mx-auto border-2 border-bone/30 border-t-bone rounded-full animate-spin mb-3" />
+          <p className="text-sm text-stone">Loading calls...</p>
         </div>
       ) : (
         <CallLogTable calls={calls} onSelectCall={setSelectedCall} />
@@ -105,17 +105,17 @@ export default function CallsPage() {
           <button
             onClick={() => setPage(Math.max(0, page - 1))}
             disabled={page === 0}
-            className="px-3 py-2 rounded-lg text-xs font-semibold bg-ringo-card border border-ringo-border text-ringo-muted disabled:opacity-30 min-h-[44px] min-w-[44px]"
+            className="px-3 py-2 rounded-lg text-xs font-semibold bg-coal border border-smoke text-stone disabled:opacity-30 min-h-[44px] min-w-[44px]"
           >
             Previous
           </button>
-          <span className="text-xs text-ringo-muted">
+          <span className="text-xs text-stone">
             Page {page + 1} of {totalPages}
           </span>
           <button
             onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
             disabled={page >= totalPages - 1}
-            className="px-3 py-2 rounded-lg text-xs font-semibold bg-ringo-card border border-ringo-border text-ringo-muted disabled:opacity-30 min-h-[44px] min-w-[44px]"
+            className="px-3 py-2 rounded-lg text-xs font-semibold bg-coal border border-smoke text-stone disabled:opacity-30 min-h-[44px] min-w-[44px]"
           >
             Next
           </button>

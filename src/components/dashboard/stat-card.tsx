@@ -17,39 +17,39 @@ interface StatCardProps {
 
 const accentColors = {
   teal: {
-    bg: 'bg-[#F3EEE3]/10',
-    text: 'text-[#F3EEE3]',
-    gradient: 'from-[#F3EEE3]/20 to-transparent',
-    glow: 'shadow-[#F3EEE3]/10',
-    border: 'hover:border-[#F3EEE3]/30',
-    ring: 'ring-[#F3EEE3]/5',
+    bg: 'bg-bone/10',
+    text: 'text-bone',
+    gradient: 'from-bone/20 to-transparent',
+    glow: 'shadow-bone/10',
+    border: 'hover:border-bone/30',
+    ring: 'ring-bone/5',
     spark: '#F3EEE3',
   },
   amber: {
-    bg: 'bg-ringo-amber/10',
-    text: 'text-ringo-amber',
-    gradient: 'from-ringo-amber/20 to-transparent',
-    glow: 'shadow-ringo-amber/10',
-    border: 'hover:border-ringo-amber/30',
-    ring: 'ring-ringo-amber/5',
+    bg: 'bg-chalk/10',
+    text: 'text-chalk',
+    gradient: 'from-chalk/20 to-transparent',
+    glow: 'shadow-chalk/10',
+    border: 'hover:border-chalk/30',
+    ring: 'ring-chalk/5',
     spark: '#F3EEE3',
   },
   purple: {
-    bg: 'bg-ringo-purple-light/10',
-    text: 'text-ringo-purple-light',
-    gradient: 'from-ringo-purple-light/20 to-transparent',
-    glow: 'shadow-ringo-purple-light/10',
-    border: 'hover:border-ringo-purple-light/30',
-    ring: 'ring-ringo-purple-light/5',
+    bg: 'bg-stone/10',
+    text: 'text-stone',
+    gradient: 'from-stone/20 to-transparent',
+    glow: 'shadow-stone/10',
+    border: 'hover:border-stone/30',
+    ring: 'ring-stone/5',
     spark: '#9C9C9C',
   },
   emerald: {
-    bg: 'bg-[#F3EEE3]/10',
-    text: 'text-[#F3EEE3]',
-    gradient: 'from-[#F3EEE3]/20 to-transparent',
-    glow: 'shadow-[#F3EEE3]/10',
-    border: 'hover:border-[#F3EEE3]/30',
-    ring: 'ring-[#F3EEE3]/5',
+    bg: 'bg-bone/10',
+    text: 'text-bone',
+    gradient: 'from-bone/20 to-transparent',
+    glow: 'shadow-bone/10',
+    border: 'hover:border-bone/30',
+    ring: 'ring-bone/5',
     spark: '#F3EEE3',
   },
 };
@@ -115,8 +115,8 @@ export function StatCard({
   return (
     <div
       className={cn(
-        'relative group rounded-2xl border border-ringo-border bg-ringo-card/80 backdrop-blur-sm p-5 overflow-hidden',
-        'transition-all duration-300',
+        'relative group rounded-2xl border border-smoke bg-coal/80 backdrop-blur-sm p-5 overflow-hidden',
+        'transition-[transform,opacity,border-color,box-shadow] duration-300',
         'hover:shadow-xl hover:shadow-obsidian/[0.08] hover:-translate-y-0.5',
         'ring-1',
         colors.ring,
@@ -132,9 +132,9 @@ export function StatCard({
 
       <div className="relative flex items-start justify-between gap-3">
         <div className="space-y-2 min-w-0 flex-1">
-          <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-ringo-muted">{title}</p>
+          <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-stone">{title}</p>
           <p className={cn(
-            'text-2xl sm:text-3xl font-bold text-foreground transition-all duration-700 break-words',
+            'text-2xl sm:text-3xl font-bold text-bone transition-[transform,opacity] duration-700 break-words font-display italic',
             animated ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
           )}>
             {value}
@@ -152,13 +152,13 @@ export function StatCard({
                 {trend.positive ? '↑' : '↓'} {Math.abs(trend.value)}%
               </span>
             )}
-            {subtitle && <p className="text-[11px] text-ringo-muted">{subtitle}</p>}
+            {subtitle && <p className="text-[11px] text-stone">{subtitle}</p>}
           </div>
         </div>
 
         <div className="flex flex-col items-end gap-2 flex-shrink-0">
           <div className={cn(
-            'rounded-xl p-2.5 transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg min-h-[44px] min-w-[44px] flex items-center justify-center',
+            'rounded-xl p-2.5 transition-[transform,opacity,box-shadow] duration-300 group-hover:scale-110 group-hover:shadow-lg min-h-[44px] min-w-[44px] flex items-center justify-center',
             colors.bg,
             colors.glow
           )}>

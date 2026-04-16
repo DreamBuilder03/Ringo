@@ -16,12 +16,13 @@ export const PRICING_TIERS: PricingTier[] = [
   {
     name: 'Starter',
     tier: 'starter',
-    price: 299,
+    price: 799,
     callsPerDay: 'Up to 100 calls/day',
     features: [
       'Voice AI Agent',
-      'Call transcripts & analytics',
-      'POS integration',
+      'SMS payment links',
+      'Dashboard & analytics',
+      'Bilingual (EN/ES)',
       'Email support',
     ],
     stripePriceId: process.env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID || '',
@@ -29,12 +30,12 @@ export const PRICING_TIERS: PricingTier[] = [
   {
     name: 'Growth',
     tier: 'growth',
-    price: 599,
+    price: 1499,
     callsPerDay: 'Up to 250 calls/day',
     features: [
-      'Voice AI + Chat AI Agent',
+      'Everything in Starter',
+      'POS integration',
       'Smart upselling engine',
-      'Advanced analytics & ROI dashboard',
       'Custom voice persona',
       'Priority support',
     ],

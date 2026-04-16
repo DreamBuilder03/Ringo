@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { discoverMenuFor } from '@/lib/demo-menu';
+import { rateLimit } from '@/lib/rate-limit';
+
+const limiter = rateLimit({ max: 5, windowMs: 60_000, message: 'Too many demo sessions — please wait a moment.' });
 
 // Creates a Retell Web Call for the visitor's demo.
 // Extends the legacy /api/demo-call route with: real Google Places data, bilingual support,
@@ -21,6 +24,9 @@ interface Body {
 }
 
 export async function POST(req: NextRequest) {
+  const blocked = limiter(req);
+  if (blocked) return blocked;
+
   try {
     const body = (await req.json()) as Body;
     const {

@@ -178,11 +178,11 @@ export default function DashboardPage() {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
         <div className="text-center">
-          <div className="mx-auto w-16 h-16 rounded-2xl bg-ringo-amber/10 flex items-center justify-center mb-4">
-            <Zap className="h-8 w-8 text-ringo-amber" />
+          <div className="mx-auto w-16 h-16 rounded-2xl bg-chalk/10 flex items-center justify-center mb-4">
+            <Zap className="h-8 w-8 text-chalk" />
           </div>
-          <h2 className="text-lg font-bold text-foreground mb-2">Getting Started</h2>
-          <p className="text-sm text-ringo-muted max-w-sm">{error}</p>
+          <h2 className="text-lg font-bold text-bone mb-2">Getting Started</h2>
+          <p className="text-sm text-stone max-w-sm">{error}</p>
           <a href="/onboarding" className="inline-flex items-center gap-2 mt-4 px-4 py-2 rounded-xl bg-[#F3EEE3] text-[#0A0A0A] text-sm font-semibold">
             Complete Setup <ArrowUpRight className="h-3.5 w-3.5" />
           </a>
@@ -198,33 +198,33 @@ export default function DashboardPage() {
       {/* Gold status banner */}
       <div className="rounded-xl bg-[#F3EEE3]/10 border border-[#F3EEE3]/20 px-4 py-2.5 flex items-center gap-2 mb-4">
         <div className="w-2 h-2 rounded-full bg-[#F3EEE3] animate-pulse" />
-        <span className="text-sm font-semibold text-[#F3EEE3]">Ringo is live and handling your calls</span>
+        <span className="text-sm font-semibold text-bone">Ringo is live and handling your calls</span>
       </div>
 
       {/* Welcome header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="min-w-0">
           <div className="flex items-center gap-2 sm:gap-3 mb-1 flex-wrap">
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">Dashboard</h1>
+            <h1 className="text-xl sm:text-2xl font-bold text-bone tracking-tight">Dashboard</h1>
             <div className="flex items-center gap-1.5 rounded-full bg-[#F3EEE3]/10 border border-[#F3EEE3]/20 px-2.5 py-1 shadow-sm shadow-[#F3EEE3]/10">
               <div className="h-1.5 w-1.5 rounded-full bg-[#F3EEE3] animate-pulse" />
               <span className="text-[10px] font-bold text-[#F3EEE3]">LIVE</span>
             </div>
           </div>
-          <p className="text-sm text-ringo-muted">{restaurantName} &middot; {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
+          <p className="text-sm text-stone">{restaurantName} &middot; {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}</p>
         </div>
 
         {hasData && (
           <div className="flex items-center gap-2 sm:gap-3 flex-wrap sm:flex-nowrap">
-            <div className="flex items-center gap-1.5 rounded-xl bg-ringo-card/80 backdrop-blur-sm border border-ringo-border px-2 sm:px-3 py-2 shadow-sm ring-1 ring-obsidian/[0.02] text-xs sm:text-sm">
+            <div className="flex items-center gap-1.5 rounded-xl bg-coal/80 backdrop-blur-sm border border-smoke px-2 sm:px-3 py-2 shadow-sm ring-1 ring-obsidian/[0.02] text-xs sm:text-sm">
               <Target className="h-3 sm:h-3.5 w-3 sm:w-3.5 text-[#F3EEE3] flex-shrink-0" />
-              <span className="text-xs font-semibold text-foreground">{stats.answerRate}%</span>
-              <span className="text-[10px] text-ringo-muted hidden sm:inline">answer rate</span>
+              <span className="text-xs font-semibold text-bone">{stats.answerRate}%</span>
+              <span className="text-[10px] text-stone hidden sm:inline">answer rate</span>
             </div>
-            <div className="flex items-center gap-1.5 rounded-xl bg-ringo-card/80 backdrop-blur-sm border border-ringo-border px-2 sm:px-3 py-2 shadow-sm ring-1 ring-obsidian/[0.02] text-xs sm:text-sm">
-              <Activity className="h-3 sm:h-3.5 w-3 sm:w-3.5 text-ringo-amber flex-shrink-0" />
-              <span className="text-xs font-semibold text-foreground">{stats.ordersTaken}/{stats.totalCalls}</span>
-              <span className="text-[10px] text-ringo-muted hidden sm:inline">converted</span>
+            <div className="flex items-center gap-1.5 rounded-xl bg-coal/80 backdrop-blur-sm border border-smoke px-2 sm:px-3 py-2 shadow-sm ring-1 ring-obsidian/[0.02] text-xs sm:text-sm">
+              <Activity className="h-3 sm:h-3.5 w-3 sm:w-3.5 text-chalk flex-shrink-0" />
+              <span className="text-xs font-semibold text-bone">{stats.ordersTaken}/{stats.totalCalls}</span>
+              <span className="text-[10px] text-stone hidden sm:inline">converted</span>
             </div>
           </div>
         )}
@@ -280,13 +280,13 @@ export default function DashboardPage() {
             <div className="flex items-center gap-3">
               <h2 className="text-lg font-bold text-foreground tracking-tight">Recent Calls</h2>
               {hasData && (
-                <span className="text-xs font-semibold text-ringo-muted bg-ringo-card/80 backdrop-blur-sm border border-ringo-border rounded-full px-2.5 py-0.5 shadow-sm">
+                <span className="text-xs font-semibold text-stone bg-coal/80 backdrop-blur-sm border border-smoke rounded-full px-2.5 py-0.5 shadow-sm">
                   {calls.length} today
                 </span>
               )}
             </div>
             {hasData && (
-              <a href="/dashboard/calls" className="text-xs font-semibold text-[#F3EEE3] hover:text-[#C8C8C8] transition-colors flex items-center gap-1 group">
+              <a href="/dashboard/calls" className="text-xs font-semibold text-bone hover:text-chalk transition-[color,opacity] duration-200 flex items-center gap-1 group">
                 View all <ArrowUpRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </a>
             )}
@@ -295,7 +295,7 @@ export default function DashboardPage() {
             <div className="rounded-2xl border border-[#F3EEE3]/20 bg-[#F3EEE3]/5 p-8 text-center">
               <Phone className="w-8 h-8 text-[#F3EEE3] mx-auto mb-3" />
               <p className="text-base font-semibold text-foreground mb-1">Ringo is ready</p>
-              <p className="text-sm text-ringo-muted">Your first call will appear here in real time the moment it comes in.</p>
+              <p className="text-sm text-stone">Your first call will appear here in real time the moment it comes in.</p>
             </div>
           ) : (
             <CallLogTable calls={calls} onSelectCall={setSelectedCall} compact />
@@ -309,7 +309,7 @@ export default function DashboardPage() {
 
       {/* AI Insights Card */}
       {hasData && (
-        <div className="rounded-2xl border border-[#F3EEE3]/20 bg-ringo-card/80 backdrop-blur-sm p-6 ring-1 ring-[#F3EEE3]/5 shadow-sm relative overflow-hidden">
+        <div className="rounded-2xl border border-bone/20 bg-coal/80 backdrop-blur-sm p-6 ring-1 ring-bone/5 shadow-sm relative overflow-hidden">
           {/* Decorative gradient */}
           <div className="absolute top-0 left-0 w-48 h-48 bg-gradient-to-br from-[#F3EEE3]/10 to-transparent rounded-full blur-3xl -translate-x-12 -translate-y-12 pointer-events-none" />
           <div className="relative flex items-start gap-4">
@@ -317,8 +317,8 @@ export default function DashboardPage() {
               <Zap className="h-6 w-6 text-[#F3EEE3]" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-foreground mb-1">AI Insights</h3>
-              <p className="text-sm text-ringo-muted leading-relaxed">
+              <h3 className="text-base font-bold text-bone mb-1">AI Insights</h3>
+              <p className="text-sm text-stone leading-relaxed">
                 <span className="text-[#F3EEE3] font-semibold">Performance:</span>{' '}
                 Your AI agent handled {stats.totalCalls} calls today with a {stats.answerRate}% answer rate, capturing {formatCurrency(stats.revenue + stats.upsellRevenue)} in total revenue.
                 {stats.upsellRevenue > 0 && (

@@ -3,6 +3,19 @@
 ## Current Status
 Production build deployed to Vercel at `www.useringo.ai` (also `ringo-kohl.vercel.app`). Codebase has 10+ commits on `main`; feature surface is largely built. Live functionality is gated by third-party credentials — most still placeholder. Twilio and Supabase are the only fully-live integrations.
 
+## Rebrand Session (2026-04-15)
+- Completed a broad monochrome repaint pass across shared UI primitives first (`button`, `card`, `input`, `select`, `badge`, `skeleton`) so downstream pages inherit token-safe styles.
+- Repainted and normalized transition/interaction states on core dashboard components and pages touched in this session, including `location-switcher`, `sidebar`, `stat-card`, `peak-hours-heatmap`, `call-log-table`, `transcript-viewer`, `roi-summary`, dashboard home, analytics, and calls.
+- Removed `transition-all` usage in the landing page and replaced with explicit transition property sets.
+- Ran `npm run build` successfully (Next build completes; dynamic route warnings remain expected for request-header-dependent routes).
+- Ran `npm run lint`; repo still has pre-existing lint debt across many unrelated files (not introduced by this rebrand session).
+- Captured viewport QA screenshots after running dev server:
+  - `screenshots/home-mobile.png`
+  - `screenshots/home-desktop.png`
+  - `screenshots/dashboard-mobile.png`
+  - `screenshots/dashboard-desktop.png`
+- Open item before shipping/commit: `public/brand/ringo-logo.svg` is still missing and must be provided before finalizing the rebrand.
+
 ## Completed
 - [x] Next.js scaffold + full project structure (src/app, components, lib, tests)
 - [x] Landing page (multiple iterations — current: premium dark hero, phone mockup, glassmorphism, gold rebrand)

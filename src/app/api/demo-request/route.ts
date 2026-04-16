@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { rateLimit } from '@/lib/rate-limit';
+
+const limiter = rateLimit({ max: 5, windowMs: 60_000, message: 'Too many demo requests — please wait a moment.' });
 
 export async function POST(req: NextRequest) {
+  const blocked = limiter(req);
+  if (blocked) return blocked;
+
   try {
     const body = await req.json();
     const { restaurantName, email } = body;

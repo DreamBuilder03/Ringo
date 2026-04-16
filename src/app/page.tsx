@@ -224,7 +224,7 @@ function DemoCallForm() {
           <div className="flex items-center gap-2 mb-5">
             {stepLabels.map((label, i) => (
               <div key={label} className="flex items-center gap-2 flex-1">
-                <div className={`h-1 flex-1 rounded-full transition-all duration-300 ${i <= stepIndex ? "bg-[#F3EEE3]" : "bg-bone/10"}`} />
+                <div className={`h-1 flex-1 rounded-full transition-[opacity,background-color] duration-300 ${i <= stepIndex ? "bg-[#F3EEE3]" : "bg-bone/10"}`} />
               </div>
             ))}
           </div>
@@ -237,12 +237,12 @@ function DemoCallForm() {
               placeholder="Your restaurant name"
               value={restaurantName}
               onChange={(e) => setRestaurantName(e.target.value)}
-              className="w-full px-4 py-3 bg-bone/[0.07] border border-bone/[0.1] rounded-xl text-bone placeholder-bone/40 focus:outline-none focus:ring-2 focus:ring-[#F3EEE3]/50 focus:border-[#F3EEE3]/50 text-sm transition-all"
+              className="w-full px-4 py-3 bg-bone/[0.07] border border-bone/[0.1] rounded-xl text-bone placeholder-bone/40 focus:outline-none focus:ring-2 focus:ring-[#F3EEE3]/50 focus:border-[#F3EEE3]/50 text-sm transition-[opacity,transform,border-color,background-color]"
             />
             <button
               onClick={() => restaurantName && setStep("cuisine")}
               disabled={!restaurantName}
-              className="w-full bg-[#F3EEE3] text-[#0A0A0A] py-3 rounded-xl font-semibold hover:bg-[#C8C8C8] disabled:opacity-30 disabled:cursor-not-allowed transition-all text-sm flex items-center justify-center gap-2"
+              className="w-full bg-[#F3EEE3] text-[#0A0A0A] py-3 rounded-xl font-semibold hover:bg-[#C8C8C8] disabled:opacity-30 disabled:cursor-not-allowed transition-[opacity,transform,background-color] text-sm flex items-center justify-center gap-2"
             >
               Continue <ArrowRight className="w-4 h-4" />
             </button>
@@ -257,7 +257,7 @@ function DemoCallForm() {
                 <button
                   key={cuisine}
                   onClick={() => handleCuisineSelect(cuisine)}
-                  className="px-3 py-2.5 border border-bone/[0.1] text-bone/80 rounded-xl hover:bg-[#F3EEE3] hover:text-[#0A0A0A] hover:border-[#F3EEE3] transition-all text-sm font-medium"
+                  className="px-3 py-2.5 border border-bone/[0.1] text-bone/80 rounded-xl hover:bg-[#F3EEE3] hover:text-[#0A0A0A] hover:border-[#F3EEE3] transition-[opacity,transform,color,background-color,border-color] text-sm font-medium"
                 >
                   {cuisine}
                 </button>
@@ -273,19 +273,19 @@ function DemoCallForm() {
               placeholder="First name"
               value={formData.firstName}
               onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-              className="w-full px-4 py-3 bg-bone/[0.07] border border-bone/[0.1] rounded-xl text-bone placeholder-bone/40 focus:outline-none focus:ring-2 focus:ring-[#F3EEE3]/50 text-sm transition-all"
+              className="w-full px-4 py-3 bg-bone/[0.07] border border-bone/[0.1] rounded-xl text-bone placeholder-bone/40 focus:outline-none focus:ring-2 focus:ring-[#F3EEE3]/50 text-sm transition-[opacity,transform,border-color,background-color]"
             />
             <input
               type="tel"
               placeholder="Phone number"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full px-4 py-3 bg-bone/[0.07] border border-bone/[0.1] rounded-xl text-bone placeholder-bone/40 focus:outline-none focus:ring-2 focus:ring-[#F3EEE3]/50 text-sm transition-all"
+              className="w-full px-4 py-3 bg-bone/[0.07] border border-bone/[0.1] rounded-xl text-bone placeholder-bone/40 focus:outline-none focus:ring-2 focus:ring-[#F3EEE3]/50 text-sm transition-[opacity,transform,border-color,background-color]"
             />
             <button
               type="submit"
               disabled={isSubmitting || !formData.firstName || !formData.phone}
-              className="w-full bg-[#F3EEE3] text-[#0A0A0A] py-3 rounded-xl font-semibold hover:bg-[#C8C8C8] disabled:opacity-30 transition-all text-sm flex items-center justify-center gap-2"
+              className="w-full bg-[#F3EEE3] text-[#0A0A0A] py-3 rounded-xl font-semibold hover:bg-[#C8C8C8] disabled:opacity-30 transition-[opacity,transform,background-color] text-sm flex items-center justify-center gap-2"
             >
               <PhoneCall className="w-4 h-4" /> Start Demo Call
             </button>
@@ -319,7 +319,7 @@ function DashboardPreview() {
   const { ref, visible } = useScrollReveal();
 
   return (
-    <div ref={ref} className={`transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
+    <div ref={ref} className={`transition-[opacity,transform] duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
       <div className="relative">
         <div className="bg-[#0A0A0A] rounded-t-xl px-4 py-3 flex items-center gap-2">
           <div className="flex gap-1.5">
@@ -484,7 +484,7 @@ function FAQItem({ question, answer }: { question: string; answer: string }) {
         <span className="text-[15px] font-semibold text-[#F3EEE3] group-hover:text-[#F3EEE3] transition-colors pr-4">{question}</span>
         <ChevronDown className={`w-4 h-4 text-[#F3EEE3] flex-shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
-      <div className={`overflow-hidden transition-all duration-300 ${open ? "max-h-40 pb-5" : "max-h-0"}`}>
+      <div className={`overflow-hidden transition-[max-height,padding,opacity] duration-300 ${open ? "max-h-40 pb-5" : "max-h-0"}`}>
         <p className="text-sm text-[#6B6B6B] leading-relaxed px-1">{answer}</p>
       </div>
     </div>
@@ -499,7 +499,7 @@ function RevealSection({ children, className = "", delay = 0 }: { children: Reac
   return (
     <div
       ref={ref}
-      className={`transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"} ${className}`}
+      className={`transition-[opacity,transform] duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"} ${className}`}
       style={{ transitionDelay: `${delay}ms` }}
     >
       {children}

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { discoverMenuFor } from '@/lib/demo-menu';
+import { rateLimit } from '@/lib/rate-limit';
+
+const limiter = rateLimit({ max: 3, windowMs: 60_000, message: 'Too many phone call requests — please wait.' });
 
 // Outbound phone-call variant: Ringo dials the visitor's cell (Loman + edge).
 // Uses Retell's create-phone-call endpoint with dynamic variables so the agent adapts
@@ -15,6 +18,9 @@ function toE164(raw: string): string | null {
 }
 
 export async function POST(req: NextRequest) {
+  const blocked = limiter(req);
+  if (blocked) return blocked;
+
   try {
     const body = await req.json();
     const {
