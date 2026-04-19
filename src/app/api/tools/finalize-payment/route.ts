@@ -58,7 +58,14 @@ export async function POST(request: NextRequest) {
     const { call, args } = body;
     callId = call?.call_id;
     agentId = call?.agent_id;
-    const customer_phone = args.customer_phone || args.phone;
+    // Phone resolution order:
+    //   1. customer_phone (preferred — agent passes it explicitly)
+    //   2. phone          (legacy alias some prompt versions use)
+    //   3. call.from_number (fallback — the Twilio CallerID of the inbound call)
+    // The fallback is critical: if the prompt forgets to pass the phone, the
+    // demo would otherwise dead-loop with "we need your phone number" messages.
+    // 99% of inbound callers want the SMS sent to the number they called from.
+    const customer_phone = args.customer_phone || args.phone || call?.from_number;
 
     if (!call?.agent_id || !call?.call_id) {
       return NextResponse.json(
