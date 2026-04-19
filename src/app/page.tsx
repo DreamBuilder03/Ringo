@@ -1,425 +1,568 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, ReactNode } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import { useRouter } from "next/navigation";
 import {
   Phone,
-  PhoneCall,
   ArrowRight,
-  Check,
-  BarChart3,
   ChevronDown,
-  MessageSquare,
-  Sparkles,
   Menu,
   X,
-  Activity,
   Mic,
-  ShoppingCart,
-  Users,
-  Calendar,
   CreditCard,
-  Send,
-  ChefHat,
+  ShieldCheck,
+  Clock,
+  TrendingUp,
+  Headphones,
+  Users,
+  MessageSquare,
+  Utensils,
+  Search,
+  BarChart3,
+  Zap,
+  Play,
+  MessageCircle,
+  Zap as Lightning,
 } from "lucide-react";
+import { integrationList, coreStack } from "@/components/marketing/IntegrationLogos";
 
 /* ═══════════════════════════════════════════════════════════════════════
-   BRAND PALETTE — Pure Monochrome (v2, 2026-04-14)
-   Obsidian → Bone axis only. No hue anywhere. See tailwind.config.ts.
+   UTILITIES
    ═══════════════════════════════════════════════════════════════════════ */
 
-/* ═══════════════════════════════════════════════════════════════════════
-   SCROLL ANIMATION HOOK
-   ═══════════════════════════════════════════════════════════════════════ */
-function useScrollReveal() {
-  const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(false);
+function GrainOverlay({ opacity = 0.03 }: { opacity?: number }) {
+  return (
+    <div
+      className="pointer-events-none absolute inset-0 z-[1]"
+      style={{
+        opacity,
+        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
+        backgroundRepeat: "repeat",
+        backgroundSize: "256px 256px",
+      }}
+    />
+  );
+}
 
+/* Ribbon sweep — hairline Bone echo of the logo's underline. Decorative only. */
+function RibbonSweep({
+  className = "",
+  stroke = "currentColor",
+  strokeWidth = 1,
+  opacity = 0.35,
+}: { className?: string; stroke?: string; strokeWidth?: number; opacity?: number }) {
+  return (
+    <svg
+      viewBox="0 0 320 40"
+      fill="none"
+      className={className}
+      preserveAspectRatio="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M2 26 C 40 8, 90 8, 140 22 S 240 38, 318 14"
+        stroke={stroke}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        opacity={opacity}
+      />
+      <path
+        d="M2 30 C 50 18, 110 18, 170 30 S 270 42, 318 22"
+        stroke={stroke}
+        strokeWidth={strokeWidth * 0.6}
+        strokeLinecap="round"
+        opacity={opacity * 0.55}
+      />
+    </svg>
+  );
+}
+
+function useGlobalReveal() {
+  useEffect(() => {
+    const check = () => {
+      document.querySelectorAll(".sr-hidden").forEach((el) => {
+        if (el.getBoundingClientRect().top < window.innerHeight - 20) {
+          el.classList.remove("sr-hidden");
+          el.classList.add("sr-visible");
+        }
+      });
+    };
+    check();
+    const t1 = setTimeout(check, 100);
+    const t2 = setTimeout(check, 500);
+    window.addEventListener("scroll", check, { passive: true });
+    return () => { clearTimeout(t1); clearTimeout(t2); window.removeEventListener("scroll", check); };
+  }, []);
+}
+
+function Reveal({ children, className = "", delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
+  return <div className={`sr-hidden ${className}`} style={{ transitionDelay: `${delay}ms` }}>{children}</div>;
+}
+
+function Counter({ target, prefix = "", suffix = "", immediate = false, decimals = 0 }: { target: number; prefix?: string; suffix?: string; immediate?: boolean; decimals?: number }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef<HTMLSpanElement>(null);
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => { if (entry.isIntersecting) setVisible(true); },
-      { threshold: 0.15, rootMargin: "0px 0px -40px 0px" }
+    let running = false;
+    const start = () => {
+      if (running) return;
+      running = true;
+      let cur = 0;
+      const dur = 2200;
+      const steps = 70;
+      const inc = target / steps;
+      const timer = setInterval(() => {
+        cur += inc;
+        if (cur >= target) { setCount(target); clearInterval(timer); }
+        else setCount(decimals > 0 ? parseFloat(cur.toFixed(decimals)) : Math.floor(cur));
+      }, dur / steps);
+    };
+    if (immediate) { const t = setTimeout(start, 800); return () => clearTimeout(t); }
+    const check = () => {
+      if (running) return;
+      if (el.getBoundingClientRect().top < window.innerHeight - 20) { start(); window.removeEventListener("scroll", check); }
+    };
+    check();
+    const t = setTimeout(check, 300);
+    window.addEventListener("scroll", check, { passive: true });
+    return () => { clearTimeout(t); window.removeEventListener("scroll", check); };
+  }, [target, immediate, decimals]);
+  return <span ref={ref}>{prefix}{decimals > 0 ? count.toFixed(decimals) : count.toLocaleString()}{suffix}</span>;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   HERO SEARCH — Google Places
+   ═══════════════════════════════════════════════════════════════════════ */
+type Suggestion = { placeId: string; mainText: string; secondaryText: string };
+
+function HeroSearch() {
+  const router = useRouter();
+  const tokenRef = useRef<string>(typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : Math.random().toString(36).slice(2));
+  const [input, setInput] = useState("");
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState(0);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const geoRef = useRef<{ lat: number; lng: number } | null>(null);
+
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => { geoRef.current = { lat: pos.coords.latitude, lng: pos.coords.longitude }; },
+      () => {}, { enableHighAccuracy: false, timeout: 4000, maximumAge: 600000 }
     );
-    observer.observe(el);
-    return () => observer.disconnect();
   }, []);
 
-  return { ref, visible };
-}
-
-/* ═══════════════════════════════════════════════════════════════════════
-   ANIMATED COUNTER
-   ═══════════════════════════════════════════════════════════════════════ */
-function AnimatedCounter({ target, prefix = "", suffix = "" }: { target: number; prefix?: string; suffix?: string }) {
-  const [count, setCount] = useState(0);
-  const { ref, visible } = useScrollReveal();
-
   useEffect(() => {
-    if (!visible) return;
-    const duration = 1800;
-    const steps = 50;
-    const increment = target / steps;
-    let current = 0;
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= target) { setCount(target); clearInterval(timer); }
-      else setCount(Math.floor(current));
-    }, duration / steps);
-    return () => clearInterval(timer);
-  }, [visible, target]);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (!input || input.trim().length < 2) { setSuggestions([]); return; }
+    setLoading(true);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch("/api/demo/places/autocomplete", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ input: input.trim(), sessionToken: tokenRef.current, lat: geoRef.current?.lat, lng: geoRef.current?.lng }),
+        });
+        const data = await res.json();
+        setSuggestions(data.suggestions || []);
+        setOpen(true); setActive(0);
+      } finally { setLoading(false); }
+    }, 220);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [input]);
 
-  return <span ref={ref as React.RefObject<HTMLSpanElement>}>{prefix}{count.toLocaleString()}{suffix}</span>;
-}
-
-/* ═══════════════════════════════════════════════════════════════════════
-   PHONE MOCKUP WITH LIVE CONVERSATION
-   ═══════════════════════════════════════════════════════════════════════ */
-function PhoneMockup() {
-  const [messageIndex, setMessageIndex] = useState(0);
-  const messages = [
-    { from: "customer", text: "Hi, I'd like to place an order for pickup." },
-    { from: "ringo", text: "Of course! I'd be happy to help. What can I get started for you?" },
-    { from: "customer", text: "A large pepperoni pizza and garlic knots." },
-    { from: "ringo", text: "Great choices! Would you like to add a 2-liter drink for just $2.99?" },
-    { from: "customer", text: "Sure, a Coke please." },
-    { from: "ringo", text: "Perfect! Your total is $24.47. I'll send a payment link to your phone now." },
-  ];
-
-  useEffect(() => {
-    if (messageIndex >= messages.length) return;
-    const delay = messageIndex === 0 ? 1200 : messages[messageIndex - 1].from === "ringo" ? 2200 : 1800;
-    const timer = setTimeout(() => setMessageIndex((i) => i + 1), delay);
-    return () => clearTimeout(timer);
-  }, [messageIndex, messages.length]);
+  function select(s: Suggestion) { router.push(`/demo/confirm?placeId=${encodeURIComponent(s.placeId)}`); }
+  function onKeyDown(e: React.KeyboardEvent) {
+    if (!open || suggestions.length === 0) return;
+    if (e.key === "ArrowDown") { e.preventDefault(); setActive((i) => Math.min(i + 1, suggestions.length - 1)); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setActive((i) => Math.max(i - 1, 0)); }
+    else if (e.key === "Enter") { e.preventDefault(); select(suggestions[active]); }
+    else if (e.key === "Escape") setOpen(false);
+  }
 
   return (
-    <div className="relative mx-auto" style={{ width: "280px" }}>
-      <div className="relative bg-[#0A0A0A] rounded-[2.5rem] p-2 shadow-2xl shadow-obsidian/40 border border-bone/[0.08]">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-6 bg-[#0A0A0A] rounded-b-2xl z-20" />
-        <div className="bg-gradient-to-b from-[#0A0A0A] to-[#0A0A0A] rounded-[2rem] overflow-hidden" style={{ minHeight: "480px" }}>
-          <div className="flex items-center justify-between px-6 pt-8 pb-2">
-            <span className="text-[10px] text-bone/50 font-medium">9:41</span>
-            <div className="flex items-center gap-1">
-              <div className="w-4 h-2 border border-bone/40 rounded-sm relative">
-                <div className="absolute inset-[1px] right-[2px] bg-[#F3EEE3] rounded-[1px]" />
+    <div className="relative w-full">
+      <div className="relative group">
+        <div className="absolute -inset-[2px] rounded-2xl bg-gradient-to-r from-bone/20 via-bone/5 to-bone/20 opacity-0 group-focus-within:opacity-100 transition-opacity duration-700 blur-sm" />
+        <div className="relative flex items-center bg-coal/80 backdrop-blur-xl border border-bone/[0.12] rounded-2xl overflow-hidden focus-within:border-bone/[0.3] transition-all duration-500 shadow-[0_8px_40px_-8px_rgba(0,0,0,0.6)]">
+          <Search className="absolute left-5 w-5 h-5 text-bone/30 pointer-events-none" />
+          <input
+            className="w-full bg-transparent text-bone placeholder:text-bone/25 pl-14 pr-5 py-5 text-lg outline-none font-sans"
+            placeholder="Search for your restaurant..."
+            value={input} onChange={(e) => setInput(e.target.value)}
+            onFocus={() => input && setOpen(true)}
+            onBlur={() => setTimeout(() => setOpen(false), 150)}
+            onKeyDown={onKeyDown}
+            aria-label="Search for your restaurant"
+          />
+          {loading ? (
+            <svg className="absolute right-5 h-5 w-5 animate-spin text-bone/40" viewBox="0 0 24 24" fill="none">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.25" strokeWidth="3" />
+              <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+            </svg>
+          ) : (
+            <div className="absolute right-5 bg-bone text-obsidian text-xs font-bold px-3 py-1.5 rounded-lg">
+              Try it
+            </div>
+          )}
+        </div>
+      </div>
+      {open && suggestions.length > 0 && (
+        <div className="absolute left-0 right-0 top-[calc(100%+8px)] z-50 bg-graphite/95 backdrop-blur-xl border border-bone/[0.12] rounded-xl overflow-hidden shadow-[0_24px_80px_-12px_rgba(0,0,0,0.8)]">
+          {suggestions.map((s, i) => (
+            <div key={s.placeId} className={`px-5 py-3.5 cursor-pointer transition-colors duration-150 border-b border-bone/[0.04] last:border-0 ${i === active ? "bg-bone/[0.08]" : "hover:bg-bone/[0.04]"}`}
+              onMouseDown={(e) => { e.preventDefault(); select(s); }} onMouseEnter={() => setActive(i)}>
+              <div className="text-bone text-[15px] font-medium">{s.mainText}</div>
+              <div className="text-bone/35 text-sm">{s.secondaryText}</div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   HERO PHONE — Larger, richer conversation mockup
+   ═══════════════════════════════════════════════════════════════════════ */
+function HeroPhone() {
+  const [msgIdx, setMsgIdx] = useState(0);
+  const msgs = useRef([
+    { from: "r", text: "Thanks for calling Tony's Pizza! How can I help you today?" },
+    { from: "c", text: "Hi, can I get a large pepperoni with extra cheese?" },
+    { from: "r", text: "Absolutely! Want to add garlic knots for just $3.99? They're our most popular add-on." },
+    { from: "c", text: "Yeah sure, and a 2-liter Coke." },
+    { from: "r", text: "Great! Your total is $26.47. I'm sending a payment link to your phone now." },
+    { from: "s", text: "💳 Payment link sent via SMS" },
+    { from: "r", text: "Payment received! Your order will be ready for pickup in 25 minutes. Thank you!" },
+  ]).current;
+
+  useEffect(() => {
+    if (msgIdx >= msgs.length) {
+      const t = setTimeout(() => setMsgIdx(0), 5000);
+      return () => clearTimeout(t);
+    }
+    const delay = msgIdx === 0 ? 2000 : msgs[msgIdx - 1]?.from === "r" ? 2400 : 1600;
+    const t = setTimeout(() => setMsgIdx((i) => i + 1), delay);
+    return () => clearTimeout(t);
+  }, [msgIdx, msgs]);
+
+  return (
+    <div className="relative" style={{ width: 300 }}>
+      {/* Outer glow rings */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[380px] rounded-full border border-bone/[0.04] animate-[pulseScale_6s_ease-in-out_infinite] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[440px] h-[440px] rounded-full border border-bone/[0.02] animate-[pulseScale_8s_ease-in-out_infinite] pointer-events-none" style={{ animationDelay: "-2s" }} />
+      <div className="absolute -inset-20 rounded-full bg-bone/[0.04] blur-[100px] -z-10" />
+
+      <div className="relative rounded-[2.8rem] bg-obsidian p-2 border border-bone/[0.12] shadow-[0_40px_120px_-20px_rgba(0,0,0,0.9),0_0_0_1px_rgba(243,238,227,0.05)]">
+        {/* Notch */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-7 bg-obsidian rounded-b-2xl z-20 flex items-center justify-center">
+          <div className="w-12 h-3 bg-coal rounded-full" />
+        </div>
+
+        <div className="rounded-[2.4rem] overflow-hidden bg-gradient-to-b from-coal via-coal to-obsidian" style={{ minHeight: 520 }}>
+          {/* Status bar */}
+          <div className="flex items-center justify-between px-7 pt-10 pb-2">
+            <span className="text-[11px] text-bone/50 font-semibold tabular-nums">9:41</span>
+            <div className="flex items-center gap-1.5">
+              <div className="flex gap-0.5">
+                {[1,2,3,4].map(i => <div key={i} className="w-[3px] rounded-full bg-bone/50" style={{ height: 4 + i * 2 }} />)}
+              </div>
+              <div className="w-6 h-3 border border-bone/40 rounded-[3px] relative ml-1">
+                <div className="absolute inset-[1.5px] right-[3px] bg-bone/70 rounded-[1.5px]" />
               </div>
             </div>
           </div>
-          <div className="px-4 py-3 border-b border-bone/[0.06]">
+
+          {/* Call header */}
+          <div className="px-5 py-3 border-b border-bone/[0.06] mx-2">
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#F3EEE3] to-[#C8C8C8] flex items-center justify-center">
-                <Phone className="w-4 h-4 text-[#0A0A0A]" />
+              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-bone/90 to-bone/60 flex items-center justify-center shadow-[0_2px_8px_rgba(243,238,227,0.15)]">
+                <Phone className="w-4.5 h-4.5 text-obsidian" />
               </div>
-              <div>
-                <p className="text-bone text-sm font-semibold">Ringo AI</p>
+              <div className="flex-1">
+                <p className="text-bone text-sm font-bold tracking-tight">Ringo AI</p>
                 <div className="flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#F3EEE3] animate-pulse" />
-                  <span className="text-[11px] text-[#F3EEE3] font-medium">Active call — 2:34</span>
+                  <span className="w-2 h-2 rounded-full bg-bone animate-pulse-bone inline-block" />
+                  <span className="text-[11px] text-bone/40 tabular-nums">Live call — Tony&apos;s Pizza</span>
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <div className="w-8 h-8 rounded-full bg-bone/[0.06] flex items-center justify-center">
+                  <Mic className="w-3.5 h-3.5 text-bone/40" />
                 </div>
               </div>
             </div>
           </div>
-          <div className="px-3 py-4 space-y-3 overflow-hidden" style={{ maxHeight: "360px" }}>
-            {messages.slice(0, messageIndex).map((msg, i) => (
-              <div key={i} className={`flex ${msg.from === "customer" ? "justify-end" : "justify-start"}`}>
-                <div
-                  className={`max-w-[85%] px-3.5 py-2.5 rounded-2xl text-[13px] leading-relaxed ${
-                    msg.from === "customer"
-                      ? "bg-[#F3EEE3] text-[#0A0A0A] rounded-br-md font-medium"
-                      : "bg-bone/[0.08] text-bone/90 rounded-bl-md"
-                  }`}
-                  style={{ animation: "fadeSlideUp 0.4s ease-out forwards" }}
-                >
-                  {msg.text}
-                </div>
+
+          {/* Messages */}
+          <div className="px-4 py-4 space-y-2.5 overflow-hidden" style={{ maxHeight: 380 }}>
+            {msgs.slice(0, msgIdx).map((msg, i) => (
+              <div key={i} className={`flex ${msg.from === "c" ? "justify-end" : "justify-start"} anim-msg`} style={{ animationDelay: `${i * 60}ms` }}>
+                {msg.from === "s" ? (
+                  <div className="w-full flex justify-center">
+                    <div className="bg-bone/[0.06] border border-bone/[0.08] rounded-xl px-4 py-2 text-[11px] text-bone/50 text-center">
+                      {msg.text}
+                    </div>
+                  </div>
+                ) : (
+                  <div className={`max-w-[82%] px-3.5 py-2 text-[12.5px] leading-relaxed ${
+                    msg.from === "c"
+                      ? "bg-bone text-obsidian rounded-2xl rounded-br-sm font-medium shadow-[0_2px_8px_rgba(243,238,227,0.1)]"
+                      : "bg-bone/[0.07] text-bone/90 rounded-2xl rounded-bl-sm"
+                  }`}>
+                    {msg.text}
+                  </div>
+                )}
               </div>
             ))}
-            {messageIndex < messages.length && (
-              <div className={`flex ${messages[messageIndex].from === "customer" ? "justify-end" : "justify-start"}`}>
-                <div className="bg-bone/[0.06] rounded-2xl px-4 py-3 flex gap-1">
-                  <div className="w-1.5 h-1.5 bg-bone/40 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <div className="w-1.5 h-1.5 bg-bone/40 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <div className="w-1.5 h-1.5 bg-bone/40 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+            {msgIdx < msgs.length && msgs[msgIdx].from !== "s" && (
+              <div className={`flex ${msgs[msgIdx].from === "c" ? "justify-end" : "justify-start"}`}>
+                <div className="bg-bone/[0.06] rounded-2xl px-4 py-2.5 flex gap-1">
+                  <span className="w-1.5 h-1.5 bg-bone/40 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                  <span className="w-1.5 h-1.5 bg-bone/40 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                  <span className="w-1.5 h-1.5 bg-bone/40 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
                 </div>
               </div>
             )}
           </div>
         </div>
       </div>
-      <div className="absolute -inset-8 bg-[#F3EEE3]/15 rounded-full blur-3xl -z-10" />
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   DEMO CALL FORM
+   LIVE DASHBOARD — Tabs, animated data, richer layout
    ═══════════════════════════════════════════════════════════════════════ */
-function DemoCallForm() {
-  const [step, setStep] = useState<"restaurant" | "cuisine" | "contact" | "connecting">("restaurant");
-  const [restaurantName, setRestaurantName] = useState("");
-  const [selectedCuisine, setSelectedCuisine] = useState("");
-  const [formData, setFormData] = useState({ firstName: "", phone: "", restaurant: "" });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+function LiveDashboard() {
+  const [tick, setTick] = useState(0);
+  const [activeTab, setActiveTab] = useState(0);
+  const dataSets = [
+    { calls: 145, orders: 97, revenue: 4010, rate: 99.3 },
+    { calls: 148, orders: 100, revenue: 4185, rate: 99.4 },
+    { calls: 142, orders: 95, revenue: 3890, rate: 99.2 },
+    { calls: 151, orders: 103, revenue: 4320, rate: 99.5 },
+  ];
+  const d = dataSets[tick];
 
-  const cuisineOptions = ["Mexican", "Pizza", "Burgers", "Sushi", "Italian", "Indian", "Chinese", "BBQ"];
+  useEffect(() => {
+    const i = setInterval(() => setTick((t) => (t + 1) % dataSets.length), 3500);
+    return () => clearInterval(i);
+  }, [dataSets.length]);
 
-  const handleCuisineSelect = (cuisine: string) => {
-    setSelectedCuisine(cuisine);
-    setFormData({ ...formData, restaurant: restaurantName });
-    setStep("contact");
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.firstName || !formData.phone) return;
-    setIsSubmitting(true);
-    setStep("connecting");
-    try {
-      const response = await fetch("/api/demo-call", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          restaurantName: formData.restaurant || restaurantName,
-          cuisineType: selectedCuisine,
-          customerName: formData.firstName,
-        }),
-      });
-      if (response.ok) {
-        setTimeout(() => {
-          alert("Demo call initiated! You should receive a call shortly.");
-          setStep("restaurant");
-          setRestaurantName("");
-          setSelectedCuisine("");
-          setFormData({ firstName: "", phone: "", restaurant: "" });
-          setIsSubmitting(false);
-        }, 3000);
-      }
-    } catch {
-      alert("Failed to initiate demo call. Please try again.");
-      setIsSubmitting(false);
-      setStep("restaurant");
-    }
-  };
-
-  const stepLabels = ["Restaurant", "Cuisine", "Contact"];
-  const stepIndex = step === "restaurant" ? 0 : step === "cuisine" ? 1 : step === "contact" ? 2 : 2;
+  const tabs = ["Overview", "Calls", "Orders", "Analytics"];
+  const recentCalls = [
+    { time: "2:34 PM", name: "John M.", phone: "(209) 555-0142", dur: "4:12", type: "Order", amount: "$28.50", upsell: "+$3.99" },
+    { time: "2:18 PM", name: "Sarah L.", phone: "(209) 555-0198", dur: "2:45", type: "Order", amount: "$42.75", upsell: "+$5.99" },
+    { time: "1:56 PM", name: "Mike R.", phone: "(209) 555-0256", dur: "3:08", type: "Order", amount: "$19.90", upsell: "-" },
+    { time: "1:42 PM", name: "Emma T.", phone: "(209) 555-0311", dur: "1:32", type: "Text Order", amount: "$35.20", upsell: "+$2.99" },
+    { time: "1:28 PM", name: "Alex K.", phone: "(209) 555-0187", dur: "2:55", type: "Order", amount: "$27.00", upsell: "+$3.99" },
+  ];
 
   return (
-    <div className="w-full max-w-sm mx-auto">
-      <div className="bg-bone/[0.06] backdrop-blur-xl rounded-2xl border border-bone/[0.1] p-6 shadow-2xl shadow-obsidian/20">
-        <div className="flex items-center gap-2 mb-5">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#F3EEE3] to-[#C8C8C8] flex items-center justify-center">
-            <Mic className="w-4 h-4 text-[#0A0A0A]" />
+    <div className="relative rounded-2xl border border-bone/[0.1] bg-coal overflow-hidden shadow-[0_40px_120px_-20px_rgba(0,0,0,0.7),0_0_0_1px_rgba(243,238,227,0.04)]">
+      {/* Browser bar */}
+      <div className="flex items-center gap-3 px-5 py-3 border-b border-bone/[0.06] bg-graphite/80">
+        <div className="flex gap-2">
+          <div className="w-3 h-3 rounded-full bg-bone/[0.12]" />
+          <div className="w-3 h-3 rounded-full bg-bone/[0.09]" />
+          <div className="w-3 h-3 rounded-full bg-bone/[0.12]" />
+        </div>
+        <div className="flex-1 mx-6">
+          <div className="bg-obsidian/80 rounded-lg px-4 py-1.5 text-bone/25 text-xs flex items-center gap-2 max-w-sm mx-auto">
+            <svg viewBox="0 0 16 16" className="w-3 h-3 text-bone/20" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="12" height="12" rx="3" /><path d="M6 2v12" /></svg>
+            app.useringo.ai/dashboard
           </div>
-          <div>
-            <p className="text-bone text-sm font-semibold">Try Ringo Live</p>
-            <p className="text-bone/50 text-[11px]">Hear AI order-taking for your restaurant</p>
+        </div>
+      </div>
+
+      <div className="flex min-h-[420px] md:min-h-[480px]">
+        {/* Sidebar */}
+        <div className="hidden md:flex flex-col w-52 shrink-0 border-r border-bone/[0.04] bg-obsidian/40 p-4">
+          <div className="flex items-center gap-2 mb-6 px-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/ringo-logo.png" alt="Ringo" className="h-5 w-auto brightness-0 invert" />
+          </div>
+          {[
+            { name: "Dashboard", icon: <BarChart3 className="w-4 h-4" />, active: true },
+            { name: "Calls", icon: <Phone className="w-4 h-4" />, active: false, badge: "12" },
+            { name: "Orders", icon: <Utensils className="w-4 h-4" />, active: false },
+            { name: "Text Orders", icon: <MessageCircle className="w-4 h-4" />, active: false, badge: "NEW" },
+            { name: "Analytics", icon: <TrendingUp className="w-4 h-4" />, active: false },
+            { name: "Customers", icon: <Users className="w-4 h-4" />, active: false },
+          ].map((item) => (
+            <div key={item.name} className={`flex items-center justify-between px-3 py-2.5 rounded-lg text-[13px] mb-0.5 transition-colors ${
+              item.active ? "bg-bone/[0.08] text-bone font-medium" : "text-bone/25 hover:text-bone/40 hover:bg-bone/[0.03]"
+            }`}>
+              <div className="flex items-center gap-2.5">{item.icon}{item.name}</div>
+              {item.badge && (
+                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
+                  item.badge === "NEW" ? "bg-bone/[0.12] text-bone/60" : "bg-bone/[0.08] text-bone/40"
+                }`}>{item.badge}</span>
+              )}
+            </div>
+          ))}
+
+          <div className="mt-auto pt-4 border-t border-bone/[0.04]">
+            <div className="flex items-center gap-2 px-3 py-2">
+              <div className="w-7 h-7 rounded-full bg-bone/[0.08] flex items-center justify-center text-bone/30 text-[10px] font-bold">TR</div>
+              <div>
+                <p className="text-bone/50 text-[11px] font-medium">Tony&apos;s Restaurant</p>
+                <p className="text-bone/20 text-[10px]">Modesto, CA</p>
+              </div>
+            </div>
           </div>
         </div>
 
-        {step !== "connecting" && (
-          <div className="flex items-center gap-2 mb-5">
-            {stepLabels.map((label, i) => (
-              <div key={label} className="flex items-center gap-2 flex-1">
-                <div className={`h-1 flex-1 rounded-full transition-[opacity,background-color] duration-300 ${i <= stepIndex ? "bg-[#F3EEE3]" : "bg-bone/10"}`} />
+        {/* Main */}
+        <div className="flex-1 p-4 md:p-6 space-y-5 overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-bone font-semibold text-base">Dashboard</h3>
+              <p className="text-bone/20 text-[11px]">Today, April 16 — Real-time</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="hidden sm:flex items-center gap-1 bg-obsidian/60 rounded-lg p-0.5">
+                {tabs.map((t, i) => (
+                  <button key={t} onClick={() => setActiveTab(i)}
+                    className={`px-3 py-1.5 rounded-md text-[11px] font-medium transition-all ${
+                      i === activeTab ? "bg-bone/[0.1] text-bone" : "text-bone/25 hover:text-bone/40"
+                    }`}>{t}</button>
+                ))}
+              </div>
+              <span className="inline-flex items-center gap-1.5 bg-bone/[0.06] px-3 py-1.5 rounded-full text-[10px] text-bone/50 font-medium">
+                <span className="w-2 h-2 rounded-full bg-bone animate-pulse-bone" />
+                LIVE
+              </span>
+            </div>
+          </div>
+
+          {/* Stat cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {[
+              { label: "Total Calls", value: d.calls, change: "+12%", icon: <Phone className="w-3.5 h-3.5" /> },
+              { label: "Orders", value: d.orders, change: "+18%", icon: <Utensils className="w-3.5 h-3.5" /> },
+              { label: "Revenue", value: d.revenue, prefix: "$", change: "+24%", icon: <TrendingUp className="w-3.5 h-3.5" /> },
+              { label: "Answer Rate", value: d.rate, suffix: "%", change: "+0.3%", icon: <ShieldCheck className="w-3.5 h-3.5" /> },
+            ].map((s) => (
+              <div key={s.label} className="bg-obsidian/60 rounded-xl p-3.5 border border-bone/[0.04] hover:border-bone/[0.08] transition-colors">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-bone/20 text-[10px] uppercase tracking-wider">{s.label}</p>
+                  <span className="text-bone/10">{s.icon}</span>
+                </div>
+                <p className="text-bone font-bold text-xl tabular-nums transition-all duration-700">
+                  {s.prefix}{typeof s.value === "number" && !s.suffix ? s.value.toLocaleString() : s.value}{s.suffix}
+                </p>
+                <p className="text-bone/25 text-[10px] tabular-nums mt-0.5">{s.change} vs yesterday</p>
               </div>
             ))}
           </div>
-        )}
 
-        {step === "restaurant" && (
-          <div className="space-y-3">
-            <input
-              type="text"
-              placeholder="Your restaurant name"
-              value={restaurantName}
-              onChange={(e) => setRestaurantName(e.target.value)}
-              className="w-full px-4 py-3 bg-bone/[0.07] border border-bone/[0.1] rounded-xl text-bone placeholder-bone/40 focus:outline-none focus:ring-2 focus:ring-[#F3EEE3]/50 focus:border-[#F3EEE3]/50 text-sm transition-[opacity,transform,border-color,background-color]"
-            />
-            <button
-              onClick={() => restaurantName && setStep("cuisine")}
-              disabled={!restaurantName}
-              className="w-full bg-[#F3EEE3] text-[#0A0A0A] py-3 rounded-xl font-semibold hover:bg-[#C8C8C8] disabled:opacity-30 disabled:cursor-not-allowed transition-[opacity,transform,background-color] text-sm flex items-center justify-center gap-2"
-            >
-              Continue <ArrowRight className="w-4 h-4" />
-            </button>
+          {/* Chart + Activity split */}
+          <div className="grid lg:grid-cols-5 gap-3">
+            {/* Bar chart */}
+            <div className="lg:col-span-3 bg-obsidian/60 rounded-xl border border-bone/[0.04] p-4">
+              <div className="flex items-center justify-between mb-4">
+                <p className="text-bone/30 text-[11px] font-medium">Revenue — Last 7 Days</p>
+                <div className="flex gap-1">
+                  {["Week", "Month", "Year"].map((p, i) => (
+                    <span key={p} className={`text-[9px] px-2 py-0.5 rounded ${i === 0 ? "bg-bone/[0.08] text-bone/50" : "text-bone/15"}`}>{p}</span>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-end gap-[6px] h-24">
+                {[
+                  { h: 58, v: "$2,840" }, { h: 72, v: "$3,520" }, { h: 48, v: "$2,340" },
+                  { h: 85, v: "$4,150" }, { h: 66, v: "$3,220" }, { h: 92, v: "$4,490" }, { h: 78, v: "$3,810" },
+                ].map((bar, i) => (
+                  <div key={i} className="flex-1 flex flex-col items-center gap-1.5 group">
+                    <span className="text-[8px] text-bone/0 group-hover:text-bone/40 transition-colors tabular-nums">{bar.v}</span>
+                    <div className="w-full rounded-t-sm bg-bone/[0.08] group-hover:bg-bone/[0.16] transition-all duration-300 relative"
+                      style={{ height: `${bar.h}%` }}>
+                      <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-bone/[0.05] to-transparent rounded-t-sm" />
+                    </div>
+                    <span className="text-[8px] text-bone/15">{["M","T","W","T","F","S","S"][i]}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Activity feed */}
+            <div className="lg:col-span-2 bg-obsidian/60 rounded-xl border border-bone/[0.04] p-4">
+              <p className="text-bone/30 text-[11px] font-medium mb-3">Live Activity</p>
+              <div className="space-y-3">
+                {[
+                  { icon: <Phone className="w-3 h-3" />, text: "New call from (209) 555-0142", time: "Just now", highlight: true },
+                  { icon: <CreditCard className="w-3 h-3" />, text: "Payment received — $28.50", time: "1m ago" },
+                  { icon: <MessageCircle className="w-3 h-3" />, text: "Text order from (209) 555-0311", time: "3m ago" },
+                  { icon: <TrendingUp className="w-3 h-3" />, text: "Upsell accepted — +$3.99", time: "5m ago" },
+                ].map((a, i) => (
+                  <div key={i} className="flex items-start gap-2.5">
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
+                      a.highlight ? "bg-bone/[0.12] text-bone/60" : "bg-bone/[0.05] text-bone/25"
+                    }`}>{a.icon}</div>
+                    <div className="min-w-0">
+                      <p className="text-bone/50 text-[11px] leading-snug truncate">{a.text}</p>
+                      <p className="text-bone/15 text-[9px]">{a.time}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-        )}
 
-        {step === "cuisine" && (
-          <div className="space-y-3">
-            <p className="text-bone/60 text-xs font-medium">What type of cuisine?</p>
-            <div className="grid grid-cols-2 gap-2">
-              {cuisineOptions.map((cuisine) => (
-                <button
-                  key={cuisine}
-                  onClick={() => handleCuisineSelect(cuisine)}
-                  className="px-3 py-2.5 border border-bone/[0.1] text-bone/80 rounded-xl hover:bg-[#F3EEE3] hover:text-[#0A0A0A] hover:border-[#F3EEE3] transition-[opacity,transform,color,background-color,border-color] text-sm font-medium"
-                >
-                  {cuisine}
-                </button>
+          {/* Calls table */}
+          <div className="bg-obsidian/60 rounded-xl border border-bone/[0.04] overflow-hidden">
+            <div className="px-4 py-2.5 border-b border-bone/[0.04] flex items-center justify-between">
+              <p className="text-bone/30 text-[11px] font-medium">Recent Calls</p>
+              <p className="text-bone/15 text-[10px] hover:text-bone/30 cursor-pointer transition-colors">View all →</p>
+            </div>
+            {/* Table header */}
+            <div className="hidden sm:grid grid-cols-7 gap-2 px-4 py-2 text-[9px] text-bone/15 uppercase tracking-wider border-b border-bone/[0.03]">
+              <span>Time</span><span>Caller</span><span>Phone</span><span>Duration</span><span>Type</span><span className="text-right">Amount</span><span className="text-right">Upsell</span>
+            </div>
+            <div className="divide-y divide-bone/[0.03]">
+              {recentCalls.map((c, i) => (
+                <div key={i} className="grid grid-cols-4 sm:grid-cols-7 gap-2 px-4 py-2.5 text-[11px] hover:bg-bone/[0.02] transition-colors">
+                  <span className="text-bone/20 tabular-nums">{c.time}</span>
+                  <span className="text-bone font-medium truncate">{c.name}</span>
+                  <span className="hidden sm:block text-bone/20 tabular-nums">{c.phone}</span>
+                  <span className="hidden sm:block text-bone/20 tabular-nums">{c.dur}</span>
+                  <span className={`hidden sm:flex items-center gap-1 ${c.type === "Text Order" ? "text-bone/50" : "text-bone/30"}`}>
+                    {c.type === "Text Order" && <MessageCircle className="w-3 h-3" />}
+                    {c.type}
+                  </span>
+                  <span className="text-bone font-semibold tabular-nums text-right">{c.amount}</span>
+                  <span className="text-bone/30 tabular-nums text-right">{c.upsell}</span>
+                </div>
               ))}
             </div>
           </div>
-        )}
-
-        {step === "contact" && (
-          <form onSubmit={handleSubmit} className="space-y-3">
-            <input
-              type="text"
-              placeholder="First name"
-              value={formData.firstName}
-              onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-              className="w-full px-4 py-3 bg-bone/[0.07] border border-bone/[0.1] rounded-xl text-bone placeholder-bone/40 focus:outline-none focus:ring-2 focus:ring-[#F3EEE3]/50 text-sm transition-[opacity,transform,border-color,background-color]"
-            />
-            <input
-              type="tel"
-              placeholder="Phone number"
-              value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              className="w-full px-4 py-3 bg-bone/[0.07] border border-bone/[0.1] rounded-xl text-bone placeholder-bone/40 focus:outline-none focus:ring-2 focus:ring-[#F3EEE3]/50 text-sm transition-[opacity,transform,border-color,background-color]"
-            />
-            <button
-              type="submit"
-              disabled={isSubmitting || !formData.firstName || !formData.phone}
-              className="w-full bg-[#F3EEE3] text-[#0A0A0A] py-3 rounded-xl font-semibold hover:bg-[#C8C8C8] disabled:opacity-30 transition-[opacity,transform,background-color] text-sm flex items-center justify-center gap-2"
-            >
-              <PhoneCall className="w-4 h-4" /> Start Demo Call
-            </button>
-          </form>
-        )}
-
-        {step === "connecting" && (
-          <div className="py-6 flex flex-col items-center gap-4">
-            <div className="relative">
-              <div className="w-16 h-16 rounded-full bg-[#F3EEE3]/20 flex items-center justify-center">
-                <Phone className="w-7 h-7 text-[#F3EEE3]" />
-              </div>
-              <div className="absolute inset-0 rounded-full border-2 border-[#F3EEE3]/40 animate-ping" />
-            </div>
-            <p className="text-bone/70 text-sm font-medium">Connecting to Ringo...</p>
-          </div>
-        )}
-
-        <p className="text-bone/30 text-[10px] text-center mt-4">
-          Join 500+ restaurants already using Ringo
-        </p>
+        </div>
       </div>
     </div>
   );
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   DASHBOARD PREVIEW (PREMIUM)
+   FAQ ITEM
    ═══════════════════════════════════════════════════════════════════════ */
-function DashboardPreview() {
-  const { ref, visible } = useScrollReveal();
-
+function FAQItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
   return (
-    <div ref={ref} className={`transition-[opacity,transform] duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}>
-      <div className="relative">
-        <div className="bg-[#0A0A0A] rounded-t-xl px-4 py-3 flex items-center gap-2">
-          <div className="flex gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-[#F3EEE3]" />
-            <div className="w-3 h-3 rounded-full bg-[#F3EEE3]" />
-            <div className="w-3 h-3 rounded-full bg-[#F3EEE3]" />
-          </div>
-          <div className="flex-1 mx-4">
-            <div className="bg-bone/[0.06] rounded-md px-3 py-1 text-bone/40 text-xs font-medium">
-              app.useringo.ai/dashboard
-            </div>
-          </div>
-        </div>
-        <div className="bg-[#0A0A0A] rounded-b-xl overflow-hidden border border-bone/[0.06] border-t-0">
-          <div className="flex">
-            <div className="hidden md:block w-52 border-r border-bone/[0.06] p-4 space-y-1">
-              <div className="flex items-center gap-2 mb-6">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/ringo-logo.png" alt="Ringo" className="h-7 w-auto brightness-0 invert" />
-              </div>
-              {[
-                { icon: Activity, label: "Dashboard", active: true },
-                { icon: Phone, label: "Calls", active: false },
-                { icon: BarChart3, label: "Analytics", active: false },
-                { icon: ShoppingCart, label: "Orders", active: false },
-                { icon: Calendar, label: "Reservations", active: false },
-              ].map((item) => (
-                <div key={item.label} className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm ${item.active ? "bg-[#F3EEE3]/15 text-[#F3EEE3] font-semibold" : "text-bone/40 hover:text-bone/60"}`}>
-                  <item.icon className="w-4 h-4" />
-                  <span>{item.label}</span>
-                </div>
-              ))}
-            </div>
-            <div className="flex-1 p-5">
-              <div className="flex items-center justify-between mb-5">
-                <div>
-                  <h3 className="text-bone font-bold text-base">Dashboard</h3>
-                  <p className="text-bone/40 text-xs">Today, {new Date().toLocaleDateString("en-US", { month: "long", day: "numeric" })}</p>
-                </div>
-                <div className="flex items-center gap-1.5 rounded-full bg-[#F3EEE3]/10 border border-[#F3EEE3]/20 px-2.5 py-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#F3EEE3] animate-pulse" />
-                  <span className="text-[10px] text-[#F3EEE3] font-bold">LIVE</span>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
-                {[
-                  { label: "Total Calls", value: "127", change: "+12%", color: "text-[#F3EEE3]" },
-                  { label: "Orders", value: "84", change: "+18%", color: "text-[#F3EEE3]" },
-                  { label: "Revenue", value: "$3,247", change: "+24%", color: "text-[#C8C8C8]" },
-                  { label: "Answer Rate", value: "99.2%", change: "+0.3%", color: "text-[#F3EEE3]" },
-                ].map((stat) => (
-                  <div key={stat.label} className="bg-[#0A0A0A] rounded-xl border border-bone/[0.06] p-3.5">
-                    <p className="text-bone/40 text-[11px] font-medium mb-1">{stat.label}</p>
-                    <p className={`text-xl font-bold ${stat.color}`}>{stat.value}</p>
-                    <p className="text-[#F3EEE3] text-[10px] font-semibold mt-1">{stat.change} vs yesterday</p>
-                  </div>
-                ))}
-              </div>
-              <div className="bg-[#0A0A0A] rounded-xl border border-bone/[0.06] overflow-hidden">
-                <div className="px-4 py-3 border-b border-bone/[0.06]">
-                  <p className="text-bone text-sm font-semibold">Recent Calls</p>
-                </div>
-                <table className="w-full text-xs">
-                  <thead>
-                    <tr className="border-b border-bone/[0.04]">
-                      <th className="text-left px-4 py-2.5 text-bone/30 font-medium">Time</th>
-                      <th className="text-left px-4 py-2.5 text-bone/30 font-medium">Caller</th>
-                      <th className="text-left px-4 py-2.5 text-bone/30 font-medium hidden sm:table-cell">Duration</th>
-                      <th className="text-left px-4 py-2.5 text-bone/30 font-medium">Result</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[
-                      { time: "2:34 PM", caller: "John M.", dur: "4m 12s", result: "Order — $28.50", type: "order" },
-                      { time: "2:18 PM", caller: "Sarah L.", dur: "2m 45s", result: "Reservation", type: "res" },
-                      { time: "1:56 PM", caller: "Mike R.", dur: "3m 08s", result: "Order — $42.75", type: "order" },
-                      { time: "1:42 PM", caller: "Emma T.", dur: "1m 32s", result: "FAQ Answered", type: "faq" },
-                    ].map((call, i) => (
-                      <tr key={i} className="border-b border-bone/[0.03] hover:bg-bone/[0.02]">
-                        <td className="px-4 py-2.5 text-bone/60">{call.time}</td>
-                        <td className="px-4 py-2.5 text-bone/80 font-medium">{call.caller}</td>
-                        <td className="px-4 py-2.5 text-bone/40 hidden sm:table-cell">{call.dur}</td>
-                        <td className="px-4 py-2.5">
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
-                            call.type === "order" ? "bg-[#F3EEE3]/15 text-[#F3EEE3]" :
-                            call.type === "res" ? "bg-bone/15 text-bone" :
-                            "bg-[#F3EEE3]/10 text-[#C8C8C8]"
-                          }`}>
-                            <Check className="w-2.5 h-2.5" /> {call.result}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div className="absolute -inset-12 bg-gradient-to-b from-[#F3EEE3]/8 via-transparent to-transparent rounded-3xl blur-3xl -z-10 pointer-events-none" />
+    <div className="border-b border-bone/[0.06]">
+      <button onClick={() => setOpen(!open)} className="w-full flex items-center justify-between py-6 text-left group">
+        <span className="text-bone font-medium text-base pr-4 group-hover:text-bone/80 transition-colors">{q}</span>
+        <ChevronDown className={`w-5 h-5 text-bone/30 shrink-0 transition-transform duration-300 ${open ? "rotate-180" : ""}`} />
+      </button>
+      <div className="overflow-hidden transition-all duration-300" style={{ maxHeight: open ? 300 : 0, opacity: open ? 1 : 0 }}>
+        <p className="text-stone text-[15px] leading-relaxed pb-6">{a}</p>
       </div>
     </div>
   );
@@ -429,44 +572,60 @@ function DashboardPreview() {
    ROI CALCULATOR
    ═══════════════════════════════════════════════════════════════════════ */
 function ROICalculator() {
-  const [callsPerDay, setCallsPerDay] = useState(30);
-  const [avgOrder, setAvgOrder] = useState(30);
-  const missedRevenue = Math.round(callsPerDay * 0.3 * avgOrder * 30);
-  const yearlyLost = missedRevenue * 12;
+  const [calls, setCalls] = useState(80);
+  const [avg, setAvg] = useState(25);
+  const missedPct = 0.3;
+  const monthlyLost = Math.round(calls * missedPct * avg * 30);
+  const yearly = monthlyLost * 12;
 
   return (
-    <div className="bg-bone rounded-2xl border border-[#2E2E2E]/60 shadow-lg shadow-obsidian/[0.03] overflow-hidden">
-      <div className="grid grid-cols-1 md:grid-cols-2">
-        <div className="p-8">
-          <h4 className="text-lg font-bold text-[#F3EEE3] mb-1">Calculate Your Lost Revenue</h4>
-          <p className="text-sm text-[#6B6B6B] mb-8">See how much missed calls cost your restaurant.</p>
-          <div className="space-y-6">
+    <div className="relative overflow-hidden">
+      <div className="grid md:grid-cols-2 gap-0 rounded-2xl border border-bone/[0.08] overflow-hidden">
+        {/* Left — Controls */}
+        <div className="bg-coal p-8 md:p-10">
+          <p className="text-bone/40 text-[11px] font-medium uppercase tracking-[0.12em] mb-6">Revenue Calculator</p>
+          <h3 className="font-display text-bone text-2xl md:text-3xl tracking-tight mb-2">
+            How much are missed calls costing you?
+          </h3>
+          <p className="text-stone text-sm mb-8">Drag the sliders.</p>
+
+          <div className="space-y-8">
             <div>
-              <div className="flex justify-between mb-2">
-                <label className="text-sm font-medium text-[#F3EEE3]">Phone calls per day</label>
-                <span className="text-sm font-bold text-[#F3EEE3]">{callsPerDay}</span>
+              <div className="flex justify-between text-sm mb-3">
+                <span className="text-bone/50">Phone calls per day</span>
+                <span className="text-bone font-bold tabular-nums text-lg">{calls}</span>
               </div>
-              <input type="range" min="10" max="100" value={callsPerDay} onChange={(e) => setCallsPerDay(+e.target.value)}
-                className="w-full h-1.5 bg-[#2E2E2E] rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#F3EEE3] [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:cursor-pointer" />
+              <input type="range" min={10} max={300} value={calls} onChange={(e) => setCalls(+e.target.value)}
+                className="w-full accent-bone h-1.5 bg-smoke rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-bone [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-[0_0_0_4px_rgba(243,238,227,0.15)]" />
             </div>
             <div>
-              <div className="flex justify-between mb-2">
-                <label className="text-sm font-medium text-[#F3EEE3]">Average order value</label>
-                <span className="text-sm font-bold text-[#F3EEE3]">${avgOrder}</span>
+              <div className="flex justify-between text-sm mb-3">
+                <span className="text-bone/50">Average order value</span>
+                <span className="text-bone font-bold tabular-nums text-lg">${avg}</span>
               </div>
-              <input type="range" min="15" max="60" value={avgOrder} onChange={(e) => setAvgOrder(+e.target.value)}
-                className="w-full h-1.5 bg-[#2E2E2E] rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#F3EEE3] [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:cursor-pointer" />
+              <input type="range" min={10} max={60} value={avg} onChange={(e) => setAvg(+e.target.value)}
+                className="w-full accent-bone h-1.5 bg-smoke rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-bone [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:shadow-[0_0_0_4px_rgba(243,238,227,0.15)]" />
             </div>
           </div>
         </div>
-        <div className="bg-gradient-to-br from-[#0A0A0A] to-[#0A0A0A] p-8 flex flex-col justify-center">
-          <p className="text-bone/50 text-xs uppercase tracking-widest font-semibold mb-2">Monthly revenue lost to missed calls</p>
-          <p className="text-4xl md:text-5xl font-bold text-bone mb-1">${missedRevenue.toLocaleString()}</p>
-          <p className="text-bone/40 text-sm mb-6">${yearlyLost.toLocaleString()} per year</p>
-          <div className="bg-[#F3EEE3]/10 rounded-xl p-4 border border-[#F3EEE3]/20">
-            <p className="text-[#F3EEE3] text-sm font-semibold mb-0.5">With Ringo at $799/mo</p>
-            <p className="text-bone/60 text-xs">ROI payback in {Math.max(1, Math.ceil(799 / ((missedRevenue / 30) || 1)))} day{Math.ceil(799 / ((missedRevenue / 30) || 1)) !== 1 ? "s" : ""}</p>
-          </div>
+
+        {/* Right — Results */}
+        <div className="bg-bone text-obsidian p-8 md:p-10 flex flex-col items-center justify-center text-center">
+          <p className="text-obsidian/40 text-[11px] font-medium uppercase tracking-[0.12em] mb-4">Monthly revenue you&apos;re losing</p>
+          <p className="money-number text-obsidian text-[4.5rem] md:text-[7.5rem] leading-[0.9]">
+            ${monthlyLost.toLocaleString()}
+          </p>
+          <p className="text-obsidian/50 text-sm mt-2">
+            That&apos;s <span className="font-bold text-obsidian">${yearly.toLocaleString()}</span> per year
+          </p>
+          <div className="w-16 h-[1px] bg-obsidian/10 my-6" />
+          <p className="text-obsidian/40 text-xs">With Ringo at <span className="font-bold text-obsidian">$799/mo</span></p>
+          <p className="font-display italic text-obsidian text-2xl mt-1">
+            ROI payback in {Math.max(1, Math.ceil((799 / (monthlyLost || 1)) * 30))} days
+          </p>
+          <Link href="/demo" className="mt-6 inline-flex items-center gap-2 bg-obsidian text-bone px-6 py-3 rounded-full text-sm font-bold hover:shadow-lg transition-all">
+            Get started <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </div>
     </div>
@@ -474,35 +633,239 @@ function ROICalculator() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   FAQ
+   EMBEDDED VOICE DEMO — Interactive restaurant search + live call
    ═══════════════════════════════════════════════════════════════════════ */
-function FAQItem({ question, answer }: { question: string; answer: string }) {
+type DemoPlace = { placeId: string; name: string; address: string; phone: string; cuisineType: string; hours: string[] | null; photoUrl: string | null; website?: string | null };
+type DemoCallState = "idle" | "connecting" | "live" | "ended" | "error";
+type DemoSuggestion = { placeId: string; mainText: string; secondaryText: string };
+
+function EmbeddedVoiceDemo() {
+  const [step, setStep] = useState<"search" | "ready" | "call">("search");
+  const [input, setInput] = useState("");
+  const [suggestions, setSuggestions] = useState<DemoSuggestion[]>([]);
   const [open, setOpen] = useState(false);
-  return (
-    <div className="border-b border-[#2E2E2E]/60 last:border-0">
-      <button onClick={() => setOpen(!open)} className="w-full py-5 px-1 flex items-center justify-between text-left group">
-        <span className="text-[15px] font-semibold text-[#F3EEE3] group-hover:text-[#F3EEE3] transition-colors pr-4">{question}</span>
-        <ChevronDown className={`w-4 h-4 text-[#F3EEE3] flex-shrink-0 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
-      </button>
-      <div className={`overflow-hidden transition-[max-height,padding,opacity] duration-300 ${open ? "max-h-40 pb-5" : "max-h-0"}`}>
-        <p className="text-sm text-[#6B6B6B] leading-relaxed px-1">{answer}</p>
-      </div>
-    </div>
-  );
-}
+  const [active, setActive] = useState(0);
+  const [place, setPlace] = useState<DemoPlace | null>(null);
+  const [callState, setCallState] = useState<DemoCallState>("idle");
+  const [error, setError] = useState<string | null>(null);
+  const clientRef = useRef<unknown>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const tokenRef = useRef(typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : Math.random().toString(36).slice(2));
+  const geoRef = useRef<{ lat: number; lng: number } | null>(null);
 
-/* ═══════════════════════════════════════════════════════════════════════
-   SECTION WRAPPER WITH SCROLL ANIMATION
-   ═══════════════════════════════════════════════════════════════════════ */
-function RevealSection({ children, className = "", delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
-  const { ref, visible } = useScrollReveal();
+  useEffect(() => {
+    if (typeof navigator === "undefined" || !navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => { geoRef.current = { lat: pos.coords.latitude, lng: pos.coords.longitude }; },
+      () => {}, { enableHighAccuracy: false, timeout: 4000, maximumAge: 600000 }
+    );
+  }, []);
+
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    if (!input || input.trim().length < 2) { setSuggestions([]); return; }
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const res = await fetch("/api/demo/places/autocomplete", {
+          method: "POST", headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ input: input.trim(), sessionToken: tokenRef.current, lat: geoRef.current?.lat, lng: geoRef.current?.lng }),
+        });
+        const data = await res.json();
+        setSuggestions(data.suggestions || []);
+        setOpen(true); setActive(0);
+      } catch {}
+    }, 220);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [input]);
+
+  async function selectPlace(s: DemoSuggestion) {
+    setOpen(false); setInput(s.mainText);
+    try {
+      const res = await fetch(`/api/demo/places/details?placeId=${encodeURIComponent(s.placeId)}`);
+      if (!res.ok) throw new Error("Could not load restaurant");
+      const d = await res.json();
+      setPlace(d); setStep("ready");
+    } catch (e) { setError((e as Error).message); }
+  }
+
+  async function startCall() {
+    if (!place) return;
+    setError(null); setCallState("connecting");
+    try {
+      const res = await fetch("/api/demo/create-session", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ language: "en", restaurantName: place.name, cuisineType: place.cuisineType, address: place.address, phone: place.phone, hours: place.hours, website: place.website }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to create session");
+      if (data.demo_mode) { setError("Demo voice not configured. Contact us to enable live calls."); setCallState("error"); return; }
+
+      const { RetellWebClient } = await import("retell-client-js-sdk");
+      const client = new RetellWebClient();
+      clientRef.current = client;
+      client.on("call_started", () => { setCallState("live"); setStep("call"); });
+      client.on("call_ended", () => setCallState("ended"));
+      client.on("error", () => { setError("Call dropped. Try again?"); setCallState("error"); try { client.stopCall(); } catch {} });
+      await client.startCall({ accessToken: data.access_token });
+    } catch (e) { setError((e as Error).message || "Could not start call"); setCallState("error"); }
+  }
+
+  function endCall() {
+    try { const client = clientRef.current as { stopCall: () => void } | null; client?.stopCall(); } catch {}
+    setCallState("ended");
+  }
+
+  function reset() { setStep("search"); setPlace(null); setInput(""); setCallState("idle"); setError(null); }
+
+  function onKeyDown(e: React.KeyboardEvent) {
+    if (!open || suggestions.length === 0) return;
+    if (e.key === "ArrowDown") { e.preventDefault(); setActive((i) => Math.min(i + 1, suggestions.length - 1)); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setActive((i) => Math.max(i - 1, 0)); }
+    else if (e.key === "Enter") { e.preventDefault(); selectPlace(suggestions[active]); }
+    else if (e.key === "Escape") setOpen(false);
+  }
+
   return (
-    <div
-      ref={ref}
-      className={`transition-[opacity,transform] duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"} ${className}`}
-      style={{ transitionDelay: `${delay}ms` }}
-    >
-      {children}
+    <div className="mx-auto max-w-2xl">
+      {/* Glass card container */}
+      <div className="relative rounded-3xl border border-bone/[0.08] bg-coal/60 backdrop-blur-xl p-8 md:p-10 shadow-[0_40px_120px_-20px_rgba(0,0,0,0.6)]">
+        <div className="absolute -inset-[1px] rounded-3xl bg-gradient-to-b from-bone/[0.08] via-transparent to-transparent pointer-events-none" />
+        <div className="relative z-10">
+
+          {/* Step 1: Search */}
+          {step === "search" && (
+            <div className="space-y-5">
+              <div className="text-center mb-2">
+                <div className="inline-flex items-center gap-2 text-bone/40 text-sm mb-1">
+                  <Search className="w-4 h-4" /> Step 1 of 2
+                </div>
+                <p className="text-bone text-lg font-medium">Find your restaurant</p>
+              </div>
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-bone/30 pointer-events-none" />
+                <input
+                  className="w-full bg-obsidian/60 border border-bone/[0.1] rounded-xl text-bone placeholder:text-bone/25 pl-12 pr-5 py-4 text-base outline-none focus:border-bone/[0.25] transition-colors"
+                  placeholder="Search for any restaurant..."
+                  value={input} onChange={(e) => setInput(e.target.value)}
+                  onFocus={() => input && setOpen(true)}
+                  onBlur={() => setTimeout(() => setOpen(false), 150)}
+                  onKeyDown={onKeyDown}
+                />
+                {open && suggestions.length > 0 && (
+                  <div className="absolute left-0 right-0 top-full mt-2 rounded-xl border border-bone/[0.1] bg-graphite/95 backdrop-blur-xl overflow-hidden shadow-xl z-30">
+                    {suggestions.map((s, i) => (
+                      <button key={s.placeId}
+                        className={`w-full text-left px-4 py-3 transition-colors ${i === active ? "bg-bone/[0.08]" : "hover:bg-bone/[0.04]"}`}
+                        onMouseDown={(e) => { e.preventDefault(); selectPlace(s); }}
+                        onMouseEnter={() => setActive(i)}
+                      >
+                        <span className="block text-bone text-sm font-medium">{s.mainText}</span>
+                        <span className="block text-bone/40 text-xs mt-0.5">{s.secondaryText}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {error && <p className="text-bone/60 text-sm text-center">{error}</p>}
+            </div>
+          )}
+
+          {/* Step 2: Ready to call */}
+          {step === "ready" && place && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <div className="inline-flex items-center gap-2 text-bone/40 text-sm mb-3">
+                  <Phone className="w-4 h-4" /> Step 2 of 2
+                </div>
+                <p className="text-bone text-xl font-bold">{place.name}</p>
+                <p className="text-bone/40 text-sm mt-1">{place.address}</p>
+                {place.cuisineType && <p className="text-bone/30 text-xs mt-1 uppercase tracking-wider">{place.cuisineType}</p>}
+              </div>
+
+              <div className="flex flex-col items-center gap-4">
+                <button
+                  onClick={startCall}
+                  disabled={callState === "connecting"}
+                  className="group relative w-20 h-20 rounded-full bg-bone text-obsidian flex items-center justify-center shadow-[0_0_0_0_rgba(243,238,227,0.3)] hover:shadow-[0_0_0_12px_rgba(243,238,227,0.1)] transition-all duration-500 hover:scale-105 active:scale-95 disabled:opacity-50"
+                >
+                  {callState === "connecting" ? (
+                    <svg className="h-8 w-8 animate-spin" viewBox="0 0 24 24" fill="none">
+                      <circle cx="12" cy="12" r="10" stroke="currentColor" strokeOpacity="0.25" strokeWidth="3" />
+                      <path d="M22 12a10 10 0 0 1-10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                    </svg>
+                  ) : (
+                    <Phone className="w-8 h-8" />
+                  )}
+                  {/* Pulsing ring animation */}
+                  <span className="absolute inset-0 rounded-full border-2 border-bone/40 animate-ping" style={{ animationDuration: "2s" }} />
+                </button>
+                <p className="text-bone/50 text-sm">
+                  {callState === "connecting" ? "Connecting..." : "Tap to start a live call"}
+                </p>
+              </div>
+
+              <button onClick={reset} className="block mx-auto text-bone/30 hover:text-bone/60 text-xs transition-colors">
+                ← Search for a different restaurant
+              </button>
+            </div>
+          )}
+
+          {/* Step 3: Live call / ended */}
+          {step === "call" && place && (
+            <div className="space-y-6">
+              <div className="text-center">
+                <p className="text-bone text-xl font-bold">{place.name}</p>
+                <div className="inline-flex items-center gap-2 mt-2">
+                  {callState === "live" && <span className="w-2.5 h-2.5 rounded-full bg-bone animate-pulse" />}
+                  <span className="text-bone/60 text-sm">
+                    {callState === "live" && "Call in progress — say something!"}
+                    {callState === "ended" && "Call ended"}
+                    {callState === "error" && (error || "Something went wrong")}
+                  </span>
+                </div>
+              </div>
+
+              {/* Waveform visualization */}
+              {callState === "live" && (
+                <div className="flex items-center justify-center gap-1 h-16">
+                  {Array.from({ length: 20 }).map((_, i) => (
+                    <div key={i} className="w-1 bg-bone/40 rounded-full" style={{
+                      height: `${16 + Math.random() * 40}px`,
+                      animation: `waveform ${0.3 + Math.random() * 0.5}s ease-in-out infinite alternate`,
+                      animationDelay: `${i * 0.05}s`,
+                    }} />
+                  ))}
+                </div>
+              )}
+
+              <div className="flex justify-center gap-4">
+                {callState === "live" ? (
+                  <button onClick={endCall} className="group w-16 h-16 rounded-full bg-bone text-obsidian flex items-center justify-center hover:scale-105 active:scale-95 transition-all shadow-[0_0_32px_rgba(243,238,227,0.2)]">
+                    <Phone className="w-6 h-6 rotate-[135deg]" />
+                  </button>
+                ) : (
+                  <div className="flex flex-col items-center gap-3">
+                    <button onClick={reset} className="bg-bone text-obsidian px-6 py-3 rounded-full text-sm font-bold hover:scale-[1.02] active:scale-[0.98] transition-all">
+                      Try another restaurant
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Prompt chips below */}
+      {step === "ready" && callState === "idle" && (
+        <div className="mt-6 flex flex-wrap justify-center gap-2">
+          {["Place a test order", "Ask about hours", "Ask what's on the menu", "Order in Spanish"].map((p) => (
+            <div key={p} className="bg-coal/40 border border-bone/[0.06] rounded-full px-4 py-2 text-bone/30 text-xs hover:text-bone/50 hover:border-bone/[0.12] transition-colors cursor-default">
+              {p}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -513,869 +876,906 @@ function RevealSection({ children, className = "", delay = 0 }: { children: Reac
 export default function HomePage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  useGlobalReveal();
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    const fn = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", fn, { passive: true });
+    return () => window.removeEventListener("scroll", fn);
   }, []);
 
   const navLinks = [
-    { label: "Features", href: "#features" },
     { label: "How it works", href: "#how-it-works" },
-    { label: "Integrations", href: "#integrations" },
+    { label: "Features", href: "#features" },
+    { label: "Demo", href: "#demo" },
     { label: "Pricing", href: "#pricing" },
   ];
 
-  const integrations = [
-    { name: "Square", src: "/integrations/square.svg" },
-    { name: "Toast", src: "/integrations/toast.svg" },
-    { name: "Clover", src: "/integrations/clover.svg" },
-    { name: "SpotOn", src: "/integrations/spoton.svg" },
-    { name: "Aloha", src: "/integrations/aloha.svg" },
-    { name: "OpenTable", src: "/integrations/opentable.svg" },
-    { name: "DoorDash", src: "/integrations/doordash.svg" },
-    { name: "Uber Eats", src: "/integrations/ubereats.svg" },
-  ];
-
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-obsidian">
       <style>{`
-        @keyframes fadeSlideUp {
-          from { opacity: 0; transform: translateY(8px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        .marquee-track { animation: marquee 30s linear infinite; }
-        .marquee-track:hover { animation-play-state: paused; }
         html { scroll-behavior: smooth; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-100%); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideRight { from { opacity: 0; transform: translateX(50px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes growWidth { from { width: 0; } to { width: 40%; } }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        @keyframes pulseScale { 0%,100% { transform: scale(1); opacity: 0.5; } 50% { transform: scale(1.08); opacity: 1; } }
+        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+        @keyframes glowPulse { 0%,100% { opacity: 0.03; } 50% { opacity: 0.08; } }
+        @keyframes borderGlow { 0%,100% { border-color: rgba(243,238,227,0.06); } 50% { border-color: rgba(243,238,227,0.14); } }
+        @keyframes waveform { 0% { height: 8px; } 100% { height: 48px; } }
+
+        .anim-nav { animation: slideDown 0.5s ease-out both; }
+        .anim-h1 { animation: fadeInUp 0.8s cubic-bezier(0.22,1,0.36,1) 0.1s both; }
+        .anim-h2 { animation: fadeInUp 0.8s cubic-bezier(0.22,1,0.36,1) 0.25s both; }
+        .anim-h3 { animation: fadeInUp 0.8s cubic-bezier(0.22,1,0.36,1) 0.4s both; }
+        .anim-h4 { animation: fadeInUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.55s both; }
+        .anim-h5 { animation: fadeInUp 0.7s cubic-bezier(0.22,1,0.36,1) 0.7s both; }
+        .anim-phone { animation: slideRight 1s cubic-bezier(0.22,1,0.36,1) 0.4s both; }
+        .anim-ribbon { animation: growWidth 1.2s cubic-bezier(0.22,1,0.36,1) 1.4s both; }
+        .anim-msg { animation: fadeInUp 0.35s ease-out both; }
+        .marquee-track { animation: marquee 45s linear infinite; }
+        .marquee-track:hover { animation-play-state: paused; }
+        .shimmer-btn { background: linear-gradient(90deg, transparent 0%, rgba(243,238,227,0.1) 50%, transparent 100%); background-size: 200% 100%; animation: shimmer 3s linear infinite; }
+        .glow-pulse { animation: glowPulse 5s ease-in-out infinite; }
+        .border-glow { animation: borderGlow 4s ease-in-out infinite; }
       `}</style>
 
-      {/* ═══════════════ 1. NAVIGATION ═══════════════ */}
-      <nav className={`fixed top-0 left-0 right-0 z-50 transition-[background,border,backdrop-filter,box-shadow] duration-300 ${
-        scrolled
-          ? "bg-[#0A0A0A]/85 backdrop-blur-xl border-b border-bone/[0.06] shadow-lg shadow-obsidian/10"
-          : "bg-transparent border-b border-transparent"
+      {/* ═══ NAV ═══ */}
+      <nav className={`anim-nav fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+        scrolled ? "bg-obsidian/90 backdrop-blur-2xl border-b border-bone/[0.06]" : "bg-bone/80 backdrop-blur-2xl border-b border-obsidian/[0.06]"
       }`}>
-        <div className={`max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 flex items-center justify-between transition-[height] duration-300 ${scrolled ? "h-14" : "h-20"}`}>
-          <Link href="/" className="flex items-center gap-2 group">
+        <div className={`max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 flex items-center justify-between transition-all duration-500 ${scrolled ? "h-14" : "h-20"}`}>
+          <Link href="/" className="flex items-center group">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/ringo-logo.png" alt="Ringo" className="h-8 w-auto brightness-0 invert transition-transform duration-300 group-hover:scale-[1.03]" />
+            <img src="/ringo-logo.png" alt="Ringo" className={`h-8 w-auto transition-all duration-300 group-hover:scale-105 ${scrolled ? "brightness-0 invert" : "brightness-0"}`} />
           </Link>
-
-          <div className="hidden lg:flex items-center gap-1 bg-bone/[0.03] border border-bone/[0.06] rounded-full px-2 py-1.5">
-            {navLinks.map((link) => (
-              <Link
-                key={link.label}
-                href={link.href}
-                className="text-bone/60 hover:text-bone px-3.5 py-1.5 rounded-full text-[13px] font-medium tracking-tight transition-[color,background-color] duration-200 hover:bg-bone/[0.05]"
-              >
-                {link.label}
-              </Link>
+          <div className={`hidden lg:flex items-center gap-0.5 rounded-full px-1.5 py-1.5 border transition-colors ${
+            scrolled ? "bg-bone/[0.03] border-bone/[0.06]" : "bg-obsidian/[0.04] border-obsidian/[0.08]"
+          }`}>
+            {navLinks.map((l) => (
+              <Link key={l.label} href={l.href} className={`px-4 py-1.5 rounded-full text-[13px] font-medium tracking-tight transition-colors duration-200 ${
+                scrolled ? "text-bone/50 hover:text-bone hover:bg-bone/[0.06]" : "text-obsidian/50 hover:text-obsidian hover:bg-obsidian/[0.06]"
+              }`}>{l.label}</Link>
             ))}
           </div>
-
-          <div className="hidden md:flex items-center gap-2">
-            <Link href="/login" className="text-bone/60 hover:text-bone transition-colors text-[13px] font-medium px-4 py-2">
-              Log in
-            </Link>
-            <Link
-              href="#demo"
-              className="group relative inline-flex items-center gap-1.5 bg-[#F3EEE3] text-[#0A0A0A] px-4 py-2 rounded-full text-[13px] font-semibold transition-[transform,box-shadow] duration-200 hover:shadow-[0_0_0_4px_rgba(243,238,227,0.12)] active:scale-[0.98]"
-            >
-              Schedule a demo
-              <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
-            </Link>
+          <div className="hidden md:flex items-center gap-3">
+            <Link href="/login" className={`transition-colors text-[13px] font-medium px-4 py-2 ${
+              scrolled ? "text-bone/50 hover:text-bone" : "text-obsidian/50 hover:text-obsidian"
+            }`}>Log in</Link>
+            <a href="#demo" className={`group relative inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[13px] font-bold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
+              scrolled ? "bg-bone text-obsidian hover:shadow-[0_0_0_4px_rgba(243,238,227,0.15)]" : "bg-obsidian text-bone hover:shadow-[0_0_0_4px_rgba(10,10,10,0.15)]"
+            }`}>
+              Try live demo <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+            </a>
           </div>
-
-          <button className="md:hidden text-bone/70" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+          <button className={`md:hidden ${scrolled ? "text-bone/60" : "text-obsidian/60"}`} onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
-
         {mobileMenuOpen && (
-          <div className="md:hidden bg-[#0A0A0A]/95 backdrop-blur-xl border-t border-bone/[0.06] px-5 py-4 space-y-1">
-            {navLinks.map((link) => (
-              <Link key={link.label} href={link.href} onClick={() => setMobileMenuOpen(false)}
-                className="block text-bone/60 hover:text-bone py-2.5 text-sm font-medium transition-colors">
-                {link.label}
-              </Link>
-            ))}
-            <hr className="border-bone/[0.08] my-2" />
-            <Link href="/login" className="block text-bone/60 hover:text-bone py-2.5 text-sm font-medium">Log in</Link>
-            <Link href="#demo" className="block bg-[#F3EEE3] text-[#0A0A0A] text-center py-2.5 rounded-full text-sm font-semibold mt-2">
-              Schedule a demo
-            </Link>
+          <div className={`md:hidden backdrop-blur-2xl border-t ${scrolled ? "bg-obsidian/95 border-bone/[0.06]" : "bg-bone/95 border-obsidian/[0.06]"}`}>
+            <div className="px-5 py-4 space-y-1">
+              {navLinks.map((l) => (
+                <Link key={l.label} href={l.href} onClick={() => setMobileMenuOpen(false)} className={`block py-2.5 text-sm font-medium ${scrolled ? "text-bone/60 hover:text-bone" : "text-obsidian/60 hover:text-obsidian"}`}>{l.label}</Link>
+              ))}
+              <hr className={`my-2 ${scrolled ? "border-bone/[0.06]" : "border-obsidian/[0.06]"}`} />
+              <Link href="/login" className={`block py-2.5 text-sm font-medium ${scrolled ? "text-bone/60 hover:text-bone" : "text-obsidian/60 hover:text-obsidian"}`}>Log in</Link>
+              <a href="#demo" className={`block text-center py-2.5 rounded-full text-sm font-bold mt-2 ${scrolled ? "bg-bone text-obsidian" : "bg-obsidian text-bone"}`}>Try live demo</a>
+            </div>
           </div>
         )}
       </nav>
 
-      {/* ═══════════════ 2. HERO — DARK ═══════════════ */}
-      <section className="relative bg-[#0A0A0A] overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-[#F3EEE3]/[0.05] via-transparent to-transparent pointer-events-none" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[600px] bg-[#F3EEE3]/[0.03] rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute inset-0 opacity-[0.03]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)", backgroundSize: "32px 32px" }} />
+      {/* ═══ HERO — BONE BACKGROUND (Inverted) ═══ */}
+      <section className="relative overflow-hidden pt-24 pb-20 md:pt-32 md:pb-32 lg:pt-28">
+        {/* BONE background with grain */}
+        <div className="absolute inset-0 bg-bone z-0" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_100%_50%_at_50%_0%,rgba(10,10,10,0.08),transparent)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_600px_at_80%_20%,rgba(10,10,10,0.04),transparent)]" />
+        <GrainOverlay opacity={0.05} />
 
-        <div className="relative max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 pt-28 pb-20 md:pt-36 md:pb-28">
-          <div className="flex justify-center mb-8">
-            <div className="inline-flex items-center gap-2 bg-bone/[0.06] backdrop-blur-sm border border-bone/[0.08] rounded-full px-4 py-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-[#F3EEE3]" />
-              <span className="text-bone/70 text-xs font-medium">The #1 AI phone agent for restaurants</span>
-            </div>
-          </div>
+        {/* Decorative floating shapes */}
+        <div className="absolute top-20 left-[10%] w-64 h-64 rounded-full border border-obsidian/[0.04] animate-[pulseScale_12s_ease-in-out_infinite] pointer-events-none" />
+        <div className="absolute bottom-10 right-[5%] w-48 h-48 rounded-full border border-obsidian/[0.03] animate-[pulseScale_10s_ease-in-out_infinite_2s] pointer-events-none" />
+        <svg className="absolute top-32 right-[15%] w-32 h-32 text-obsidian/[0.04] pointer-events-none" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="4 6" />
+          <circle cx="50" cy="50" r="20" fill="none" stroke="currentColor" strokeWidth="0.5" />
+        </svg>
 
-          <h1 className="text-center text-4xl sm:text-5xl md:text-6xl lg:text-[72px] font-normal text-bone leading-[1.04] tracking-[-0.035em] mb-3 max-w-4xl mx-auto" style={{ fontFamily: "'Fraunces', serif", fontVariationSettings: "'opsz' 144, 'SOFT' 40" }}>
-            The phone rings.
-            <br className="hidden sm:block" />
-            <span className="text-bone/50"> Ringo recovers</span>
-          </h1>
+        <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 w-full">
+          <div className="grid lg:grid-cols-[1fr,380px] gap-12 lg:gap-16 items-center">
+            {/* Left — Text on bone */}
+            <div className="order-2 lg:order-1 max-w-2xl">
+              <div className="anim-h1 inline-flex items-center gap-2.5 bg-obsidian/[0.06] border border-obsidian/[0.12] rounded-full px-4 py-2 mb-8">
+                <span className="w-2 h-2 rounded-full bg-obsidian animate-pulse" />
+                <span className="text-[11px] text-obsidian/60 font-medium uppercase tracking-[0.1em]">AI phone + text agent</span>
+              </div>
 
-          <div className="text-center mb-6 relative">
-            <span
-              className="block money-number text-[#F3EEE3] leading-[0.9]"
-              style={{
-                fontFamily: "'Fraunces', serif",
-                fontStyle: "italic",
-                fontVariationSettings: "'opsz' 144, 'SOFT' 50",
-                fontSize: "clamp(96px, 18vw, 180px)",
-                letterSpacing: "-0.045em",
-              }}
-            >
-              <AnimatedCounter target={31050} prefix="$" />
-            </span>
-            <p className="text-bone/40 text-xs uppercase tracking-[0.22em] mt-2 font-medium">
-              recovered per location, every month
-            </p>
-          </div>
-
-          <p className="text-center text-lg md:text-xl text-bone/55 max-w-2xl mx-auto leading-relaxed mb-14">
-            Ringo answers every call, takes orders, upsells, and collects payment before the kitchen starts prep — 24/7. The AI employee that never calls in sick.
-          </p>
-
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-8 items-center max-w-5xl mx-auto">
-            <div className="flex justify-center lg:justify-end order-2 lg:order-1">
-              <PhoneMockup />
-            </div>
-            <div id="demo" className="order-1 lg:order-2 scroll-mt-24">
-              <DemoCallForm />
-            </div>
-          </div>
-        </div>
-
-        <div className="h-24 bg-gradient-to-b from-[#0A0A0A] to-[#0A0A0A]" />
-      </section>
-
-      {/* ═══════════════ 3. PAIN STATS BAR ═══════════════ */}
-      <section className="bg-[#0A0A0A] py-20 md:py-28 px-5 sm:px-6 lg:px-8 border-t border-bone/[0.06]">
-        <div className="max-w-6xl mx-auto">
-          <RevealSection>
-            <div className="text-center mb-16 max-w-2xl mx-auto">
-              <p className="eyebrow text-bone/50 mb-4">The leak</p>
-              <h2 className="text-3xl md:text-4xl lg:text-[44px] font-normal text-bone leading-[1.1] tracking-[-0.025em]" style={{ fontFamily: "'Fraunces', serif", fontVariationSettings: "'opsz' 96, 'SOFT' 50" }}>
-                Every missed call is money in the trash.
-              </h2>
-            </div>
-          </RevealSection>
-          <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-bone/[0.06] border border-bone/[0.06] rounded-2xl overflow-hidden bg-gradient-to-b from-[#141414] to-[#0A0A0A]">
-            {[
-              { target: 30, prefix: "", suffix: "%", label: "of restaurant calls go unanswered during peak hours" },
-              { target: 23, prefix: "$", suffix: "", label: "average ticket on a phone order walking away" },
-              { target: 31050, prefix: "$", suffix: "", label: "average monthly revenue lost to missed calls" },
-            ].map((stat) => (
-              <div key={stat.label} className="p-8 md:p-12 text-center md:text-left">
-                <span
-                  className="block text-bone"
-                  style={{
-                    fontFamily: "'Fraunces', serif",
-                    fontStyle: "italic",
-                    fontVariationSettings: "'opsz' 144, 'SOFT' 50",
-                    fontSize: "clamp(64px, 9vw, 112px)",
-                    letterSpacing: "-0.045em",
-                    lineHeight: 0.95,
-                  }}
-                >
-                  <AnimatedCounter target={stat.target} prefix={stat.prefix} suffix={stat.suffix} />
+              <h1 className="anim-h2">
+                <span className="block hero-display text-obsidian text-[2.75rem] sm:text-[3.5rem] lg:text-[4.5rem]">
+                  Every missed call is
                 </span>
-                <p className="text-sm text-bone/50 leading-relaxed mt-5 max-w-[240px] mx-auto md:mx-0">{stat.label}</p>
+                <span className="relative inline-block mt-2">
+                  <span className="money-number text-obsidian text-[5rem] sm:text-[7rem] lg:text-[9rem] block">
+                    <Counter prefix="$" target={31050} immediate />
+                  </span>
+                  <span className="text-obsidian/30 font-sans text-base sm:text-lg font-normal align-top">/month leaked</span>
+                  {/* Ribbon sweep — decorative echo of the Ringo logo underline */}
+                  <RibbonSweep className="absolute -bottom-3 left-0 w-[80%] h-8 text-obsidian" opacity={0.22} strokeWidth={1.2} />
+                </span>
+              </h1>
+
+              <p className="anim-h3 text-obsidian/70 text-base sm:text-lg mt-8 max-w-xl leading-relaxed font-medium">
+                Ringo answers every call and text, takes orders, upsells, and collects payment before your kitchen starts prep — 24/7, in English and Spanish.
+              </p>
+
+              <div className="anim-h4 mt-10 max-w-xl">
+                {/* Inverted search box on bone */}
+                <div className="relative group">
+                  <div className="relative flex items-center bg-white/60 backdrop-blur-xl border border-obsidian/[0.1] rounded-2xl overflow-hidden focus-within:border-obsidian/[0.3] transition-all duration-500 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.15)]">
+                    <Search className="absolute left-5 w-5 h-5 text-obsidian/30 pointer-events-none" />
+                    <input
+                      className="w-full bg-transparent text-obsidian placeholder:text-obsidian/25 pl-14 pr-5 py-5 text-lg outline-none font-sans"
+                      placeholder="Search for your restaurant..."
+                      disabled
+                    />
+                    <div className="absolute right-5 bg-obsidian text-bone text-xs font-bold px-3 py-1.5 rounded-lg">
+                      Try it
+                    </div>
+                  </div>
+                </div>
               </div>
-            ))}
+
+              <div className="anim-h5 flex flex-wrap items-center gap-x-5 gap-y-2 mt-8 text-obsidian/40 text-[11px] font-medium">
+                <span className="flex items-center gap-1.5"><Phone className="w-3 h-3" /> Voice orders</span>
+                <span className="flex items-center gap-1.5"><MessageCircle className="w-3 h-3" /> Text orders</span>
+                <span className="flex items-center gap-1.5"><Mic className="w-3 h-3" /> EN + ES</span>
+              </div>
+            </div>
+
+            {/* Right — Phone mockup on bone */}
+            <div className="order-1 lg:order-2 anim-phone flex justify-center lg:justify-end">
+              <div className="relative" style={{ width: 280 }}>
+                {/* Subtle glow ring */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[360px] h-[360px] rounded-full border border-obsidian/[0.08] animate-[pulseScale_6s_ease-in-out_infinite] pointer-events-none" />
+
+                <div className="relative rounded-[2.8rem] bg-obsidian p-2 border border-obsidian/[0.15] shadow-[0_32px_80px_-16px_rgba(0,0,0,0.25),0_0_0_1px_rgba(0,0,0,0.1)]">
+                  {/* Notch */}
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-7 bg-obsidian rounded-b-2xl z-20 flex items-center justify-center">
+                    <div className="w-12 h-3 bg-coal rounded-full" />
+                  </div>
+
+                  <div className="rounded-[2.4rem] overflow-hidden bg-coal" style={{ minHeight: 460 }}>
+                    {/* Status bar */}
+                    <div className="flex items-center justify-between px-6 pt-9 pb-2">
+                      <span className="text-[10px] text-bone/40 font-semibold">9:41</span>
+                      <div className="flex items-center gap-1">
+                        {[1,2,3,4].map(i => <div key={i} className="w-[2.5px] rounded-full bg-bone/40" style={{ height: 3 + i * 1.5 }} />)}
+                      </div>
+                    </div>
+
+                    {/* Messages — simpler version */}
+                    <div className="px-3.5 py-3 space-y-2 overflow-hidden" style={{ maxHeight: 380 }}>
+                      <div className="flex justify-start">
+                        <div className="max-w-[80%] px-3.5 py-2 text-[12px] leading-relaxed bg-bone/[0.08] text-bone/80 rounded-2xl rounded-bl-sm">
+                          Hi, how can I help?
+                        </div>
+                      </div>
+                      <div className="flex justify-end">
+                        <div className="max-w-[80%] px-3.5 py-2 text-[12px] leading-relaxed bg-bone text-obsidian rounded-2xl rounded-br-sm font-medium shadow-[0_2px_8px_rgba(243,238,227,0.1)]">
+                          Large pepperoni
+                        </div>
+                      </div>
+                      <div className="flex justify-start">
+                        <div className="max-w-[80%] px-3.5 py-2 text-[12px] leading-relaxed bg-bone/[0.08] text-bone/80 rounded-2xl rounded-bl-sm">
+                          +$3.99 garlic knots?
+                        </div>
+                      </div>
+                      <div className="flex justify-end">
+                        <div className="max-w-[80%] px-3.5 py-2 text-[12px] leading-relaxed bg-bone text-obsidian rounded-2xl rounded-br-sm font-medium shadow-[0_2px_8px_rgba(243,238,227,0.1)]">
+                          Yes
+                        </div>
+                      </div>
+                      <div className="flex justify-center w-full">
+                        <div className="bg-bone/[0.06] border border-bone/[0.1] rounded-xl px-3 py-1.5 text-[10px] text-bone/50 text-center font-medium">
+                          💳 Payment link sent
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ═══════════════ 4. HOW IT WORKS — 4 STEPS ═══════════════ */}
-      <section id="how-it-works" className="bg-[#0A0A0A] py-24 md:py-32 px-5 sm:px-6 lg:px-8 border-t border-[#2E2E2E]/60">
-        <div className="max-w-5xl mx-auto">
-          <RevealSection>
-            <div className="text-center mb-16">
-              <p className="text-[#F3EEE3] text-xs font-bold uppercase tracking-widest mb-3">How It Works</p>
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#F3EEE3] leading-tight" style={{ fontFamily: "'Fraunces', serif" }}>
-                From phone call to kitchen ticket in seconds
-              </h2>
-            </div>
-          </RevealSection>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* ═══ SOCIAL PROOF ═══ */}
+      <section className="relative border-y border-bone/[0.04] py-10 md:py-12">
+        <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
             {[
-              { step: "1", title: "Customer Calls", desc: "Ringo answers in 2 rings, 24/7. No hold music, no voicemail.", icon: Phone },
-              { step: "2", title: "AI Takes the Order", desc: "Ringo takes the full order with mods, answers menu questions, and upsells intelligently.", icon: MessageSquare },
-              { step: "3", title: "Payment Link Sent", desc: "Customer gets an SMS payment link. One tap to pay. No card info over the phone.", icon: Send },
-              { step: "4", title: "Kitchen Ticket Fires", desc: "Order confirmed, ticket prints. Pickup time set. Done.", icon: ChefHat },
-            ].map((item, i) => (
-              <RevealSection key={item.step} delay={i * 100}>
-                <div className="relative bg-bone rounded-2xl border border-[#2E2E2E]/60 p-6 shadow-sm hover:shadow-md transition-shadow group text-center">
-                  <div className="w-12 h-12 rounded-full bg-[#F3EEE3] flex items-center justify-center mx-auto mb-4 group-hover:bg-[#C8C8C8] transition-colors">
-                    <span className="text-[#0A0A0A] text-lg font-bold">{item.step}</span>
-                  </div>
-                  <h3 className="text-base font-bold text-[#F3EEE3] mb-2">{item.title}</h3>
-                  <p className="text-sm text-[#6B6B6B] leading-relaxed">{item.desc}</p>
-                </div>
-              </RevealSection>
+              { value: "10K+", label: "Calls handled monthly" },
+              { value: "99.2%", label: "Answer rate" },
+              { value: "$31K", label: "Avg. recovered / location" },
+              { value: "<5 min", label: "Support response time" },
+            ].map((s) => (
+              <div key={s.label} className="text-center">
+                <p className="font-display italic text-bone text-3xl md:text-4xl tracking-tight">{s.value}</p>
+                <p className="text-bone/25 text-[11px] mt-1 uppercase tracking-wider">{s.label}</p>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══════════════ 5. POS INTEGRATIONS MARQUEE ═══════════════ */}
-      <section id="integrations" className="bg-[#0A0A0A] py-10 border-t border-[#2E2E2E]/60 scroll-mt-20">
-        <p className="text-center text-[#6B6B6B] text-xs font-semibold uppercase tracking-widest mb-6">
-          Integrates with your POS
-        </p>
+      {/* Gradient transition from bone hero to dark */}
+      <div className="relative h-32 bg-gradient-to-b from-bone via-bone/50 to-obsidian" />
+
+      {/* ═══ HOW IT WORKS ═══ */}
+      <section id="how-it-works" className="relative py-24 md:py-32">
+        <GrainOverlay opacity={0.02} />
+        {/* Decorative glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-bone/[0.02] blur-[150px] rounded-full pointer-events-none" />
+        <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
+          <Reveal>
+            <div className="max-w-2xl">
+              <p className="text-bone/40 text-[11px] font-medium uppercase tracking-[0.12em] mb-3">How Ringo works</p>
+              <h2 className="font-display text-bone text-4xl md:text-5xl tracking-tight">
+                From ring to receipt in 90 seconds
+              </h2>
+              <p className="text-stone text-base mt-3">Phone or text — same flawless flow.</p>
+            </div>
+          </Reveal>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-px mt-16 bg-bone/[0.04] rounded-2xl overflow-hidden">
+            {[
+              { step: "01", icon: <Phone className="w-6 h-6" />, title: "AI Answers", desc: "Picks up in 2 rings. Or responds to a text in seconds. No hold, no voicemail.", color: "from-bone/[0.03]" },
+              { step: "02", icon: <MessageSquare className="w-6 h-6" />, title: "Takes the Order", desc: "Full menu mastery. Mods, allergies, combos. Smart upsells on every interaction.", color: "from-bone/[0.02]" },
+              { step: "03", icon: <CreditCard className="w-6 h-6" />, title: "Collects Payment", desc: "One-tap SMS payment link. Customer pays before kitchen starts. Zero waste.", color: "from-bone/[0.04]", highlight: true },
+              { step: "04", icon: <Utensils className="w-6 h-6" />, title: "Kitchen Fires", desc: "Payment confirmed. Ticket prints. Food is made only when it's paid for.", color: "from-bone/[0.02]" },
+            ].map((s, i) => (
+              <Reveal key={i} delay={i * 100}>
+                <div className={`relative bg-coal p-8 md:p-10 h-full group transition-all duration-500 ${
+                  s.highlight ? "bg-gradient-to-b from-bone/[0.06] to-coal" : ""
+                }`}>
+                  {/* Step number — large watermark */}
+                  <span className="absolute top-4 right-6 font-display text-[80px] leading-none text-bone/[0.03] font-bold select-none">{s.step}</span>
+
+                  <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-colors ${
+                    s.highlight ? "bg-bone text-obsidian" : "bg-bone/[0.06] text-bone/50 group-hover:bg-bone/[0.1] group-hover:text-bone/70"
+                  }`}>
+                    {s.icon}
+                  </div>
+
+                  <h3 className="text-bone font-semibold text-lg mb-3">{s.title}</h3>
+                  <p className="text-stone text-sm leading-relaxed">{s.desc}</p>
+
+                  {s.highlight && (
+                    <div className="mt-4 inline-flex items-center gap-1.5 text-[11px] text-obsidian bg-bone rounded-full px-3 py-1 font-bold">
+                      <ShieldCheck className="w-3 h-3" /> Pay-before-prep
+                    </div>
+                  )}
+
+                  {/* Connector arrow on desktop */}
+                  {i < 3 && (
+                    <div className="hidden lg:block absolute top-1/2 -right-3 z-10">
+                      <ArrowRight className="w-5 h-5 text-bone/10" />
+                    </div>
+                  )}
+                </div>
+              </Reveal>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ INTEGRATIONS — Aesop-style calm stack row + supporting marquee ═══ */}
+      <section id="integrations" className="relative py-24 md:py-32 overflow-hidden bg-obsidian">
+        <GrainOverlay opacity={0.02} />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_40%_at_50%_50%,rgba(243,238,227,0.02),transparent)] pointer-events-none" />
+
+        {/* CORE STACK — calm, static, Aesop rhythm */}
+        <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-6 lg:px-8">
+          <Reveal>
+            <div className="text-center">
+              <p className="eyebrow text-bone/45 mb-8">Works with your existing stack</p>
+              {/* Hairline divider above */}
+              <div className="h-px w-full bg-bone/[0.08]" />
+              <div className="flex flex-wrap items-center justify-center gap-x-14 gap-y-8 md:gap-x-20 py-10 md:py-12 text-bone/55">
+                {coreStack.map(({ name, Logo }) => (
+                  <Logo key={name} className="h-6 w-auto opacity-80 hover:opacity-100 transition-opacity duration-300" />
+                ))}
+              </div>
+              {/* Hairline divider below */}
+              <div className="h-px w-full bg-bone/[0.08]" />
+            </div>
+          </Reveal>
+        </div>
+
+        {/* SECTION HEADLINE */}
+        <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 mt-20 mb-12">
+          <Reveal>
+            <div className="text-center">
+              <h2 className="font-display text-bone text-4xl md:text-5xl tracking-tight">
+                Plus every tool your phones already touch
+              </h2>
+              <p className="text-stone text-base mt-4 max-w-lg mx-auto">POS, delivery, CRM, payments, voice — all connected. No extra setup.</p>
+            </div>
+          </Reveal>
+        </div>
+
+        {/* Marquee Row 1 */}
+        <div className="relative overflow-hidden mb-4">
+          <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-obsidian to-transparent z-10" />
+          <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-obsidian to-transparent z-10" />
+          <div className="marquee-track flex items-center gap-8 whitespace-nowrap" style={{ width: "fit-content" }}>
+            {[...Array(4)].map((_, setIdx) =>
+              integrationList.map((int, i) => (
+                <div key={`a${setIdx}-${i}`} className="flex items-center bg-coal/60 border border-bone/[0.06] rounded-xl px-6 py-4 hover:border-bone/[0.14] hover:bg-coal duration-300 group" style={{ transitionProperty: "border-color,background-color,opacity" }}>
+                  <div className="text-bone/30 group-hover:text-bone/65" style={{ transitionProperty: "color,opacity", transitionDuration: "300ms" }}>
+                    <int.Logo className="h-6 w-auto" />
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Marquee Row 2 — reverse */}
         <div className="relative overflow-hidden">
-          <div className="flex items-center gap-16 marquee-track" style={{ width: "max-content" }}>
-            {[...integrations, ...integrations].map((item, i) => (
-              <div key={`${item.name}-${i}`} className="flex-shrink-0 opacity-40 hover:opacity-80 transition-opacity">
-                <Image src={item.src} alt={item.name} width={100} height={40} className="h-8 w-auto object-contain" />
+          <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-obsidian to-transparent z-10" />
+          <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-obsidian to-transparent z-10" />
+          <div className="marquee-track flex items-center gap-8 whitespace-nowrap" style={{ width: "fit-content", animationDirection: "reverse", animationDuration: "55s" }}>
+            {[...Array(4)].map((_, setIdx) =>
+              [...integrationList].reverse().map((int, i) => (
+                <div key={`b${setIdx}-${i}`} className="flex items-center bg-coal/60 border border-bone/[0.06] rounded-xl px-6 py-4 hover:border-bone/[0.14] hover:bg-coal duration-300 group" style={{ transitionProperty: "border-color,background-color,opacity" }}>
+                  <div className="text-bone/30 group-hover:text-bone/65" style={{ transitionProperty: "color,opacity", transitionDuration: "300ms" }}>
+                    <int.Logo className="h-6 w-auto" />
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ FEATURES — Editorial layout, not just cards ═══ */}
+      <section id="features" className="relative py-24 md:py-32">
+        <GrainOverlay opacity={0.02} />
+        <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
+          <Reveal>
+            <p className="text-bone/40 text-[11px] font-medium uppercase tracking-[0.12em] mb-3">Why Ringo</p>
+            <h2 className="font-display text-bone text-4xl md:text-5xl tracking-tight max-w-xl">
+              Everything your phone staff can&apos;t do. On every call.
+            </h2>
+          </Reveal>
+
+          {/* Feature 1 — Hero feature: Pay Before Prep (big) */}
+          <Reveal delay={100}>
+            <div className="mt-16 grid md:grid-cols-2 gap-0 rounded-2xl overflow-hidden border border-bone/[0.08] border-glow">
+              <div className="bg-bone text-obsidian p-10 md:p-14 flex flex-col justify-center">
+                <div className="w-14 h-14 rounded-2xl bg-obsidian text-bone flex items-center justify-center mb-6">
+                  <CreditCard className="w-6 h-6" />
+                </div>
+                <h3 className="font-display text-obsidian text-3xl md:text-4xl tracking-tight mb-4">
+                  Pay Before Prep
+                </h3>
+                <p className="text-obsidian/60 text-base leading-relaxed mb-6">
+                  No other platform gates the kitchen on payment. Ringo sends an SMS payment link after every order.
+                  The ticket only fires after payment clears. Zero wasted food. Zero no-shows.
+                </p>
+                <div className="flex items-baseline gap-3 flex-wrap">
+                  <span className="money-number text-obsidian text-[4.5rem] md:text-[6rem] leading-[0.9]">$4,200</span>
+                  <span className="text-obsidian/50 text-sm">saved per month</span>
+                </div>
               </div>
+              <div className="bg-coal p-10 md:p-14 flex flex-col justify-center border-l border-bone/[0.06]">
+                {/* Visual: order flow diagram */}
+                <div className="space-y-4">
+                  {[
+                    { icon: <Phone className="w-4 h-4" />, label: "Customer calls", status: "done" },
+                    { icon: <MessageSquare className="w-4 h-4" />, label: "Order confirmed + readback", status: "done" },
+                    { icon: <CreditCard className="w-4 h-4" />, label: "SMS payment link sent", status: "done" },
+                    { icon: <ShieldCheck className="w-4 h-4" />, label: "Payment received", status: "active" },
+                    { icon: <Utensils className="w-4 h-4" />, label: "Kitchen ticket fires", status: "pending" },
+                  ].map((step, i) => (
+                    <div key={i} className="flex items-center gap-4">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
+                        step.status === "done" ? "bg-bone/[0.1] text-bone/60" :
+                        step.status === "active" ? "bg-bone text-obsidian animate-pulse-bone" :
+                        "bg-bone/[0.04] text-bone/20"
+                      }`}>{step.icon}</div>
+                      <div className="flex-1">
+                        <span className={`text-sm font-medium ${
+                          step.status === "done" ? "text-bone/50" :
+                          step.status === "active" ? "text-bone font-bold" :
+                          "text-bone/20"
+                        }`}>{step.label}</span>
+                      </div>
+                      {step.status === "done" && (
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4 text-bone/30"><path d="M20 6 9 17l-5-5" /></svg>
+                      )}
+                      {step.status === "active" && (
+                        <span className="text-[10px] text-bone font-bold bg-bone/[0.15] px-2 py-0.5 rounded-full">NOW</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </Reveal>
+
+          {/* Features 2-6 grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5 mt-6">
+            {[
+              { icon: <Clock className="w-5 h-5" />, title: "24/7/365 Coverage", desc: "Answers in two rings. Holidays. Dinner rush. 3 a.m. Never a voicemail.", stat: "99.2%", statLabel: "answer rate" },
+              { icon: <TrendingUp className="w-5 h-5" />, title: "Upsell Engine", desc: "+$3.40 average lift per call. Suggests combos, add-ons, drinks. Every single time.", stat: "+$3.40", statLabel: "per call lift" },
+              { icon: <MessageCircle className="w-5 h-5" />, title: "Text Ordering", desc: "Customers can text their order. Same AI, same upsells, same pay-before-prep flow. Coming soon.", stat: "NEW", statLabel: "channel" },
+              { icon: <ShieldCheck className="w-5 h-5" />, title: "Full Order Readback", desc: "99.4% accuracy. Every item confirmed back before the ticket prints. Fewer remakes.", stat: "99.4%", statLabel: "accuracy" },
+              { icon: <Users className="w-5 h-5" />, title: "Customer Database", desc: "Every caller becomes a CRM contact with name, number, order history, and lifetime value.", stat: "+1.2K", statLabel: "contacts / mo" },
+              { icon: <Headphones className="w-5 h-5" />, title: "Managed Service", desc: "Something broke? Call us directly. Not a support ticket. Not a chatbot. A real person.", stat: "<5 min", statLabel: "response" },
+            ].map((f, i) => (
+              <Reveal key={i} delay={i * 60}>
+                <div className="bg-coal rounded-2xl border border-bone/[0.06] p-7 h-full hover:border-bone/[0.14] transition-all duration-300 group">
+                  <div className="w-11 h-11 rounded-xl bg-bone/[0.06] flex items-center justify-center text-bone/50 mb-5 group-hover:bg-bone/[0.1] group-hover:text-bone/70 transition-colors">
+                    {f.icon}
+                  </div>
+                  <h3 className="text-bone font-semibold text-lg mb-2">{f.title}</h3>
+                  <p className="text-stone text-sm leading-relaxed mb-5">{f.desc}</p>
+                  <div className="border-t border-bone/[0.06] pt-4 flex items-baseline gap-2">
+                    <span className="font-display italic text-bone text-2xl">{f.stat}</span>
+                    <span className="text-bone/30 text-xs">{f.statLabel}</span>
+                  </div>
+                </div>
+              </Reveal>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ═══════════════ 6. FEATURES ═══════════════ */}
-      <section id="features" className="bg-[#0A0A0A] py-24 md:py-32 px-5 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <RevealSection>
-            <div className="text-center mb-20">
-              <p className="text-[#F3EEE3] text-xs font-bold uppercase tracking-widest mb-3">Features</p>
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#F3EEE3] leading-tight" style={{ fontFamily: "'Fraunces', serif" }}>
-                Everything your restaurant phone line needs
+      {/* ═══ LIVE VOICE DEMO — Interactive Embedded Demo ═══ */}
+      <section id="demo" className="relative py-28 md:py-40 overflow-hidden">
+        {/* Gradient mesh background */}
+        <div className="absolute inset-0">
+          <div className="absolute top-0 left-1/4 w-96 h-96 rounded-full bg-bone/[0.04] blur-[120px]" />
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 rounded-full bg-bone/[0.03] blur-[140px]" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full bg-bone/[0.02] blur-[180px]" />
+        </div>
+        <GrainOverlay opacity={0.02} />
+
+        <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-6 lg:px-8">
+          <Reveal>
+            <div className="text-center mb-14">
+              <div className="inline-flex items-center gap-2 bg-bone/[0.04] border border-bone/[0.08] rounded-full px-4 py-2 mb-6">
+                <Mic className="w-4 h-4 text-bone/50" />
+                <span className="text-[11px] text-bone/60 font-medium uppercase tracking-[0.1em]">Live interactive demo</span>
+              </div>
+              <h2 className="font-display text-bone text-5xl md:text-6xl tracking-tight leading-[1.05] mb-4">
+                Hear Ringo <em className="italic text-bone/60">handle your calls.</em>
               </h2>
+              <p className="text-stone text-lg max-w-xl mx-auto">
+                Search for any restaurant. We build a live AI voice agent for it in seconds. Talk to it right here.
+              </p>
             </div>
-          </RevealSection>
+          </Reveal>
 
-          <div className="space-y-24">
-            {/* Feature 1: Order Taking */}
-            <RevealSection>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <div>
-                  <div className="inline-flex items-center gap-2 bg-[#F3EEE3]/10 rounded-lg px-3 py-1.5 mb-5">
-                    <ShoppingCart className="w-4 h-4 text-[#F3EEE3]" />
-                    <span className="text-xs font-semibold text-[#F3EEE3]">Order Taking</span>
-                  </div>
-                  <h3 className="text-2xl md:text-3xl font-bold text-[#F3EEE3] mb-4 leading-snug" style={{ fontFamily: "'Fraunces', serif" }}>
-                    Takes phone orders and sends them straight to your POS
-                  </h3>
-                  <p className="text-[#6B6B6B] leading-relaxed mb-6">
-                    Customers call, Ringo takes their order with all customizations, and sends it directly to your kitchen. No typing, no mistakes, no missed orders.
-                  </p>
-                  <div className="space-y-3">
-                    {["Real-time POS integration", "Handles modifiers and special requests", "Pickup and delivery support"].map((item) => (
-                      <div key={item} className="flex items-center gap-3">
-                        <div className="w-5 h-5 rounded-full bg-[#F3EEE3]/10 flex items-center justify-center flex-shrink-0">
-                          <Check className="w-3 h-3 text-[#F3EEE3]" />
-                        </div>
-                        <span className="text-sm text-[#6B6B6B]">{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="bg-bone rounded-2xl border border-[#2E2E2E]/60 shadow-lg shadow-obsidian/[0.03] p-6">
-                  <div className="bg-[#0A0A0A] rounded-xl p-5 space-y-3">
-                    <div className="flex items-center justify-between text-xs text-bone/40 pb-3 border-b border-bone/[0.06]">
-                      <span>Order #4827</span>
-                      <span className="text-[#F3EEE3] font-semibold">In Progress</span>
-                    </div>
-                    {[
-                      { item: "Large Pepperoni Pizza", mod: "Extra cheese, thin crust", price: "$18.99" },
-                      { item: "Crazy Bread (8pc)", mod: "With marinara", price: "$4.49" },
-                      { item: "2L Coca-Cola", mod: "Upsell added", price: "$2.99" },
-                    ].map((line) => (
-                      <div key={line.item} className="flex justify-between items-start py-2">
-                        <div>
-                          <p className="text-bone text-sm font-medium">{line.item}</p>
-                          <p className="text-bone/30 text-xs">{line.mod}</p>
-                        </div>
-                        <span className="text-bone/70 text-sm font-medium">{line.price}</span>
-                      </div>
-                    ))}
-                    <div className="flex justify-between pt-3 border-t border-bone/[0.06]">
-                      <span className="text-bone font-bold text-sm">Total</span>
-                      <span className="text-bone font-bold text-sm">$26.47</span>
-                    </div>
-                    <div className="bg-[#F3EEE3]/10 border border-[#F3EEE3]/20 rounded-lg px-3 py-2 flex items-center gap-2">
-                      <Check className="w-3.5 h-3.5 text-[#F3EEE3]" />
-                      <span className="text-[#F3EEE3] text-xs font-semibold">Payment link sent to customer</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </RevealSection>
+          <Reveal delay={100}>
+            <EmbeddedVoiceDemo />
+          </Reveal>
 
-            {/* Feature 2: Payment */}
-            <RevealSection>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <div className="lg:order-2">
-                  <div className="inline-flex items-center gap-2 bg-[#F3EEE3]/10 rounded-lg px-3 py-1.5 mb-5">
-                    <CreditCard className="w-4 h-4 text-[#F3EEE3]" />
-                    <span className="text-xs font-semibold text-[#F3EEE3]">Payments</span>
-                  </div>
-                  <h3 className="text-2xl md:text-3xl font-bold text-[#F3EEE3] mb-4 leading-snug" style={{ fontFamily: "'Fraunces', serif" }}>
-                    Collects payment before the food hits the grill
-                  </h3>
-                  <p className="text-[#6B6B6B] leading-relaxed mb-6">
-                    Pay Before Prep means zero no-shows and instant cash flow. Ringo sends a secure payment link via text — customers pay in one tap.
-                  </p>
-                  <div className="space-y-3">
-                    {["PCI-DSS Level 1 compliant", "One-tap payment via text link", "Eliminates no-shows and chargebacks"].map((item) => (
-                      <div key={item} className="flex items-center gap-3">
-                        <div className="w-5 h-5 rounded-full bg-[#F3EEE3]/10 flex items-center justify-center flex-shrink-0">
-                          <Check className="w-3 h-3 text-[#F3EEE3]" />
-                        </div>
-                        <span className="text-sm text-[#6B6B6B]">{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="lg:order-1 bg-bone rounded-2xl border border-[#2E2E2E]/60 shadow-lg shadow-obsidian/[0.03] p-6 flex items-center justify-center">
-                  <div className="w-full max-w-xs space-y-4">
-                    <div className="bg-gradient-to-br from-[#0A0A0A] to-[#0A0A0A] rounded-xl p-5 text-bone">
-                      <p className="text-bone/40 text-[10px] uppercase tracking-wider mb-4">Secure Payment</p>
-                      <p className="text-xl font-bold tracking-wider mb-5">4142 &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; 1234</p>
-                      <div className="flex justify-between text-xs text-bone/50">
-                        <span>John Smith</span>
-                        <span>12/26</span>
-                      </div>
-                    </div>
-                    <div className="bg-[#F3EEE3]/10 border border-[#F3EEE3]/30 rounded-xl px-4 py-3 flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-[#F3EEE3]/20 flex items-center justify-center flex-shrink-0">
-                        <Check className="w-3.5 h-3.5 text-[#F3EEE3]" />
-                      </div>
-                      <div>
-                        <p className="text-[#F3EEE3] text-sm font-semibold">Payment received</p>
-                        <p className="text-[#6B6B6B] text-xs">$26.47 — Order #4827</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </RevealSection>
-
-            {/* Feature 3: Menu Intelligence */}
-            <RevealSection>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <div>
-                  <div className="inline-flex items-center gap-2 bg-[#F3EEE3]/10 rounded-lg px-3 py-1.5 mb-5">
-                    <MessageSquare className="w-4 h-4 text-[#F3EEE3]" />
-                    <span className="text-xs font-semibold text-[#F3EEE3]">Menu Intelligence</span>
-                  </div>
-                  <h3 className="text-2xl md:text-3xl font-bold text-[#F3EEE3] mb-4 leading-snug" style={{ fontFamily: "'Fraunces', serif" }}>
-                    Knows your menu inside-out and upsells intelligently
-                  </h3>
-                  <p className="text-[#6B6B6B] leading-relaxed mb-6">
-                    Upload your menu once. Ringo learns every item, price, modifier, allergy, and special — then uses that knowledge to answer questions and increase ticket sizes.
-                  </p>
-                  <div className="space-y-3">
-                    {["Allergy-aware recommendations", "Smart upselling and cross-selling", "Auto-syncs menu changes"].map((item) => (
-                      <div key={item} className="flex items-center gap-3">
-                        <div className="w-5 h-5 rounded-full bg-[#F3EEE3]/10 flex items-center justify-center flex-shrink-0">
-                          <Check className="w-3 h-3 text-[#F3EEE3]" />
-                        </div>
-                        <span className="text-sm text-[#6B6B6B]">{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="bg-bone rounded-2xl border border-[#2E2E2E]/60 shadow-lg shadow-obsidian/[0.03] p-6">
-                  <div className="space-y-4">
-                    {[
-                      { from: "customer", text: "Do you have anything gluten-free?" },
-                      { from: "ringo", text: "Yes! Our Grilled Chicken Caesar, Salmon Bowl, and all our stir-fry dishes are gluten-free. The Salmon Bowl is our most popular choice." },
-                      { from: "customer", text: "I\u2019ll do the Salmon Bowl." },
-                      { from: "ringo", text: "Great choice! Would you like to add our house-made miso soup for $3? It pairs perfectly and it\u2019s also gluten-free." },
-                    ].map((msg, i) => (
-                      <div key={i} className="flex gap-3">
-                        <div className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                          msg.from === "customer" ? "bg-[#2E2E2E]" : "bg-gradient-to-br from-[#F3EEE3] to-[#C8C8C8]"
-                        }`}>
-                          {msg.from === "customer" ? (
-                            <Users className="w-3.5 h-3.5 text-[#6B6B6B]" />
-                          ) : (
-                            <Sparkles className="w-3.5 h-3.5 text-[#0A0A0A]" />
-                          )}
-                        </div>
-                        <div>
-                          <p className="text-[10px] font-semibold uppercase tracking-wider mb-1 text-[#6B6B6B]/60">
-                            {msg.from === "customer" ? "Customer" : "Ringo AI"}
-                          </p>
-                          <p className="text-sm text-[#F3EEE3] leading-relaxed">{msg.text}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </RevealSection>
-          </div>
+          <Reveal delay={200}>
+            <p className="text-center text-bone/20 text-sm mt-8">No signup. No credit card. 60 seconds to hear the magic.</p>
+          </Reveal>
         </div>
       </section>
 
-      {/* ═══════════════ 6b. BENTO GRID — WHY RINGO ═══════════════ */}
-      <section className="bg-[#0A0A0A] py-24 md:py-32 px-5 sm:px-6 lg:px-8 border-t border-bone/[0.06]">
-        <div className="max-w-7xl mx-auto">
-          <RevealSection>
-            <div className="text-center mb-16 max-w-3xl mx-auto">
-              <p className="eyebrow text-bone/50 mb-4">Why Ringo</p>
-              <h2 className="text-3xl md:text-5xl lg:text-[56px] font-normal text-bone leading-[1.05] tracking-[-0.025em]" style={{ fontFamily: "'Fraunces', serif", fontVariationSettings: "'opsz' 96, 'SOFT' 50" }}>
-                Turn every ring into <span className="italic text-bone">cash</span>.
+      {/* ═══ DASHBOARD WALKTHROUGH — Laptop-framed with callouts ═══ */}
+      <section className="relative py-24 md:py-32">
+        <GrainOverlay opacity={0.02} />
+        <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
+          <Reveal>
+            <div className="text-center mb-14">
+              <p className="eyebrow text-bone/45 mb-3">Your command center</p>
+              <h2 className="font-display text-bone text-4xl md:text-5xl tracking-tight">
+                Real-time dashboard. Real money.
               </h2>
-              <p className="text-bone/50 mt-5 text-lg leading-relaxed">
-                Six things no other voice AI ships in one box.
+              <p className="text-stone text-base mt-3 max-w-lg mx-auto">
+                Every call, text, order, and dollar — live. Numbers update as Ringo handles your phones.
               </p>
             </div>
-          </RevealSection>
+          </Reveal>
 
-          <div className="grid grid-cols-1 md:grid-cols-6 grid-rows-none md:grid-rows-[auto_auto] gap-4 md:gap-5">
-            {/* TILE 1 — Big hero tile: Pay Before Prep */}
-            <RevealSection className="md:col-span-4 md:row-span-2">
-              <div className="group relative h-full min-h-[320px] md:min-h-[520px] bg-[#141414] rounded-3xl border border-bone/[0.06] hover:border-bone/[0.14] p-8 md:p-12 overflow-hidden transition-[border-color] duration-300">
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_10%,rgba(243,238,227,0.06),transparent_60%)] pointer-events-none" />
-                <div className="relative flex flex-col h-full">
-                  <p className="eyebrow text-bone/40 mb-4">Pay Before Prep</p>
-                  <h3 className="text-bone text-3xl md:text-4xl lg:text-5xl leading-[1.05] tracking-[-0.025em] mb-6 max-w-xl" style={{ fontFamily: "'Fraunces', serif", fontVariationSettings: "'opsz' 96, 'SOFT' 50" }}>
-                    The kitchen never makes food that doesn&apos;t get paid for.
-                  </h3>
-                  <p className="text-bone/55 text-[15px] leading-relaxed max-w-md mb-10">
-                    Ringo collects payment by SMS link before the ticket fires. Zero no-shows. Zero food waste. Zero chargebacks.
-                  </p>
+          <Reveal delay={200}>
+            <div className="relative">
+              {/* Outer bone glow for depth */}
+              <div className="absolute -inset-16 rounded-[3rem] bg-bone/[0.015] blur-[100px] pointer-events-none" />
 
-                  <div className="mt-auto grid grid-cols-3 gap-4 max-w-xl">
-                    {[
-                      { n: "$4,200", l: "avg food waste saved / mo" },
-                      { n: "0", l: "tickets fire before pay" },
-                      { n: "2.3s", l: "avg link delivery" },
-                    ].map((x) => (
-                      <div key={x.l} className="border-t border-bone/[0.08] pt-4">
-                        <div
-                          className="text-bone"
-                          style={{
-                            fontFamily: "'Fraunces', serif",
-                            fontStyle: "italic",
-                            fontVariationSettings: "'opsz' 96, 'SOFT' 50",
-                            fontSize: "clamp(28px, 3.2vw, 44px)",
-                            lineHeight: 1,
-                            letterSpacing: "-0.03em",
-                          }}
-                        >
-                          {x.n}
-                        </div>
-                        <p className="text-bone/40 text-[11px] uppercase tracking-[0.12em] mt-2 leading-snug">{x.l}</p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </RevealSection>
-
-            {/* TILE 2 — 24/7 answer */}
-            <RevealSection className="md:col-span-2">
-              <div className="group relative h-full min-h-[220px] bg-[#141414] rounded-3xl border border-bone/[0.06] hover:border-bone/[0.14] p-8 overflow-hidden transition-[border-color] duration-300">
-                <div className="flex items-center gap-2 mb-6">
-                  <div className="w-2 h-2 rounded-full bg-[#F3EEE3] animate-pulse" />
-                  <span className="text-[11px] uppercase tracking-[0.18em] text-[#F3EEE3] font-semibold">Live</span>
-                </div>
-                <h3 className="text-bone text-2xl md:text-[28px] leading-[1.1] tracking-[-0.02em] mb-3" style={{ fontFamily: "'Fraunces', serif", fontVariationSettings: "'opsz' 72, 'SOFT' 40" }}>
-                  Answers in <span className="italic">two rings</span>, every ring.
-                </h3>
-                <p className="text-bone/50 text-sm leading-relaxed">
-                  24/7/365. Holidays. Dinner rush. 3 a.m. Never a voicemail.
-                </p>
-              </div>
-            </RevealSection>
-
-            {/* TILE 3 — Upsell engine — INVERTED */}
-            <RevealSection className="md:col-span-2">
-              <div className="group relative h-full min-h-[220px] bg-bone rounded-3xl p-8 overflow-hidden border border-bone">
-                <p className="eyebrow text-obsidian/50 mb-6">Upsell engine</p>
+              {/* LAPTOP MOCKUP — outer bezel with Coal shell, hairline Bone border, bone-tinted shadow */}
+              <div className="relative mx-auto max-w-[1180px]">
+                {/* Bezel (top rounded panel) */}
                 <div
-                  className="text-obsidian mb-3"
-                  style={{
-                    fontFamily: "'Fraunces', serif",
-                    fontStyle: "italic",
-                    fontVariationSettings: "'opsz' 144, 'SOFT' 40",
-                    fontSize: "clamp(54px, 7vw, 88px)",
-                    lineHeight: 0.9,
-                    letterSpacing: "-0.04em",
-                  }}
+                  className="relative rounded-t-[22px] border border-bone/[0.14] bg-coal p-3 md:p-4"
+                  style={{ boxShadow: "0 1px 2px rgba(0,0,0,0.6), 0 40px 120px rgba(243,238,227,0.04), 0 0 0 1px rgba(243,238,227,0.03)" }}
                 >
-                  +$3.40
+                  {/* Screen notch / camera dot */}
+                  <div className="absolute top-1.5 left-1/2 -translate-x-1/2 w-14 h-1.5 bg-obsidian/90 rounded-full flex items-center justify-center">
+                    <div className="w-1 h-1 rounded-full bg-bone/20" />
+                  </div>
+                  <div className="rounded-[14px] overflow-hidden border border-bone/[0.06]">
+                    <LiveDashboard />
+                  </div>
                 </div>
-                <p className="text-obsidian/70 text-sm leading-relaxed max-w-[220px]">
-                  Average lift per call. Staff forget combos. Ringo never does.
-                </p>
-              </div>
-            </RevealSection>
+                {/* Laptop base — thin hinge + keyboard strip */}
+                <div className="relative mx-auto" style={{ width: "106%", marginLeft: "-3%" }}>
+                  <div className="h-2 bg-graphite border-x border-bone/[0.08]" />
+                  <div className="h-3 bg-coal border-x border-b border-bone/[0.1] rounded-b-[14px] flex items-center justify-center">
+                    <div className="w-20 h-0.5 rounded-full bg-bone/[0.06]" />
+                  </div>
+                </div>
 
-            {/* TILE 4 — Readback accuracy */}
-            <RevealSection className="md:col-span-3">
-              <div className="group relative h-full min-h-[220px] bg-[#141414] rounded-3xl border border-bone/[0.06] hover:border-bone/[0.14] p-8 overflow-hidden transition-[border-color] duration-300">
-                <p className="eyebrow text-bone/40 mb-6">Full order readback</p>
-                <h3 className="text-bone text-2xl md:text-[28px] leading-[1.15] tracking-[-0.02em] mb-4" style={{ fontFamily: "'Fraunces', serif", fontVariationSettings: "'opsz' 72, 'SOFT' 40" }}>
-                  <span className="italic">99.4%</span> order accuracy, before the ticket even prints.
-                </h3>
-                <p className="text-bone/50 text-sm leading-relaxed max-w-md">
-                  Every item, mod, and allergy is read back and confirmed. Fewer remakes, fewer refunds, happier kitchens.
-                </p>
-              </div>
-            </RevealSection>
-
-            {/* TILE 5 — CRM */}
-            <RevealSection className="md:col-span-3">
-              <div className="group relative h-full min-h-[220px] bg-[#141414] rounded-3xl border border-bone/[0.06] hover:border-bone/[0.14] p-8 overflow-hidden transition-[border-color] duration-300">
-                <p className="eyebrow text-bone/40 mb-6">Customer database, not just a dashboard</p>
-                <h3 className="text-bone text-2xl md:text-[28px] leading-[1.15] tracking-[-0.02em] mb-4" style={{ fontFamily: "'Fraunces', serif", fontVariationSettings: "'opsz' 72, 'SOFT' 40" }}>
-                  Every caller becomes a <span className="italic">contact</span>.
-                </h3>
-                <p className="text-bone/50 text-sm leading-relaxed max-w-md mb-6">
-                  Name, number, order history, lifetime value — synced into your CRM. Now you can actually market to them.
-                </p>
-                <div className="flex -space-x-2">
-                  {["JM", "SL", "MR", "ET", "KP"].map((initials, i) => (
-                    <div key={i} className="w-9 h-9 rounded-full bg-[#1E1E1E] border border-[#141414] flex items-center justify-center text-[11px] font-semibold text-bone/70">
-                      {initials}
+                {/* CALLOUTS — desktop only, absolute positioned with thin connector lines */}
+                <div className="hidden lg:block pointer-events-none">
+                  {/* Callout 1 — Revenue counter (top-center stat card) */}
+                  <div className="absolute top-[140px] -right-2 translate-x-full max-w-[200px] pointer-events-auto">
+                    <svg className="absolute top-6 -left-20 w-20 h-px text-bone/30" viewBox="0 0 80 1" preserveAspectRatio="none">
+                      <line x1="0" y1="0.5" x2="80" y2="0.5" stroke="currentColor" strokeWidth="1" />
+                    </svg>
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-bone animate-pulse-bone" />
+                      <p className="eyebrow text-bone/55">Revenue counter</p>
                     </div>
-                  ))}
-                  <div className="w-9 h-9 rounded-full bg-bone/[0.08] border border-[#141414] flex items-center justify-center text-[11px] font-semibold text-bone">
-                    +1.2k
+                    <p className="font-sans text-[14px] text-stone leading-[1.45]">Live revenue ticks up with every paid order. Never a guess.</p>
+                  </div>
+
+                  {/* Callout 2 — Live call activity (right side, mid) */}
+                  <div className="absolute top-[340px] -right-2 translate-x-full max-w-[200px] pointer-events-auto">
+                    <svg className="absolute top-6 -left-20 w-20 h-px text-bone/30" viewBox="0 0 80 1" preserveAspectRatio="none">
+                      <line x1="0" y1="0.5" x2="80" y2="0.5" stroke="currentColor" strokeWidth="1" />
+                    </svg>
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-bone animate-pulse-bone" />
+                      <p className="eyebrow text-bone/55">Live call feed</p>
+                    </div>
+                    <p className="font-sans text-[14px] text-stone leading-[1.45]">Every call, text, payment, upsell — streaming as it happens.</p>
+                  </div>
+
+                  {/* Callout 3 — Active orders / Recent Calls table (left side, lower) */}
+                  <div className="absolute bottom-[130px] -left-2 -translate-x-full max-w-[200px] text-right pointer-events-auto">
+                    <svg className="absolute top-6 -right-20 w-20 h-px text-bone/30" viewBox="0 0 80 1" preserveAspectRatio="none">
+                      <line x1="0" y1="0.5" x2="80" y2="0.5" stroke="currentColor" strokeWidth="1" />
+                    </svg>
+                    <div className="flex items-center justify-end gap-1.5 mb-1">
+                      <p className="eyebrow text-bone/55">Active orders</p>
+                      <span className="w-1.5 h-1.5 rounded-full bg-bone animate-pulse-bone" />
+                    </div>
+                    <p className="font-sans text-[14px] text-stone leading-[1.45]">Tickets, tickets, upsell lifts, and ROI per caller — all at a glance.</p>
                   </div>
                 </div>
               </div>
-            </RevealSection>
+
+              {/* Mobile callouts — stacked below for small screens */}
+              <div className="lg:hidden mt-10 grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto">
+                {[
+                  { title: "Revenue counter", body: "Live revenue ticks up with every paid order. Never a guess." },
+                  { title: "Live call feed", body: "Every call, text, payment, upsell — streaming as it happens." },
+                  { title: "Active orders", body: "Tickets, upsell lifts, and ROI per caller — all at a glance." },
+                ].map((c) => (
+                  <div key={c.title} className="border-t border-bone/[0.08] pt-4">
+                    <p className="eyebrow text-bone/55 mb-1.5">{c.title}</p>
+                    <p className="font-sans text-[14px] text-stone leading-[1.45]">{c.body}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ═══ MANAGED SERVICE — Playfair Display ═══ */}
+      <section className="relative py-24 md:py-32">
+        <GrainOverlay opacity={0.02} />
+        <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
+          <Reveal>
+            <p className="text-bone/40 text-[11px] font-medium uppercase tracking-[0.12em] mb-3">Not just software</p>
+            <h2 className="font-display text-bone text-4xl md:text-5xl tracking-tight max-w-2xl">
+              A managed service, not a support ticket.
+            </h2>
+          </Reveal>
+
+          <div className="grid md:grid-cols-2 gap-0 mt-12 rounded-2xl overflow-hidden border border-bone/[0.06]">
+            <Reveal delay={100}>
+              <div className="relative bg-coal p-10 md:p-14 h-full">
+                <p className="text-bone/25 text-xs font-semibold uppercase tracking-[0.12em] mb-8">Other Companies</p>
+                <p className="font-playfair italic text-bone/40 text-3xl md:text-4xl lg:text-[2.75rem] leading-[1.15] tracking-tight">
+                  Here&apos;s our software.
+                </p>
+                <p className="font-playfair italic text-bone/20 text-3xl md:text-4xl lg:text-[2.75rem] leading-[1.15] tracking-tight mt-1">
+                  Good luck.
+                </p>
+                <div className="mt-12 pt-8 border-t border-bone/[0.06]">
+                  <p className="font-playfair italic text-bone/20 text-5xl md:text-6xl tracking-tight">~48 hours</p>
+                  <p className="text-bone/15 text-xs uppercase tracking-[0.12em] mt-2">Avg. support response</p>
+                </div>
+                <div className="hidden md:flex absolute top-1/2 -right-5 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-smoke border border-bone/[0.1] items-center justify-center">
+                  <span className="text-bone/60 text-[11px] font-bold uppercase">vs</span>
+                </div>
+              </div>
+            </Reveal>
+            <Reveal delay={200}>
+              <div className="bg-bone p-10 md:p-14 h-full">
+                <p className="text-obsidian/40 text-xs font-semibold uppercase tracking-[0.12em] mb-8">Ringo</p>
+                <p className="font-playfair font-bold text-obsidian text-3xl md:text-4xl lg:text-[2.75rem] leading-[1.15] tracking-tight">
+                  Something broke?
+                </p>
+                <p className="font-playfair italic text-obsidian/70 text-3xl md:text-4xl lg:text-[2.75rem] leading-[1.15] tracking-tight mt-1">
+                  Call me. I&apos;ll fix it.
+                </p>
+                <div className="mt-12 pt-8 border-t border-obsidian/[0.08]">
+                  <p className="font-playfair italic font-bold text-obsidian text-5xl md:text-6xl tracking-tight">Minutes</p>
+                  <p className="text-obsidian/30 text-xs uppercase tracking-[0.12em] mt-2">Direct line to your team</p>
+                </div>
+              </div>
+            </Reveal>
           </div>
         </div>
       </section>
 
-      {/* ═══════════════ 6c. PAY BEFORE PREP — PALETTE INVERTED ═══════════════ */}
-      <section className="bg-bone py-24 md:py-36 px-5 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <RevealSection>
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-16 items-center">
-              <div className="md:col-span-7">
-                <p className="eyebrow text-obsidian/50 mb-6">The unfair advantage</p>
-                <h2
-                  className="text-obsidian leading-[0.98] tracking-[-0.035em]"
-                  style={{
-                    fontFamily: "'Fraunces', serif",
-                    fontVariationSettings: "'opsz' 144, 'SOFT' 60",
-                    fontSize: "clamp(40px, 7vw, 88px)",
-                    fontWeight: 400,
-                  }}
-                >
-                  Your kitchen never makes food that doesn&apos;t get{" "}
-                  <span className="italic">paid for</span>. Ever.
-                </h2>
-                <p className="text-obsidian/70 text-lg md:text-xl leading-relaxed mt-8 max-w-xl">
-                  Competitors take the order and hope. Ringo locks the ticket until the customer confirms payment by SMS — so you never cook for a no-show again.
-                </p>
-                <div className="mt-10 space-y-3 max-w-md">
-                  {[
-                    ["Without Ringo", "5% no-show rate = $220/day in food cost gone.", true],
-                    ["With Ringo", "0 tickets fire before payment clears. Period.", false],
-                  ].map(([label, body, strike]) => (
-                    <div key={String(label)} className="flex items-start gap-4 py-4 border-t border-obsidian/10">
-                      <span className="eyebrow text-obsidian/50 pt-0.5 min-w-[110px]">{label}</span>
-                      <span className={`text-obsidian text-[15px] leading-relaxed ${strike ? "line-through decoration-1 decoration-obsidian/60" : "font-semibold"}`}>
-                        {body}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="md:col-span-5">
-                <div className="relative aspect-[4/5] rounded-3xl border border-obsidian/10 bg-gradient-to-b from-[#F3EEE3] to-[#E5DFD0] p-10 flex flex-col justify-between overflow-hidden">
-                  <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, #0A0A0A 1px, transparent 0)", backgroundSize: "24px 24px" }} />
-                  <div className="relative">
-                    <p className="eyebrow text-obsidian/50 mb-2">Monthly savings</p>
-                    <div
-                      className="text-obsidian"
-                      style={{
-                        fontFamily: "'Fraunces', serif",
-                        fontStyle: "italic",
-                        fontVariationSettings: "'opsz' 144, 'SOFT' 60",
-                        fontSize: "clamp(72px, 12vw, 128px)",
-                        lineHeight: 0.9,
-                        letterSpacing: "-0.04em",
-                      }}
-                    >
-                      $4,200
-                    </div>
-                    <p className="text-obsidian/60 text-sm mt-4 max-w-[220px] leading-relaxed">
-                      Average food-cost eliminated at a 200 orders/day location.
-                    </p>
-                  </div>
-                  <div className="relative border-t border-obsidian/15 pt-6 flex items-center gap-3">
-                    <div className="w-2 h-2 rounded-full bg-obsidian animate-pulse" />
-                    <span className="text-[11px] uppercase tracking-[0.18em] text-obsidian/70 font-semibold">
-                      Ticket locked · awaiting pay
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </RevealSection>
-        </div>
-      </section>
-
-      {/* ═══════════════ 7. DASHBOARD PREVIEW ═══════════════ */}
-      <section className="bg-[#0A0A0A] py-24 md:py-32 px-5 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <RevealSection>
-            <div className="text-center mb-14">
-              <p className="text-[#F3EEE3] text-xs font-bold uppercase tracking-widest mb-3">Dashboard</p>
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#F3EEE3] leading-tight mb-4" style={{ fontFamily: "'Fraunces', serif" }}>
-                Your AI phone command center
-              </h2>
-              <p className="text-lg text-[#6B6B6B] max-w-xl mx-auto">
-                Live calls, transcripts, orders, and performance — all in one beautiful real-time dashboard.
-              </p>
-            </div>
-          </RevealSection>
-          <DashboardPreview />
-        </div>
-      </section>
-
-      {/* ═══════════════ 8. REVENUE CALCULATOR ═══════════════ */}
-      <section className="bg-bone py-24 md:py-32 px-5 sm:px-6 lg:px-8 border-y border-[#2E2E2E]/60">
-        <div className="max-w-5xl mx-auto">
-          <RevealSection>
-            <div className="text-center mb-14">
-              <p className="text-[#F3EEE3] text-xs font-bold uppercase tracking-widest mb-3">Revenue Impact</p>
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#F3EEE3] leading-tight mb-4" style={{ fontFamily: "'Fraunces', serif" }}>
-                Every missed call is money left on the table
-              </h2>
-            </div>
-          </RevealSection>
-          <RevealSection delay={100}>
+      {/* ═══ ROI CALCULATOR ═══ */}
+      <section className="relative py-24 md:py-32">
+        <GrainOverlay opacity={0.02} />
+        <div className="relative z-10 max-w-5xl mx-auto px-5 sm:px-6 lg:px-8">
+          <Reveal>
             <ROICalculator />
-          </RevealSection>
+          </Reveal>
         </div>
       </section>
 
-      {/* ═══════════════ 9. PRICING — 3 TIERS ═══════════════ */}
-      <section id="pricing" className="bg-[#0A0A0A] py-24 md:py-32 px-5 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <RevealSection>
-            <div className="text-center mb-14">
-              <p className="text-[#F3EEE3] text-xs font-bold uppercase tracking-widest mb-3">Pricing</p>
-              <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-[#F3EEE3] leading-tight mb-4" style={{ fontFamily: "'Fraunces', serif" }}>
-                Simple, transparent pricing
-              </h2>
-              <p className="text-lg text-[#6B6B6B]">No contracts. Cancel anytime.</p>
-            </div>
-          </RevealSection>
+      {/* ═══ COMPETITIVE EDGE ═══ */}
+      <section className="relative py-24 md:py-32">
+        <GrainOverlay opacity={0.02} />
+        <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
+          <Reveal>
+            <p className="text-bone/40 text-[11px] font-medium uppercase tracking-[0.12em] mb-4">Why restaurants choose Ringo</p>
+            <h2 className="font-display text-bone text-4xl md:text-5xl tracking-tight max-w-2xl mb-16">
+              The features your staff can&apos;t do. Every time.
+            </h2>
+          </Reveal>
 
-          <RevealSection delay={100}>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:items-stretch">
-              {/* Starter — DARK */}
-              <div className="bg-[#141414] rounded-3xl border border-bone/[0.06] hover:border-bone/[0.14] p-8 flex flex-col transition-[border-color] duration-300">
-                <h3 className="text-bone text-xl font-semibold mb-1">Starter</h3>
-                <p className="text-sm text-bone/50 mb-8">Single-location independents</p>
-                <div className="flex items-baseline gap-1 mb-1">
-                  <span
-                    className="text-bone"
-                    style={{
-                      fontFamily: "'Fraunces', serif",
-                      fontStyle: "italic",
-                      fontVariationSettings: "'opsz' 96, 'SOFT' 40",
-                      fontSize: "56px",
-                      letterSpacing: "-0.04em",
-                      lineHeight: 1,
-                    }}
-                  >
-                    $799
-                  </span>
-                  <span className="text-bone/40 text-sm">/mo</span>
-                </div>
-                <p className="text-xs text-bone/40 mb-8">Pays for itself in ~35 calls</p>
-                <a href="#demo" className="w-full bg-bone/[0.06] border border-bone/[0.1] hover:bg-bone/[0.1] text-bone py-3 rounded-full font-semibold transition-[background-color] duration-200 text-sm mb-8 text-center block">
-                  Start with Starter
-                </a>
-                <ul className="space-y-3 flex-1">
-                  {[
-                    "Up to 100 calls / day",
-                    "1 location",
-                    "1 POS integration",
-                    "Real-time dashboard + transcripts",
-                    "Monthly ROI report",
-                    "Email support",
-                  ].map((f) => (
-                    <li key={f} className="flex items-start gap-2.5 text-sm text-bone/70">
-                      <Check className="w-4 h-4 text-bone flex-shrink-0 mt-0.5" /> {f}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              {/* Growth — INVERTED (featured) */}
-              <div className="bg-bone rounded-3xl p-8 flex flex-col relative overflow-hidden shadow-[0_24px_80px_-20px_rgba(243,238,227,0.2)] md:-my-3">
-                <div className="absolute top-5 right-5 bg-obsidian text-bone text-[10px] font-bold uppercase tracking-[0.14em] px-3 py-1 rounded-full">
-                  Most popular
-                </div>
-                <h3 className="text-obsidian text-xl font-semibold mb-1">Growth</h3>
-                <p className="text-sm text-obsidian/60 mb-8">Multi-location operators</p>
-                <div className="flex items-baseline gap-1 mb-1">
-                  <span
-                    className="text-obsidian"
-                    style={{
-                      fontFamily: "'Fraunces', serif",
-                      fontStyle: "italic",
-                      fontVariationSettings: "'opsz' 144, 'SOFT' 60",
-                      fontSize: "72px",
-                      letterSpacing: "-0.045em",
-                      lineHeight: 1,
-                    }}
-                  >
-                    $1,499
-                  </span>
-                  <span className="text-obsidian/50 text-sm">/mo</span>
-                </div>
-                <p className="text-xs text-obsidian/60 mb-8">Pays for itself in ~30 hours</p>
-                <a href="#demo" className="w-full bg-obsidian hover:bg-[#1E1E1E] text-bone py-3 rounded-full font-semibold transition-[background-color] duration-200 text-sm mb-8 text-center block">
-                  Schedule a demo
-                </a>
-                <ul className="space-y-3 flex-1">
-                  {[
-                    "Up to 250 calls / day",
-                    "Up to 3 locations",
-                    "All POS integrations",
-                    "Pay-before-prep SMS flow",
-                    "GHL CRM sync + marketing",
-                    "Weekly performance reports",
-                    "Priority support (call the founder)",
-                    "Custom upsell scripts",
-                  ].map((f) => (
-                    <li key={f} className="flex items-start gap-2.5 text-sm text-obsidian/75">
-                      <Check className="w-4 h-4 text-obsidian flex-shrink-0 mt-0.5" /> {f}
-                    </li>
-                  ))}
-                </ul>
-                <div className="mt-8 border-t border-obsidian/10 pt-5">
-                  <p className="text-obsidian text-sm italic leading-relaxed" style={{ fontFamily: "'Fraunces', serif", fontVariationSettings: "'opsz' 48, 'SOFT' 60" }}>
-                    &ldquo;Paid for itself in 10 days. Tickets are bigger, kitchen is calmer, and the phone never goes unanswered.&rdquo;
+          {/* Feature pairs — alternating layouts */}
+          <div className="space-y-12">
+            {/* Feature 1 */}
+            <Reveal>
+              <div className="grid md:grid-cols-2 gap-0 rounded-2xl overflow-hidden border border-bone/[0.06]">
+                <div className="bg-coal p-10 md:p-14 flex flex-col justify-center">
+                  <div className="w-12 h-12 rounded-xl bg-bone/[0.08] flex items-center justify-center text-bone/60 mb-6">
+                    <ShieldCheck className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-display text-bone text-3xl tracking-tight mb-4">Pay Before Prep</h3>
+                  <p className="text-stone text-base leading-relaxed">
+                    Ringo sends an SMS payment link after order confirmation. Kitchen ticket only fires after payment clears. Zero wasted food. Zero no-shows. This one feature saves $4,000–6,000 per month.
                   </p>
-                  <p className="text-obsidian/60 text-xs mt-2">— Marco R., 3-location pizza operator, CA</p>
+                </div>
+                <div className="bg-obsidian/30 border-l border-bone/[0.06] p-10 md:p-14 flex items-center justify-center">
+                  <div className="text-center">
+                    <p className="money-number text-bone text-[4.5rem] md:text-[7rem] leading-[0.9]">$5,200</p>
+                    <p className="text-bone/50 text-sm mt-4">Average monthly waste prevented</p>
+                  </div>
                 </div>
               </div>
+            </Reveal>
 
-              {/* Enterprise — DARK */}
-              <div className="bg-[#141414] rounded-3xl border border-bone/[0.06] hover:border-bone/[0.14] p-8 flex flex-col transition-[border-color] duration-300">
-                <h3 className="text-bone text-xl font-semibold mb-1">Enterprise</h3>
-                <p className="text-sm text-bone/50 mb-8">Franchise networks & groups</p>
-                <div className="flex items-baseline gap-1 mb-1">
-                  <span
-                    className="text-bone"
-                    style={{
-                      fontFamily: "'Fraunces', serif",
-                      fontStyle: "italic",
-                      fontVariationSettings: "'opsz' 96, 'SOFT' 40",
-                      fontSize: "56px",
-                      letterSpacing: "-0.04em",
-                      lineHeight: 1,
-                    }}
-                  >
-                    Custom
-                  </span>
+            {/* Feature 2 */}
+            <Reveal>
+              <div className="grid md:grid-cols-2 gap-0 rounded-2xl overflow-hidden border border-bone/[0.06]">
+                <div className="bg-obsidian/30 border-r border-bone/[0.06] p-10 md:p-14 flex items-center justify-center order-2 md:order-1">
+                  <div className="text-center">
+                    <p className="money-number text-bone text-[4.5rem] md:text-[7rem] leading-[0.9]">+$3.40</p>
+                    <p className="text-bone/50 text-sm mt-4">Per-call upsell lift</p>
+                  </div>
                 </div>
-                <p className="text-xs text-bone/40 mb-8">Tailored to your network</p>
-                <a href="mailto:hello@useringo.ai" className="w-full bg-bone/[0.06] border border-bone/[0.1] hover:bg-bone/[0.1] text-bone py-3 rounded-full font-semibold transition-[background-color] duration-200 text-sm mb-8 text-center block">
-                  Talk to us
-                </a>
-                <ul className="space-y-3 flex-1">
-                  {[
-                    "Unlimited calls",
-                    "10+ locations",
-                    "White-glove onboarding",
-                    "Dedicated account manager",
-                    "Custom POS / CRM integrations",
-                    "Franchise corporate dashboard",
-                    "SLA guarantee",
-                  ].map((f) => (
-                    <li key={f} className="flex items-start gap-2.5 text-sm text-bone/70">
-                      <Check className="w-4 h-4 text-bone flex-shrink-0 mt-0.5" /> {f}
+                <div className="bg-coal p-10 md:p-14 flex flex-col justify-center order-1 md:order-2">
+                  <div className="w-12 h-12 rounded-xl bg-bone/[0.08] flex items-center justify-center text-bone/60 mb-6">
+                    <TrendingUp className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-display text-bone text-3xl tracking-tight mb-4">Upsell Engine</h3>
+                  <p className="text-stone text-base leading-relaxed">
+                    Suggests combos, add-ons, and upgrades on every single call. No staff forget. No missed revenue. +$3.40 average. On 100 calls per day, that's $10,200/mo in pure extra revenue.
+                  </p>
+                </div>
+              </div>
+            </Reveal>
+
+            {/* Feature 3 */}
+            <Reveal>
+              <div className="grid md:grid-cols-2 gap-0 rounded-2xl overflow-hidden border border-bone/[0.06]">
+                <div className="bg-coal p-10 md:p-14 flex flex-col justify-center">
+                  <div className="w-12 h-12 rounded-xl bg-bone/[0.08] flex items-center justify-center text-bone/60 mb-6">
+                    <Headphones className="w-6 h-6" />
+                  </div>
+                  <h3 className="font-display text-bone text-3xl tracking-tight mb-4">Managed Service</h3>
+                  <p className="text-stone text-base leading-relaxed">
+                    Something breaks at 7pm Friday? You call us directly. Not a support ticket. Not a chatbot. A real person who understands your business. That accountability is worth a premium.
+                  </p>
+                </div>
+                <div className="bg-obsidian/30 border-l border-bone/[0.06] p-10 md:p-14 flex items-center justify-center">
+                  <div className="text-center">
+                    <p className="money-number text-bone text-[4.5rem] md:text-[7rem] leading-[0.9]">&lt;5 min</p>
+                    <p className="text-bone/50 text-sm mt-4">Direct response time</p>
+                  </div>
+                </div>
+              </div>
+            </Reveal>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ PRICING ═══ */}
+      <section id="pricing" className="relative py-24 md:py-32 overflow-hidden">
+        <GrainOverlay opacity={0.02} />
+        <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
+          <Reveal>
+            <div className="text-center mb-14">
+              <p className="text-bone/40 text-[11px] font-medium uppercase tracking-[0.12em] mb-3">Pricing</p>
+              <h2 className="font-display text-bone text-4xl md:text-5xl tracking-tight">Simple pricing. Insane ROI.</h2>
+              <p className="text-stone text-base mt-3">No contracts. No setup fees. Cancel anytime.</p>
+            </div>
+          </Reveal>
+
+          <div className="grid md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            <Reveal delay={0}>
+              <div className="bg-coal rounded-2xl border border-bone/[0.06] p-8 h-full hover:border-bone/[0.14] transition-colors">
+                <p className="text-bone/50 text-xs font-semibold uppercase tracking-[0.1em] mb-1">Starter</p>
+                <p className="text-stone text-sm mb-5">Single-location independents</p>
+                <p className="font-display text-bone text-6xl md:text-[4.5rem] tracking-tightest mb-1 leading-none">$799<span className="text-bone/25 text-lg font-sans tracking-normal">/mo</span></p>
+                <p className="text-bone/25 text-xs mb-6">Pays for itself in ~35 calls</p>
+                <Link href="/demo" className="block text-center bg-bone/[0.08] text-bone py-3.5 rounded-xl text-sm font-semibold hover:bg-bone/[0.14] transition-colors">Start with Starter</Link>
+                <ul className="mt-6 space-y-3">
+                  {["Up to 100 calls / day", "1 location", "1 POS integration", "Real-time dashboard", "Monthly ROI report", "Email support"].map((f) => (
+                    <li key={f} className="flex items-start gap-2.5 text-stone text-sm">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4 text-bone/30 shrink-0 mt-0.5"><path d="M20 6 9 17l-5-5" /></svg>{f}
                     </li>
                   ))}
                 </ul>
               </div>
-            </div>
-          </RevealSection>
+            </Reveal>
+            <Reveal delay={100}>
+              <div className="relative bg-bone text-obsidian rounded-2xl p-8 h-full shadow-[0_40px_100px_-20px_rgba(243,238,227,0.1)]">
+                <span className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-obsidian text-bone text-[11px] font-bold uppercase tracking-[0.1em] px-4 py-1.5 rounded-full">Most popular</span>
+                <p className="text-obsidian/50 text-xs font-semibold uppercase tracking-[0.1em] mb-1">Growth</p>
+                <p className="text-obsidian/60 text-sm mb-5">Multi-location operators</p>
+                <p className="font-display text-obsidian text-6xl md:text-[4.5rem] tracking-tightest mb-2 leading-none">$1,499<span className="text-obsidian/30 text-lg font-sans tracking-normal">/mo</span></p>
+                <p className="text-obsidian/35 text-xs mb-6">Pays for itself in ~30 hours</p>
+                <Link href="/demo" className="block text-center bg-obsidian text-bone py-3.5 rounded-xl text-sm font-bold hover:bg-obsidian/90 transition-colors">Schedule a demo</Link>
+                <ul className="mt-6 space-y-3">
+                  {["Up to 250 calls / day", "Up to 3 locations", "All POS integrations", "Pay-before-prep SMS", "Text ordering (coming soon)", "GHL CRM sync", "Weekly reports", "Priority support (call the founder)"].map((f) => (
+                    <li key={f} className="flex items-start gap-2.5 text-obsidian text-sm">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4 text-obsidian/40 shrink-0 mt-0.5"><path d="M20 6 9 17l-5-5" /></svg>{f}
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-6 pt-5 border-t border-obsidian/10">
+                  <p className="text-obsidian/50 text-xs italic">&ldquo;Paid for itself in 10 days. Kitchen is calmer, phone never goes unanswered.&rdquo;</p>
+                  <p className="text-obsidian/30 text-xs mt-2">— Marco R., 3-location pizza operator, CA</p>
+                </div>
+              </div>
+            </Reveal>
+            <Reveal delay={200}>
+              <div className="bg-coal rounded-2xl border border-bone/[0.06] p-8 h-full hover:border-bone/[0.14] transition-colors">
+                <p className="text-bone/50 text-xs font-semibold uppercase tracking-[0.1em] mb-1">Enterprise</p>
+                <p className="text-stone text-sm mb-5">Franchise networks</p>
+                <p className="font-display text-bone text-6xl md:text-[4.5rem] tracking-tightest mb-1 leading-none">Custom</p>
+                <p className="text-bone/25 text-xs mb-6">Tailored to your network</p>
+                <Link href="/demo" className="block text-center bg-bone/[0.08] text-bone py-3.5 rounded-xl text-sm font-semibold hover:bg-bone/[0.14] transition-colors">Talk to us</Link>
+                <ul className="mt-6 space-y-3">
+                  {["Unlimited calls", "10+ locations", "White-glove onboarding", "Dedicated account manager", "Custom integrations", "Franchise dashboard", "SLA guarantee"].map((f) => (
+                    <li key={f} className="flex items-start gap-2.5 text-stone text-sm">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="w-4 h-4 text-bone/30 shrink-0 mt-0.5"><path d="M20 6 9 17l-5-5" /></svg>{f}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </Reveal>
+          </div>
         </div>
       </section>
 
-      {/* ═══════════════ 10. FOOTER ═══════════════ */}
-      <footer className="bg-[#0A0A0A] border-t border-bone/[0.06] py-14 px-5 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
-            <div className="col-span-2 md:col-span-1">
-              <div className="mb-4">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/ringo-logo.png" alt="Ringo" className="h-8 w-auto brightness-0 invert" />
+      {/* ═══ FAQ ═══ */}
+      <section className="relative py-24 md:py-32">
+        <GrainOverlay opacity={0.02} />
+        <div className="relative z-10 max-w-3xl mx-auto px-5 sm:px-6 lg:px-8">
+          <Reveal>
+            <p className="text-bone/40 text-[11px] font-medium uppercase tracking-[0.12em] mb-3">FAQ</p>
+            <h2 className="font-display text-bone text-4xl md:text-5xl tracking-tight mb-10">Common questions</h2>
+          </Reveal>
+          {[
+            { q: "How long does it take to get set up?", a: "48 hours or less. We handle everything — POS connection, menu import, agent configuration. You just forward your phone number to Ringo and you're live." },
+            { q: "Will customers know they're talking to AI?", a: "Ringo sounds natural and conversational. Most callers don't realize it's AI. But we're transparent — if asked, Ringo identifies itself as an AI assistant." },
+            { q: "What POS systems do you integrate with?", a: "Square, Toast, Clover, SpotOn, Aloha, and more. We're adding new integrations every month. If you don't see yours, ask us — we can likely build it." },
+            { q: "How does text ordering work?", a: "Customers can text their order to your Ringo number. The same AI handles the conversation — takes the order, upsells, sends a payment link, and fires the kitchen ticket. Same pay-before-prep flow, just over text." },
+            { q: "What happens if Ringo can't handle a call?", a: "Ringo gracefully transfers to your staff with full context of what was discussed. You're always in control." },
+            { q: "How is Ringo different from other AI phone services?", a: "Two things: Pay Before Prep — your kitchen never makes food for an order that doesn't get paid for. And we're a managed service — when something breaks at 7pm Friday, you call us directly." },
+          ].map((item, i) => (
+            <Reveal key={i} delay={i * 50}>
+              <FAQItem q={item.q} a={item.a} />
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      {/* ═══ FINAL CTA — Dramatic close ═══ */}
+      <section className="relative py-32 md:py-48 border-t border-bone/[0.04] overflow-hidden">
+        {/* Gradient mesh */}
+        <div className="absolute inset-0">
+          <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-bone/[0.05] blur-[120px]" />
+          <div className="absolute bottom-0 left-1/2 w-96 h-96 rounded-full bg-bone/[0.04] blur-[140px]" />
+        </div>
+        <GrainOverlay opacity={0.03} />
+
+        <div className="relative z-10 max-w-4xl mx-auto px-5 sm:px-6 lg:px-8 text-center">
+          <Reveal>
+            <h2 className="relative inline-block font-display italic text-bone text-6xl md:text-8xl tracking-tight leading-[1.05] mb-8">
+              Stop leaving money<br />on the phone.
+              <RibbonSweep className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-[60%] h-10 text-bone" opacity={0.4} strokeWidth={1.1} />
+            </h2>
+            <p className="text-stone text-xl md:text-2xl leading-relaxed max-w-2xl mx-auto mb-12">
+              Ringo is live in 48 hours. No setup fees. No contracts. Cancel anytime.
+            </p>
+
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+              <Link href="/demo" className="group relative inline-flex items-center gap-2 bg-bone text-obsidian px-10 py-5 rounded-full text-lg font-bold transition-all duration-300 hover:shadow-[0_0_0_8px_rgba(243,238,227,0.2),0_24px_72px_-12px_rgba(243,238,227,0.25)] hover:scale-[1.02] active:scale-[0.98] overflow-hidden">
+                <span className="absolute inset-0 shimmer-btn rounded-full" />
+                <span className="relative z-10 flex items-center gap-2">See the demo <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" /></span>
+              </Link>
+              <a href="mailto:hello@useringo.ai" className="group text-bone/60 hover:text-bone text-base font-medium transition-colors flex items-center gap-2">
+                Or email us <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
+              </a>
+            </div>
+
+            <p className="text-bone/20 text-sm mt-10">Built in Modesto, CA. Made for restaurant owners.</p>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* ═══ FOOTER ═══ */}
+      <footer className="border-t border-bone/[0.04] py-14">
+        <div className="max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
+            <div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/ringo-logo.png" alt="Ringo" className="h-6 w-auto brightness-0 invert mb-3" />
+              <p className="text-bone/15 text-xs">AI voice + text ordering for restaurants.</p>
+              <p className="text-bone/15 text-xs">Built in Modesto, CA.</p>
+            </div>
+            <div className="flex flex-wrap gap-x-12 gap-y-4">
+              <div>
+                <p className="text-bone/25 text-xs font-semibold uppercase tracking-[0.1em] mb-2.5">Product</p>
+                <div className="space-y-2">
+                  {[
+                    { label: "How it works", href: "#how-it-works" },
+                    { label: "Features", href: "#features" },
+                    { label: "Integrations", href: "#integrations" },
+                    { label: "Pricing", href: "#pricing" },
+                    { label: "Live Demo", href: "#demo" },
+                  ].map((l) => (
+                    <Link key={l.label} href={l.href} className="block text-bone/30 text-sm hover:text-bone transition-colors">{l.label}</Link>
+                  ))}
+                </div>
               </div>
-              <p className="text-bone/40 text-sm leading-relaxed mb-3">
-                AI voice ordering for restaurants. Built in Modesto, CA.
-              </p>
-            </div>
-
-            <div>
-              <h4 className="text-bone text-sm font-semibold mb-4">Product</h4>
-              <ul className="space-y-2.5">
-                {["Features", "Integrations", "Pricing", "Demo"].map((item) => (
-                  <li key={item}>
-                    <a href={`#${item.toLowerCase()}`} className="text-bone/40 hover:text-bone/70 text-sm transition-colors">{item}</a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-bone text-sm font-semibold mb-4">Company</h4>
-              <ul className="space-y-2.5">
-                {["About", "Blog", "Careers", "Contact"].map((item) => (
-                  <li key={item}>
-                    <a href="#" className="text-bone/40 hover:text-bone/70 text-sm transition-colors">{item}</a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-bone text-sm font-semibold mb-4">Legal</h4>
-              <ul className="space-y-2.5">
-                <li>
-                  <Link href="/terms" className="text-bone/40 hover:text-bone/70 text-sm transition-colors">Terms of Service</Link>
-                </li>
-                <li>
-                  <Link href="/privacy" className="text-bone/40 hover:text-bone/70 text-sm transition-colors">Privacy Policy</Link>
-                </li>
-              </ul>
+              <div>
+                <p className="text-bone/25 text-xs font-semibold uppercase tracking-[0.1em] mb-2.5">Legal</p>
+                <div className="space-y-2">
+                  <Link href="/terms" className="block text-bone/30 text-sm hover:text-bone transition-colors">Terms of Service</Link>
+                  <Link href="/privacy" className="block text-bone/30 text-sm hover:text-bone transition-colors">Privacy Policy</Link>
+                </div>
+              </div>
             </div>
           </div>
-
-          <div className="border-t border-bone/[0.06] pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-bone/30 text-xs">&copy; 2026 Ringo AI, Inc. All rights reserved.</p>
-            <p className="text-bone/30 text-xs">hello@useringo.ai</p>
+          <div className="mt-10 pt-6 border-t border-bone/[0.04] flex flex-col md:flex-row items-center justify-between gap-2">
+            <p className="text-bone/10 text-xs">&copy; 2026 Ringo AI, Inc. All rights reserved.</p>
+            <p className="text-bone/10 text-xs">hello@useringo.ai</p>
           </div>
         </div>
       </footer>

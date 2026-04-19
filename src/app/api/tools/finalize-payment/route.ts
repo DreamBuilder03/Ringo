@@ -1,5 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { createHash } from 'crypto';
+import * as Sentry from '@sentry/nextjs';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+
+interface OrderItemModifier {
+  name: string;
+  price: number;
+}
+
+interface OrderItem {
+  name: string;
+  price: number;
+  quantity: number;
+  modifiers?: OrderItemModifier[];
+}
 
 interface RetellRequest {
   call: {
@@ -11,7 +25,7 @@ interface RetellRequest {
   args: {
     customer_phone?: string;
     phone?: string;
-    items?: Array<{ name: string; price: number; quantity: number }>;
+    items?: OrderItem[];
     total_amount?: number;
   };
 }
@@ -26,10 +40,24 @@ interface PaymentLinkResponse {
 
 const DEFAULT_TAX_RATE = 0.0875; // 8.75% fallback
 
+function hashPhone(phone: string): string {
+  return createHash('sha256').update(phone).digest('hex').slice(-8);
+}
+
 export async function POST(request: NextRequest) {
+  const startedAt = Date.now();
+  let callId: string | undefined;
+  let agentId: string | undefined;
+  let restaurantId: string | undefined;
+  let orderId: string | undefined;
+  let orderTotal: number | undefined;
+  let smsProvider: 'ghl' | 'twilio' | 'none' | undefined;
+
   try {
     const body = (await request.json()) as RetellRequest;
     const { call, args } = body;
+    callId = call?.call_id;
+    agentId = call?.agent_id;
     const customer_phone = args.customer_phone || args.phone;
 
     if (!call?.agent_id || !call?.call_id) {
@@ -64,6 +92,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    restaurantId = restaurant.id;
+
     // Look up internal call ID from Retell call ID
     const { data: callRecord } = await supabase
       .from('calls')
@@ -91,7 +121,10 @@ export async function POST(request: NextRequest) {
       const taxRate = restaurant.tax_rate ?? DEFAULT_TAX_RATE;
       const subtotal = args.total_amount
         ? parseFloat((args.total_amount / (1 + taxRate)).toFixed(2))
-        : items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+        : items.reduce((sum, item) => {
+            const modifierTotal = (item.modifiers || []).reduce((m, mod) => m + (mod.price || 0), 0);
+            return sum + (item.price + modifierTotal) * item.quantity;
+          }, 0);
       const tax = parseFloat((subtotal * taxRate).toFixed(2));
       const total = args.total_amount
         ? args.total_amount
@@ -133,6 +166,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    orderId = order.id;
+    orderTotal = order.total;
+
     // Get Square credentials — prefer restaurant-level, fall back to env vars
     const squareAccessToken = restaurant.square_access_token || process.env.SQUARE_ACCESS_TOKEN;
     const squareLocationId = restaurant.square_location_id || process.env.SQUARE_LOCATION_ID;
@@ -145,16 +181,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create Square payment link
+    // Create Square payment link with itemized order payload (see spec #11).
+    // Uses `order.line_items` + inline modifiers + tax so the Square-hosted
+    // checkout page renders each item by name/qty, then subtotal + tax + total.
+    const taxRate = restaurant.tax_rate ?? DEFAULT_TAX_RATE;
+    const lineItems = (order.items as OrderItem[]).map((it) => ({
+      name: it.name,
+      quantity: String(it.quantity || 1),
+      base_price_money: { amount: Math.round((it.price || 0) * 100), currency: 'USD' },
+      ...(it.modifiers && it.modifiers.length > 0
+        ? {
+            modifiers: it.modifiers.map((m) => ({
+              name: m.name,
+              base_price_money: { amount: Math.round((m.price || 0) * 100), currency: 'USD' },
+            })),
+          }
+        : {}),
+    }));
+
     const paymentLinkPayload = {
       idempotency_key: order.id,
-      quick_pay: {
-        name: `${restaurant.name} Order`,
-        price_money: {
-          amount: Math.round(order.total * 100),
-          currency: 'USD',
-        },
+      order: {
         location_id: squareLocationId,
+        line_items: lineItems,
+        taxes: [
+          {
+            name: 'Sales Tax',
+            percentage: String((taxRate * 100).toFixed(3)),
+            scope: 'ORDER',
+          },
+        ],
       },
       checkout_options: {
         redirect_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://useringo.ai'}/order-confirmed/${order.id}`,
@@ -183,6 +239,20 @@ export async function POST(request: NextRequest) {
         `[${new Date().toISOString()}] Square API error:`,
         squareData.errors || squareResponse.statusText
       );
+      Sentry.captureMessage('finalize-payment: Square API error', {
+        level: 'error',
+        tags: {
+          route: 'finalize-payment',
+          call_id: callId,
+          agent_id: agentId,
+          restaurant_id: restaurantId,
+          order_id: orderId,
+        },
+        extra: {
+          square_errors: squareData.errors,
+          status: squareResponse.status,
+        },
+      });
       return NextResponse.json(
         { result: 'Error: Unable to create payment link. Please try again.' },
         { status: 500 }
@@ -197,8 +267,10 @@ export async function POST(request: NextRequest) {
     const smsMessageEs = `Tu pedido de ${restaurant.name} esta listo para pagar! Total: $${order.total.toFixed(2)}. Paga aqui: ${paymentUrl} - Una vez pagado, tu pedido va directamente a la cocina!`;
     const smsMessage = restaurant.preferred_language === 'es' ? smsMessageEs : smsMessageEn;
 
+    // Track SMS outcome so the agent can recover if SMS fails but Square succeeded.
+    let smsDelivered = false;
     try {
-      await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'https://useringo.ai'}/api/sms`, {
+      const smsResp = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'https://useringo.ai'}/api/sms`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -208,9 +280,28 @@ export async function POST(request: NextRequest) {
           message: smsMessage,
         }),
       });
+
+      if (smsResp.ok) {
+        smsDelivered = true;
+        try {
+          const smsJson = await smsResp.clone().json();
+          if (smsJson && typeof smsJson.provider === 'string') {
+            smsProvider = smsJson.provider === 'ghl' ? 'ghl' : 'twilio';
+          } else {
+            smsProvider = 'twilio';
+          }
+        } catch {
+          smsProvider = 'twilio';
+        }
+      } else {
+        smsProvider = 'none';
+        console.error(
+          `[${new Date().toISOString()}] SMS send failed: HTTP ${smsResp.status}`
+        );
+      }
     } catch (smsError) {
+      smsProvider = 'none';
       console.error(`[${new Date().toISOString()}] SMS send failed:`, smsError);
-      // Don't fail the entire request if SMS fails, just log it
     }
 
     // Update order with payment link info
@@ -225,10 +316,46 @@ export async function POST(request: NextRequest) {
 
     if (updateError) {
       console.error(`[${new Date().toISOString()}] Order update failed:`, updateError);
+      Sentry.captureMessage('finalize-payment: Order update failed', {
+        level: 'error',
+        tags: {
+          route: 'finalize-payment',
+          call_id: callId,
+          agent_id: agentId,
+          restaurant_id: restaurantId,
+          order_id: orderId,
+        },
+      });
       return NextResponse.json(
         { result: 'Error: Unable to update order. Please try again.' },
         { status: 500 }
       );
+    }
+
+    // Log successful invocation to Sentry with PII redacted.
+    Sentry.captureMessage('finalize-payment: success', {
+      level: 'info',
+      tags: {
+        route: 'finalize-payment',
+        call_id: callId,
+        agent_id: agentId,
+        restaurant_id: restaurantId,
+        order_id: orderId,
+        sms_provider: smsProvider,
+      },
+      extra: {
+        total: orderTotal,
+        duration_ms: Date.now() - startedAt,
+        customer_phone_hash8: hashPhone(customer_phone),
+      },
+    });
+
+    // If SMS failed but Square succeeded, hand the URL back to the agent so it
+    // can read the link aloud instead of silently promising a text that never arrived.
+    if (!smsDelivered) {
+      return NextResponse.json({
+        result: `Looks like our text system just hiccuped — the payment link is ${paymentUrl}. Say it back to me and I can also have Sal email it to you.`,
+      });
     }
 
     return NextResponse.json({
@@ -237,6 +364,18 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Finalize-payment error:`, error);
+    Sentry.captureException(error, {
+      tags: {
+        route: 'finalize-payment',
+        call_id: callId,
+        agent_id: agentId,
+        restaurant_id: restaurantId,
+        order_id: orderId,
+      },
+      extra: {
+        duration_ms: Date.now() - startedAt,
+      },
+    });
     return NextResponse.json(
       { result: 'Error: Unable to process request. Please try again.' },
       { status: 500 }
