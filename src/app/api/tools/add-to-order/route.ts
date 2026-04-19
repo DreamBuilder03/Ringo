@@ -58,16 +58,18 @@ export async function POST(request: NextRequest) {
     const { call, args } = body;
     const { item_name, quantity, modifiers, customer_phone } = args;
 
+    // Every `result` string below is spoken verbatim by the Retell agent.
+    // Use natural spoken English so the agent never freezes. Never "Error:".
     if (!call?.agent_id || !call?.call_id) {
       return NextResponse.json(
-        { result: 'Error: Unable to identify the call. Please try again.' },
+        { result: "Give me just one second — I'm looking that up." },
         { status: 400 }
       );
     }
 
     if (!item_name || !quantity) {
       return NextResponse.json(
-        { result: 'Error: Item name and quantity are required.' },
+        { result: "Sorry — did you want to add an item? If so, tell me what and how many and I'll put it in." },
         { status: 400 }
       );
     }
@@ -85,7 +87,7 @@ export async function POST(request: NextRequest) {
     if (restaurantError || !restaurant) {
       console.error(`[${new Date().toISOString()}] Restaurant lookup failed:`, restaurantError);
       return NextResponse.json(
-        { result: 'Error: Restaurant not found. Please contact support.' },
+        { result: "Give me just a second — I'm having trouble pulling up the menu. I'll try again." },
         { status: 404 }
       );
     }
@@ -110,8 +112,8 @@ export async function POST(request: NextRequest) {
     if (itemError || !menuItems || menuItems.length === 0) {
       console.error(`[${new Date().toISOString()}] Menu item lookup failed:`, itemError);
       return NextResponse.json(
-        { result: `Error: "${item_name}" not found on the menu. Please try another item.` },
-        { status: 404 }
+        { result: `I don't see "${item_name}" on our menu. Want me to read off what we do have, or did you mean something else?` },
+        { status: 200 }
       );
     }
 
@@ -164,7 +166,7 @@ export async function POST(request: NextRequest) {
       if (updateError) {
         console.error(`[${new Date().toISOString()}] Order update failed:`, updateError);
         return NextResponse.json(
-          { result: 'Error: Unable to add item to order. Please try again.' },
+          { result: "Give me one more second — I'm adding that to your order now." },
           { status: 500 }
         );
       }
@@ -186,7 +188,7 @@ export async function POST(request: NextRequest) {
       if (insertError) {
         console.error(`[${new Date().toISOString()}] Order insert failed:`, insertError);
         return NextResponse.json(
-          { result: 'Error: Unable to add item to order. Please try again.' },
+          { result: "Give me one more second — I'm adding that to your order now." },
           { status: 500 }
         );
       }
@@ -198,7 +200,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Add-to-order error:`, error);
     return NextResponse.json(
-      { result: 'Error: Unable to process request. Please try again.' },
+      { result: "Sorry — give me just a second. Something hiccuped on our end." },
       { status: 500 }
     );
   }

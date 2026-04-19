@@ -67,16 +67,19 @@ export async function POST(request: NextRequest) {
     // 99% of inbound callers want the SMS sent to the number they called from.
     const customer_phone = args.customer_phone || args.phone || call?.from_number;
 
+    // IMPORTANT: every `result` string below is spoken verbatim by the Retell agent.
+    // Use plain conversational English so the agent can recover smoothly instead of
+    // freezing on a terse `Error:` prefix. Never start a result with "Error:".
     if (!call?.agent_id || !call?.call_id) {
       return NextResponse.json(
-        { result: 'Error: Unable to identify the call. Please try again.' },
+        { result: "Sorry, I'm having trouble looking up your call right now. Could you give me just a second?" },
         { status: 400 }
       );
     }
 
     if (!customer_phone) {
       return NextResponse.json(
-        { result: 'Error: Customer phone number is required.' },
+        { result: "I just need the phone number to text the payment link. What's the best number to send it to?" },
         { status: 400 }
       );
     }
@@ -94,7 +97,7 @@ export async function POST(request: NextRequest) {
     if (restaurantError || !restaurant) {
       console.error(`[${new Date().toISOString()}] Restaurant lookup failed:`, restaurantError);
       return NextResponse.json(
-        { result: 'Error: Restaurant not found. Please contact support.' },
+        { result: "Give me just one second — I'm having trouble pulling up the restaurant's system. I'll try again." },
         { status: 404 }
       );
     }
@@ -155,7 +158,7 @@ export async function POST(request: NextRequest) {
       if (insertError || !newOrder) {
         console.error(`[${new Date().toISOString()}] Order creation failed:`, insertError);
         return NextResponse.json(
-          { result: 'Error: Unable to create order. Please try again.' },
+          { result: "Hmm, I hit a snag saving the order on our end. Let me try that again in just a second." },
           { status: 500 }
         );
       }
@@ -164,12 +167,25 @@ export async function POST(request: NextRequest) {
       console.log(`[${new Date().toISOString()}] Created order ${newOrder.id} from agent args`);
     }
 
-    // If still no order, we can't proceed
+    // If still no order, we can't proceed.
+    // This is the most common failure mode when the prompt forgets to call
+    // add_to_order during the conversation AND forgets to pass `items` into
+    // finalize_payment. The agent should recover by asking the caller to
+    // restate the order one more time, NOT freeze in silence.
     if (!order) {
       console.error(`[${new Date().toISOString()}] No order found and no items provided`);
+      Sentry.captureMessage('finalize-payment: no order and no items — prompt likely missing add_to_order calls', {
+        level: 'warning',
+        tags: {
+          route: 'finalize-payment',
+          call_id: callId,
+          agent_id: agentId,
+          restaurant_id: restaurantId,
+        },
+      });
       return NextResponse.json(
-        { result: 'Error: No order found. Please confirm your order first.' },
-        { status: 404 }
+        { result: "Let me make sure I have everything right before I send the payment link. Can you repeat the full order one more time — including any sizes, sauces, or sides?" },
+        { status: 200 }
       );
     }
 
@@ -183,7 +199,7 @@ export async function POST(request: NextRequest) {
     if (!squareAccessToken || !squareLocationId) {
       console.error(`[${new Date().toISOString()}] Missing Square credentials for restaurant ${restaurant.id}`);
       return NextResponse.json(
-        { result: 'Error: Payment processing not configured. Please contact support.' },
+        { result: "Our payment system looks like it needs a quick tune-up on our end. Let me have someone from the restaurant call you right back to finish this." },
         { status: 500 }
       );
     }
@@ -261,7 +277,7 @@ export async function POST(request: NextRequest) {
         },
       });
       return NextResponse.json(
-        { result: 'Error: Unable to create payment link. Please try again.' },
+        { result: "The payment system just hiccuped on our end. Give me one more second and I'll get the link out to you." },
         { status: 500 }
       );
     }
@@ -334,7 +350,7 @@ export async function POST(request: NextRequest) {
         },
       });
       return NextResponse.json(
-        { result: 'Error: Unable to update order. Please try again.' },
+        { result: "One second — I'm finishing up your order on our end. Thanks for hanging in there." },
         { status: 500 }
       );
     }

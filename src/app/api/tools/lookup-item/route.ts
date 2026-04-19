@@ -19,16 +19,18 @@ export async function POST(request: NextRequest) {
     const { call, args } = body;
     const { item_name } = args;
 
+    // Every `result` string below is spoken verbatim by the Retell agent.
+    // Use natural spoken English so the agent never freezes. Never "Error:".
     if (!call?.agent_id) {
       return NextResponse.json(
-        { result: 'Error: Unable to identify the restaurant. Please try again.' },
+        { result: "Give me one second — I'm pulling that up." },
         { status: 400 }
       );
     }
 
     if (!item_name) {
       return NextResponse.json(
-        { result: 'Error: Item name is required.' },
+        { result: "Sure — what would you like me to look up on the menu?" },
         { status: 400 }
       );
     }
@@ -46,7 +48,7 @@ export async function POST(request: NextRequest) {
     if (restaurantError || !restaurant) {
       console.error(`[${new Date().toISOString()}] Restaurant lookup failed:`, restaurantError);
       return NextResponse.json(
-        { result: 'Error: Restaurant not found. Please contact support.' },
+        { result: "Give me just a second — I'm having trouble pulling up the menu." },
         { status: 404 }
       );
     }
@@ -61,7 +63,7 @@ export async function POST(request: NextRequest) {
     if (itemError) {
       console.error(`[${new Date().toISOString()}] Menu item search failed:`, itemError);
       return NextResponse.json(
-        { result: 'Error: Unable to search menu. Please try again.' },
+        { result: "Hmm, the menu search just hiccuped. Let me try once more." },
         { status: 500 }
       );
     }
@@ -100,7 +102,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Lookup-item error:`, error);
     return NextResponse.json(
-      { result: 'Error: Unable to process request. Please try again.' },
+      { result: "Sorry — give me one second. Something hiccuped on our end." },
       { status: 500 }
     );
   }

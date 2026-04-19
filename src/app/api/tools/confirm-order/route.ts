@@ -24,18 +24,22 @@ export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as RetellRequest;
     const { call, args } = body;
-    const { customer_phone } = args;
+    // Phone resolution: explicit arg → legacy alias → inbound call's caller ID.
+    // Mirrors finalize-payment so the agent never dead-loops asking for a phone.
+    const customer_phone = (args as any).customer_phone || (args as any).phone || call?.from_number;
 
+    // Every `result` string below is spoken verbatim by the Retell agent.
+    // Use natural spoken English so the agent never freezes. Never "Error:".
     if (!call?.agent_id || !call?.call_id) {
       return NextResponse.json(
-        { result: 'Error: Unable to identify the call. Please try again.' },
+        { result: "Give me just a moment — I'm looking that up." },
         { status: 400 }
       );
     }
 
     if (!customer_phone) {
       return NextResponse.json(
-        { result: 'Error: Customer phone number is required.' },
+        { result: "I just need a phone number to text the payment link to. What's the best number?" },
         { status: 400 }
       );
     }
@@ -53,7 +57,7 @@ export async function POST(request: NextRequest) {
     if (restaurantError || !restaurant) {
       console.error(`[${new Date().toISOString()}] Restaurant lookup failed:`, restaurantError);
       return NextResponse.json(
-        { result: 'Error: Restaurant not found. Please contact support.' },
+        { result: "Give me one second — I'm pulling up the restaurant's system." },
         { status: 404 }
       );
     }
@@ -84,8 +88,8 @@ export async function POST(request: NextRequest) {
     if (orderFetchError || !order) {
       console.error(`[${new Date().toISOString()}] Order fetch failed:`, orderFetchError);
       return NextResponse.json(
-        { result: 'Error: No active order found. Please add items first.' },
-        { status: 404 }
+        { result: "I don't have any items in the order yet — can you tell me what you'd like and I'll add it?" },
+        { status: 200 }
       );
     }
 
@@ -93,7 +97,7 @@ export async function POST(request: NextRequest) {
     const items = order.items as OrderItem[];
     if (!items || items.length === 0) {
       return NextResponse.json({
-        result: 'Error: Your order is empty. Please add items before confirming.',
+        result: "Looks like the order is empty so far. What can I get started for you?",
       });
     }
 
@@ -109,7 +113,7 @@ export async function POST(request: NextRequest) {
     if (updateError) {
       console.error(`[${new Date().toISOString()}] Order update failed:`, updateError);
       return NextResponse.json(
-        { result: 'Error: Unable to confirm order. Please try again.' },
+        { result: "Hmm, I hit a snag locking that in. Let me try one more time." },
         { status: 500 }
       );
     }
@@ -120,7 +124,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Confirm-order error:`, error);
     return NextResponse.json(
-      { result: 'Error: Unable to process request. Please try again.' },
+      { result: "Sorry — give me just a second. Something hiccuped on our end." },
       { status: 500 }
     );
   }
