@@ -52,16 +52,18 @@ export async function POST(request: NextRequest) {
     const { call, args } = body;
     const { item_name } = args;
 
+    // Every `result` string below is spoken verbatim by the Retell agent.
+    // Use natural spoken English so the agent never freezes. Never "Error:".
     if (!call?.agent_id || !call?.call_id) {
       return NextResponse.json(
-        { result: 'Error: Unable to identify the call. Please try again.' },
+        { result: "Give me one second — I'm updating your order." },
         { status: 400 }
       );
     }
 
     if (!item_name) {
       return NextResponse.json(
-        { result: 'Error: Item name is required.' },
+        { result: "Sure — which item would you like me to remove?" },
         { status: 400 }
       );
     }
@@ -79,7 +81,7 @@ export async function POST(request: NextRequest) {
     if (restaurantError || !restaurant) {
       console.error(`[${new Date().toISOString()}] Restaurant lookup failed:`, restaurantError);
       return NextResponse.json(
-        { result: 'Error: Restaurant not found. Please contact support.' },
+        { result: "Give me one second — I'm pulling up your order." },
         { status: 404 }
       );
     }
@@ -110,8 +112,8 @@ export async function POST(request: NextRequest) {
     if (orderFetchError || !order) {
       console.error(`[${new Date().toISOString()}] Order fetch failed:`, orderFetchError);
       return NextResponse.json(
-        { result: 'Error: No active order found. Please add items first.' },
-        { status: 404 }
+        { result: "I don't have anything in the order yet — want me to start a new one?" },
+        { status: 200 }
       );
     }
 
@@ -145,7 +147,7 @@ export async function POST(request: NextRequest) {
     if (updateError) {
       console.error(`[${new Date().toISOString()}] Order update failed:`, updateError);
       return NextResponse.json(
-        { result: 'Error: Unable to remove item from order. Please try again.' },
+        { result: "Hmm, I hit a snag updating the order. Let me try that again." },
         { status: 500 }
       );
     }
@@ -156,7 +158,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Remove-from-order error:`, error);
     return NextResponse.json(
-      { result: 'Error: Unable to process request. Please try again.' },
+      { result: "Sorry — give me just a second. Something hiccuped on our end." },
       { status: 500 }
     );
   }

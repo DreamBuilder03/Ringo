@@ -400,7 +400,7 @@ export async function POST(request: NextRequest) {
       },
     });
     return NextResponse.json(
-      { result: 'Error: Unable to process request. Please try again.' },
+      { result: "Sorry — give me just a second. Something hiccuped on our end." },
       { status: 500 }
     );
   }
