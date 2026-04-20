@@ -1475,15 +1475,13 @@ export default function HomePage() {
         .border-glow { animation: borderGlow 4s ease-in-out infinite; }
       `}</style>
 
-      {/* ═══ NAV — floating pill over obsidian hero ═══ */}
-      <nav className={`anim-nav fixed top-0 left-0 right-0 z-50 duration-500 ${
-        scrolled ? "bg-obsidian/85 backdrop-blur-2xl border-b border-bone/[0.06]" : "bg-transparent"
-      }`} style={{ transitionProperty: "background-color,backdrop-filter,border-color" }}>
+      {/* ═══ NAV — floating pill over obsidian hero (no bg bar, no border) ═══ */}
+      <nav className={`anim-nav fixed top-0 left-0 right-0 z-50 duration-500 bg-transparent`} style={{ transitionProperty: "background-color" }}>
         <div className={`max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 flex items-center justify-between duration-500 ${scrolled ? "py-3" : "py-5 md:py-6"}`} style={{ transitionProperty: "padding" }}>
-          {/* Logo — always bone on obsidian */}
+          {/* Logo — always bone on obsidian, bigger */}
           <Link href="/" className="flex items-center group shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/ringo-logo.png" alt="Ringo" className="h-8 w-auto brightness-0 invert duration-300 group-hover:scale-105" style={{ transitionProperty: "transform" }} />
+            <img src="/ringo-logo.png" alt="Ringo" className="h-12 md:h-14 w-auto brightness-0 invert duration-300 group-hover:scale-105" style={{ transitionProperty: "transform" }} />
           </Link>
 
           {/* Centered floating pill */}
@@ -1574,11 +1572,11 @@ export default function HomePage() {
 
       {/* ═══ HERO — OBSIDIAN (per Design Agent spec) ═══ */}
       <section className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28 lg:pt-44">
-        {/* Obsidian base + radial glow + grain */}
+        {/* Obsidian base + soft central glow (pulled down so top edge stays pure obsidian) + grain */}
         <div className="absolute inset-0 bg-obsidian z-0" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_50%_at_50%_0%,rgba(243,238,227,0.05),transparent)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_45%_at_50%_45%,rgba(243,238,227,0.035),transparent)] pointer-events-none" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_500px_at_20%_80%,rgba(243,238,227,0.02),transparent)] pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_500px_at_85%_25%,rgba(243,238,227,0.025),transparent)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_500px_at_85%_55%,rgba(243,238,227,0.022),transparent)] pointer-events-none" />
         <GrainOverlay opacity={0.04} />
 
         {/* Decorative floating dots (bone-tinted, very subtle) */}
@@ -1807,9 +1805,9 @@ export default function HomePage() {
               <p className="eyebrow text-bone/45 mb-8">Works with your existing stack</p>
               {/* Hairline divider above */}
               <div className="h-px w-full bg-bone/[0.08]" />
-              <div className="flex flex-wrap items-center justify-center gap-x-14 gap-y-8 md:gap-x-20 py-10 md:py-12 text-bone/55">
+              <div className="flex flex-wrap items-center justify-center gap-x-14 gap-y-8 md:gap-x-20 py-10 md:py-12">
                 {coreStack.map(({ name, Logo }) => (
-                  <Logo key={name} className="h-6 w-auto opacity-80 hover:opacity-100 transition-opacity duration-300" />
+                  <Logo key={name} className="h-10 md:h-12 w-auto opacity-70 hover:opacity-100 transition-opacity duration-300" />
                 ))}
               </div>
               {/* Hairline divider below */}
@@ -1837,9 +1835,9 @@ export default function HomePage() {
           <div className="marquee-track flex items-center gap-8 whitespace-nowrap" style={{ width: "fit-content" }}>
             {[...Array(4)].map((_, setIdx) =>
               integrationList.map((int, i) => (
-                <div key={`a${setIdx}-${i}`} className="flex items-center bg-coal/60 border border-bone/[0.06] rounded-xl px-6 py-4 hover:border-bone/[0.14] hover:bg-coal duration-300 group" style={{ transitionProperty: "border-color,background-color,opacity" }}>
-                  <div className="text-bone/30 group-hover:text-bone/65" style={{ transitionProperty: "color,opacity", transitionDuration: "300ms" }}>
-                    <int.Logo className="h-6 w-auto" />
+                <div key={`a${setIdx}-${i}`} className="flex items-center justify-center bg-coal/60 border border-bone/[0.06] rounded-xl px-7 py-5 hover:border-bone/[0.14] hover:bg-coal duration-300 group" style={{ transitionProperty: "border-color,background-color" }}>
+                  <div className="opacity-55 group-hover:opacity-95 duration-300" style={{ transitionProperty: "opacity" }}>
+                    <int.Logo className="h-8 w-auto" />
                   </div>
                 </div>
               ))
@@ -1854,9 +1852,9 @@ export default function HomePage() {
           <div className="marquee-track flex items-center gap-8 whitespace-nowrap" style={{ width: "fit-content", animationDirection: "reverse", animationDuration: "55s" }}>
             {[...Array(4)].map((_, setIdx) =>
               [...integrationList].reverse().map((int, i) => (
-                <div key={`b${setIdx}-${i}`} className="flex items-center bg-coal/60 border border-bone/[0.06] rounded-xl px-6 py-4 hover:border-bone/[0.14] hover:bg-coal duration-300 group" style={{ transitionProperty: "border-color,background-color,opacity" }}>
-                  <div className="text-bone/30 group-hover:text-bone/65" style={{ transitionProperty: "color,opacity", transitionDuration: "300ms" }}>
-                    <int.Logo className="h-6 w-auto" />
+                <div key={`b${setIdx}-${i}`} className="flex items-center justify-center bg-coal/60 border border-bone/[0.06] rounded-xl px-7 py-5 hover:border-bone/[0.14] hover:bg-coal duration-300 group" style={{ transitionProperty: "border-color,background-color" }}>
+                  <div className="opacity-55 group-hover:opacity-95 duration-300" style={{ transitionProperty: "opacity" }}>
+                    <int.Logo className="h-8 w-auto" />
                   </div>
                 </div>
               ))
