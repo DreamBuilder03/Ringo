@@ -337,6 +337,311 @@ function HeroPhone() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
+   IPAD LIVE CALL — Large landscape iPad showing a live 47-second Ringo call
+   Sarah M. → Tony's Pizza, 7 bubbles, $38.47 total, +$4.99 upsell captured
+   ═══════════════════════════════════════════════════════════════════════ */
+function IPadLiveCallSection() {
+  const DURATION = 47;
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+
+  // Scripted conversation — timestamps in seconds drive bubble highlight
+  const bubbles = [
+    { from: "r", text: "Thanks for calling Tony's Pizza! How can I help you today?", at: 0 },
+    { from: "c", text: "Hi, can I get a large pepperoni with extra cheese?", at: 7 },
+    { from: "r", text: "Absolutely. Want to add breadsticks for $4.99? They're our most popular upsell.", at: 14, upsell: true },
+    { from: "c", text: "Yeah, add those. And a 2-liter Coke.", at: 21 },
+    { from: "r", text: "Perfect. Your total is $38.47. Sending the payment link now.", at: 27 },
+    { from: "system", text: "Payment link sent", at: 38 },
+    { from: "r", text: "Payment received! Your order will be ready in 25 minutes. Thanks Sarah.", at: 42 },
+  ];
+
+  // Simulated playback — rAF-driven; works whether or not the audio file exists
+  useEffect(() => {
+    if (!playing) return;
+    const startStamp = Date.now() - currentTime * 1000;
+    let raf = 0;
+    const tick = () => {
+      const elapsed = (Date.now() - startStamp) / 1000;
+      if (elapsed >= DURATION) {
+        setPlaying(false);
+        setCurrentTime(0);
+        return;
+      }
+      setCurrentTime(elapsed);
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [playing]);
+
+  const toggle = () => {
+    const audio = audioRef.current;
+    if (playing) {
+      audio?.pause();
+      if (audio) audio.currentTime = 0;
+      setPlaying(false);
+      setCurrentTime(0);
+    } else {
+      setCurrentTime(0);
+      if (audio) {
+        audio.currentTime = 0;
+        audio.play().catch(() => { /* no audio file yet — simulated playback still runs */ });
+      }
+      setPlaying(true);
+    }
+  };
+
+  // Figure out the latest bubble that should be "lit"
+  const activeBubble = bubbles.reduce((acc, b, i) => (currentTime >= b.at ? i : acc), -1);
+
+  // Circular progress ring geometry
+  const RING_R = 22;
+  const RING_C = 2 * Math.PI * RING_R;
+  const ringOffset = RING_C * (1 - Math.min(currentTime, DURATION) / DURATION);
+
+  // 0:00 elapsed display
+  const mm = Math.floor(Math.min(currentTime, DURATION) / 60);
+  const ss = Math.floor(Math.min(currentTime, DURATION) % 60).toString().padStart(2, "0");
+
+  return (
+    <section className="relative bg-obsidian py-24 md:py-32 overflow-hidden">
+      <GrainOverlay opacity={0.025} />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_40%_at_50%_0%,rgba(243,238,227,0.035),transparent)] pointer-events-none" />
+
+      <div className="relative z-10 max-w-6xl mx-auto px-5 sm:px-6 lg:px-8">
+        {/* Section heading */}
+        <Reveal>
+          <div className="text-center max-w-3xl mx-auto mb-14 md:mb-16">
+            <p className="eyebrow text-bone/45 mb-4">Watch a real call, start to finish</p>
+            <h2 className="font-display text-bone text-4xl md:text-5xl lg:text-[64px] tracking-tight leading-[1.04]">
+              <span className="italic">47 seconds.</span>{" "}
+              <span className="text-bone/65">One order.</span>{" "}
+              <span className="italic">$38.47 captured.</span>
+            </h2>
+            <p className="text-stone text-base md:text-lg mt-5 leading-relaxed">
+              No staff touched the phone. The upsell landed. Payment cleared before the kitchen fired a ticket.
+            </p>
+          </div>
+        </Reveal>
+
+        {/* iPad Pro — landscape */}
+        <Reveal delay={150}>
+          <div className="relative mx-auto" style={{ maxWidth: 900 }}>
+            {/* Subtle bone halo behind iPad */}
+            <div className="absolute -inset-10 bg-bone/[0.025] blur-[80px] rounded-[80px] pointer-events-none" />
+
+            {/* iPad bezel */}
+            <div
+              className="relative bg-obsidian rounded-[38px] p-3 border border-bone/[0.14]"
+              style={{
+                aspectRatio: "4 / 3",
+                boxShadow: "0 48px 120px -24px rgba(0,0,0,0.9), 0 0 0 1px rgba(10,10,10,0.6), inset 0 1px 0 rgba(243,238,227,0.05)",
+              }}
+            >
+              {/* Front camera */}
+              <div className="absolute top-3 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-bone/25 z-10" />
+
+              {/* Screen */}
+              <div className="relative w-full h-full rounded-[28px] bg-coal overflow-hidden flex flex-col">
+                {/* iOS status bar */}
+                <div className="flex items-center justify-between px-6 pt-3 pb-2 shrink-0">
+                  <span className="text-[11px] text-bone/65 font-semibold tabular-nums">9:41</span>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-end gap-[2px]">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="w-[2.5px] rounded-full bg-bone/60" style={{ height: 3 + i * 1.5 }} />
+                      ))}
+                    </div>
+                    <span className="text-[10px] text-bone/50 font-medium">100%</span>
+                  </div>
+                </div>
+
+                {/* Caller header */}
+                <div className="flex items-center justify-between px-6 py-3 border-y border-bone/[0.05] shrink-0">
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <div className="w-11 h-11 rounded-full bg-bone/[0.08] border border-bone/[0.12] flex items-center justify-center">
+                        <span className="text-bone/85 font-display text-sm">SM</span>
+                      </div>
+                      <span className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-bone animate-pulse" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-bone text-[15px] font-medium">Sarah M.</span>
+                        <span className="text-[9px] text-bone/70 font-bold uppercase tracking-[0.14em] border border-bone/[0.22] rounded px-1.5 py-[1px]">
+                          Live
+                        </span>
+                      </div>
+                      <span className="text-bone/40 text-[11px]">Tony&apos;s Pizza · Inbound order</span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="font-display italic text-bone text-2xl tabular-nums leading-none">
+                      {mm}:{ss}
+                    </div>
+                    <div className="text-bone/35 text-[10px] uppercase tracking-[0.12em] mt-1">elapsed</div>
+                  </div>
+                </div>
+
+                {/* Conversation */}
+                <div className="relative flex-1 overflow-hidden px-5 md:px-8 py-5">
+                  <div className="space-y-2 max-w-[560px] mx-auto">
+                    {bubbles.map((b, i) => {
+                      const isActive = playing && activeBubble === i;
+                      const isPast = activeBubble >= i;
+                      const dimClass = playing && !isActive ? "opacity-45" : "opacity-100";
+
+                      if (b.from === "system") {
+                        return (
+                          <div key={i} className={`flex justify-center transition-opacity duration-300 ${isPast ? dimClass : "opacity-30"}`}>
+                            <div
+                              className={`inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-[11px] border ${
+                                isActive
+                                  ? "bg-bone/[0.12] border-bone/[0.3]"
+                                  : "bg-bone/[0.05] border-bone/[0.1]"
+                              }`}
+                            >
+                              <CreditCard className="w-3 h-3 text-bone/70" />
+                              <span className="text-bone/70 font-medium">Payment link sent ·</span>
+                              <span className="font-display italic text-bone">$38.47</span>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      return (
+                        <div key={i} className={`transition-opacity duration-300 ${isPast ? dimClass : "opacity-30"}`}>
+                          {b.upsell && (
+                            <div
+                              className={`flex justify-start mb-1 transition-opacity duration-500 ${
+                                isPast ? "opacity-100" : "opacity-0"
+                              }`}
+                            >
+                              <div className="inline-flex items-center gap-1.5 bg-bone text-obsidian rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-[0.1em]">
+                                <TrendingUp className="w-2.5 h-2.5" />
+                                Upsell captured ·
+                                <span className="font-display italic normal-case tracking-normal">+$4.99</span>
+                              </div>
+                            </div>
+                          )}
+                          <div className={`flex ${b.from === "r" ? "justify-start" : "justify-end"}`}>
+                            <div
+                              className={`max-w-[78%] px-4 py-2.5 text-[13px] leading-relaxed rounded-2xl transition-all duration-300 ${
+                                b.from === "r"
+                                  ? `bg-bone/[0.06] text-bone/85 rounded-bl-sm ${
+                                      isActive ? "bg-bone/[0.12] ring-1 ring-bone/25" : ""
+                                    }`
+                                  : `bg-bone text-obsidian rounded-br-sm font-medium ${
+                                      isActive ? "shadow-[0_0_24px_rgba(243,238,227,0.18)]" : ""
+                                    }`
+                              }`}
+                            >
+                              {b.text}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Footer strip */}
+                <div className="flex items-center justify-between px-6 py-2.5 border-t border-bone/[0.05] bg-obsidian/50 shrink-0">
+                  <div className="flex items-center gap-1.5 text-bone/45 text-[10px]">
+                    <Mic className="w-3 h-3" />
+                    <span>Recording · encrypted</span>
+                  </div>
+                  <div className="text-bone/40 text-[10px] font-medium tracking-wider uppercase">
+                    Ringo
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Reveal>
+
+        {/*
+          TODO: Misael — record the 47-second reference call and drop it at
+          /public/assets/audio/ringo-demo-call.mp3
+        */}
+        <audio ref={audioRef} src="/assets/audio/ringo-demo-call.mp3" preload="none" />
+
+        {/* Play button + YouTube ghost link */}
+        <Reveal delay={250}>
+          <div className="flex flex-col items-center gap-5 mt-14">
+            <button
+              onClick={toggle}
+              aria-label={playing ? "Stop demo call" : "Play demo call"}
+              className="group relative inline-flex items-center gap-3 bg-obsidian hover:bg-coal border-[1.5px] border-bone text-bone rounded-full pl-7 pr-6 py-3.5 font-medium text-[15px] duration-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-bone"
+              style={{ transitionProperty: "background-color,border-color,color,transform" }}
+            >
+              <span className="relative inline-flex items-center justify-center w-7 h-7">
+                <svg className="absolute inset-0 w-full h-full -rotate-90" viewBox="0 0 48 48" aria-hidden="true">
+                  <circle cx="24" cy="24" r={RING_R} fill="none" stroke="rgba(243,238,227,0.14)" strokeWidth="1.25" />
+                  <circle
+                    cx="24"
+                    cy="24"
+                    r={RING_R}
+                    fill="none"
+                    stroke="rgba(243,238,227,0.95)"
+                    strokeWidth="1.25"
+                    strokeLinecap="round"
+                    strokeDasharray={RING_C}
+                    strokeDashoffset={ringOffset}
+                    style={{ transition: playing ? "stroke-dashoffset 120ms linear" : "stroke-dashoffset 300ms ease-out" }}
+                  />
+                </svg>
+                <span className="text-bone text-[11px] leading-none">
+                  {playing ? (
+                    <span className="inline-block w-[9px] h-[9px] bg-bone" />
+                  ) : (
+                    <span className="inline-block" style={{ transform: "translateX(1px)" }}>▶</span>
+                  )}
+                </span>
+              </span>
+              <span>{playing ? "Stop" : "Hear this call"}</span>
+              <span className="font-display italic text-bone/55 text-sm ml-1">· 47 seconds</span>
+            </button>
+
+            {/* TODO: Misael — drop real YouTube URL for the full demo walkthrough */}
+            <a
+              href="#"
+              className="group inline-flex items-center gap-1.5 text-bone/45 hover:text-bone text-sm duration-300"
+              style={{ transitionProperty: "color,transform" }}
+            >
+              <Play className="w-3.5 h-3.5" />
+              <span>Watch the full demo on YouTube</span>
+              <ArrowRight className="w-3.5 h-3.5 duration-300 group-hover:translate-x-0.5" style={{ transitionProperty: "transform" }} />
+            </a>
+          </div>
+        </Reveal>
+
+        {/* Testimonial — Tony M. */}
+        <Reveal delay={350}>
+          <div className="max-w-2xl mx-auto mt-20 text-center">
+            <blockquote className="font-display italic text-stone text-[22px] md:text-[26px] leading-[1.4] tracking-tight">
+              &ldquo;First week, Ringo captured three upsells on my slowest Tuesday. My pizza oven never stops anymore — and I haven&apos;t missed a call since.&rdquo;
+            </blockquote>
+            <div className="flex items-center justify-center gap-3 mt-6">
+              <div className="w-10 h-10 rounded-full bg-bone/[0.08] border border-bone/[0.12] flex items-center justify-center">
+                <span className="text-bone/75 font-display text-sm">TM</span>
+              </div>
+              <div className="text-left">
+                <div className="text-bone text-sm font-medium">Tony M.</div>
+                <div className="text-bone/40 text-[11px]">Owner · Tony&apos;s Pizza, Modesto</div>
+              </div>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
    LIVE DASHBOARD — Tabs, animated data, richer layout
    ═══════════════════════════════════════════════════════════════════════ */
 function LiveDashboard() {
@@ -1092,8 +1397,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ═══ SOCIAL PROOF ═══ */}
-      <section className="relative border-y border-bone/[0.04] py-10 md:py-12">
+      {/* Gradient transition from bone hero to dark */}
+      <div className="relative h-32 bg-gradient-to-b from-bone via-bone/50 to-obsidian" />
+
+      {/* ═══ SECTION 2 — IPAD LIVE CALL ═══ */}
+      <IPadLiveCallSection />
+
+      {/* ═══ SOCIAL PROOF STRIP ═══ */}
+      <section className="relative border-y border-bone/[0.04] py-10 md:py-12 bg-obsidian">
         <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
             {[
@@ -1110,9 +1421,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* Gradient transition from bone hero to dark */}
-      <div className="relative h-32 bg-gradient-to-b from-bone via-bone/50 to-obsidian" />
 
       {/* ═══ HOW IT WORKS ═══ */}
       <section id="how-it-works" className="relative py-24 md:py-32">
