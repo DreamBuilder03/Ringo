@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { rankMenuMatches } from '@/lib/menu-search';
 
 interface RetellRequest {
   call: {
@@ -53,12 +54,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Search for menu item (case-insensitive)
-    const { data: menuItems, error: itemError } = await supabase
+    // Token-matched search (see src/lib/menu-search.ts).
+    const { data: allMenu, error: itemError } = await supabase
       .from('menu_items')
       .select('name, modifiers')
-      .eq('restaurant_id', restaurant.id)
-      .ilike('name', `%${item_name}%`);
+      .eq('restaurant_id', restaurant.id);
+    const menuItems = allMenu ? rankMenuMatches(allMenu, item_name) : [];
 
     if (itemError) {
       console.error(`[${new Date().toISOString()}] Menu item search failed:`, itemError);

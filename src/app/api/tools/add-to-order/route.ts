@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { rankMenuMatches } from '@/lib/menu-search';
 
 interface RetellRequest {
   call: {
@@ -101,23 +102,31 @@ export async function POST(request: NextRequest) {
 
     const internalCallId = callRecord?.id || null;
 
-    // Look up menu item
-    const { data: menuItems, error: itemError } = await supabase
+    // Token-matched menu lookup (see src/lib/menu-search.ts — handles
+    // word-order swaps like "18-inch Nonna's Pepperoni" vs
+    // "Nonna's Pepperoni 18-inch").
+    const { data: allMenu, error: itemError } = await supabase
       .from('menu_items')
       .select('id, name, price')
-      .eq('restaurant_id', restaurant.id)
-      .ilike('name', `%${item_name}%`)
-      .limit(1);
+      .eq('restaurant_id', restaurant.id);
 
-    if (itemError || !menuItems || menuItems.length === 0) {
+    if (itemError) {
       console.error(`[${new Date().toISOString()}] Menu item lookup failed:`, itemError);
+      return NextResponse.json(
+        { result: "Hmm, give me just a second — I'm pulling up the menu." },
+        { status: 500 }
+      );
+    }
+
+    const matches = rankMenuMatches(allMenu || [], item_name);
+    if (matches.length === 0) {
       return NextResponse.json(
         { result: `I don't see "${item_name}" on our menu. Want me to read off what we do have, or did you mean something else?` },
         { status: 200 }
       );
     }
 
-    const menuItem: MenuItem = menuItems[0];
+    const menuItem: MenuItem = matches[0];
 
     // If we have an internal call ID, look for existing building order
     let existingOrder = null;

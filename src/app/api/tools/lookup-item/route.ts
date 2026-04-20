@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { rankMenuMatches } from '@/lib/menu-search';
 
 interface RetellRequest {
   call: {
@@ -53,12 +54,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Search for menu item (case-insensitive)
-    const { data: menuItems, error: itemError } = await supabase
+    // Pull the whole menu and filter in memory with token-based matching.
+    // ilike `%query%` fails on word-order swaps like "18-inch Nonna's Pepperoni"
+    // vs "Nonna's Pepperoni 18-inch". Token matching is robust to it.
+    // Menu is small (<200 rows per restaurant), so this is cheap.
+    const { data: allMenu, error: itemError } = await supabase
       .from('menu_items')
       .select('id, name, price, modifiers, available')
-      .eq('restaurant_id', restaurant.id)
-      .ilike('name', `%${item_name}%`);
+      .eq('restaurant_id', restaurant.id);
 
     if (itemError) {
       console.error(`[${new Date().toISOString()}] Menu item search failed:`, itemError);
@@ -68,8 +71,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const menuItems = rankMenuMatches(allMenu || [], item_name);
+
     if (!menuItems || menuItems.length === 0) {
-      // Get all items for suggestions
+      // Suggestion fallback — pull 5 available items.
       const { data: allItems } = await supabase
         .from('menu_items')
         .select('name')

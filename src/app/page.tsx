@@ -45,6 +45,188 @@ function GrainOverlay({ opacity = 0.03 }: { opacity?: number }) {
   );
 }
 
+/* ─────────────────────────────────────────────────────────────────
+   WaveDivider — organic SVG wave transition between two color zones.
+   Replaces hard horizontal lines and straight gradient strips with
+   a soft, slightly blurred wave so sections blend like ink on paper.
+
+   fromClass: Tailwind `text-*` class for the color ABOVE (the color
+             that "drips down" into the section below). The wave
+             paths use `fill="currentColor"` to pick this up.
+   toBgClass: Tailwind `bg-*` class for the color BELOW (the section
+             into which the wave dissolves).
+   ───────────────────────────────────────────────────────────────── */
+function WaveDivider({
+  fromClass,
+  toBgClass,
+  height = 140,
+  flip = false,
+  seed = 0,
+  variant = "soft",
+}: {
+  fromClass: string;
+  toBgClass: string;
+  height?: number;
+  flip?: boolean;
+  seed?: number;
+  variant?: "soft" | "deep";
+}) {
+  const blurId = `wave-blur-${seed}`;
+  const fadeId = `wave-fade-${seed}`;
+  // Two different wave shapes so each divider feels hand-drawn, not copy-pasted
+  const primary = seed % 2 === 0
+    ? "M0,0 L1440,0 L1440,46 C1220,104 980,6 720,58 C460,110 240,14 0,76 Z"
+    : "M0,0 L1440,0 L1440,38 C1260,96 1020,10 780,60 C540,108 280,20 0,82 Z";
+  const echo = seed % 2 === 0
+    ? "M0,0 L1440,0 L1440,28 C1320,76 1120,18 880,50 C640,82 380,36 180,64 C90,76 40,72 0,82 Z"
+    : "M0,0 L1440,0 L1440,22 C1280,68 1080,14 840,46 C600,78 340,28 140,58 C70,70 30,66 0,78 Z";
+
+  return (
+    <div
+      className={`relative w-full overflow-hidden ${toBgClass} ${fromClass}`}
+      style={{ height, marginTop: -1, marginBottom: -1 }}
+      aria-hidden="true"
+    >
+      <svg
+        className="absolute inset-0 w-full h-full"
+        preserveAspectRatio="none"
+        viewBox="0 0 1440 120"
+        style={{ transform: flip ? "scaleY(-1)" : "none" }}
+      >
+        <defs>
+          <filter id={blurId} x="-10%" y="-10%" width="120%" height="120%">
+            <feGaussianBlur stdDeviation={variant === "deep" ? 5 : 3} />
+          </filter>
+          {/* Feathered vertical fade — so the bottom of the wave dissolves
+              rather than ending in a clean horizontal line */}
+          <linearGradient id={fadeId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="currentColor" stopOpacity="1" />
+            <stop offset="70%" stopColor="currentColor" stopOpacity="0.55" />
+            <stop offset="100%" stopColor="currentColor" stopOpacity="0" />
+          </linearGradient>
+        </defs>
+
+        {/* Primary wave — crisp, carries the color forward */}
+        <path d={primary} fill="currentColor" />
+
+        {/* Echo wave — blurred, softens the horizon */}
+        <path d={echo} fill="currentColor" opacity={variant === "deep" ? 0.55 : 0.4} filter={`url(#${blurId})`} />
+
+        {/* Vertical feather — dissolves any remaining hard edge */}
+        <rect x="0" y="0" width="1440" height="120" fill={`url(#${fadeId})`} opacity="0.18" />
+      </svg>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   NavGroup — hover/click-open dropdown for a top-nav menu group.
+   Desktop only. Mobile falls back to an accordion inside the slide-out.
+   ───────────────────────────────────────────────────────────────── */
+type NavEntry = { name: string; href: string; desc?: string; Icon?: React.ComponentType<{ className?: string }> };
+type NavSection = { title?: string; entries: NavEntry[] };
+
+function NavGroup({
+  label,
+  sections,
+  scrolled,
+}: {
+  label: string;
+  sections: NavSection[];
+  scrolled: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onEsc = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("keydown", onEsc);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("keydown", onEsc);
+    };
+  }, [open]);
+
+  const handleEnter = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    setOpen(true);
+  };
+  const handleLeave = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    closeTimer.current = setTimeout(() => setOpen(false), 120);
+  };
+
+  const panelWidth = sections.length >= 2 ? "min-w-[520px]" : "min-w-[240px]";
+  const multi = sections.length >= 2;
+
+  return (
+    <div ref={ref} className="relative" onMouseEnter={handleEnter} onMouseLeave={handleLeave}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        aria-haspopup="true"
+        className={`px-3.5 py-1.5 rounded-full text-[13px] font-medium tracking-tight inline-flex items-center gap-1 duration-200 ${
+          scrolled ? "text-bone/55 hover:text-bone hover:bg-bone/[0.06]" : "text-obsidian/55 hover:text-obsidian hover:bg-obsidian/[0.06]"
+        } ${open ? (scrolled ? "text-bone bg-bone/[0.06]" : "text-obsidian bg-obsidian/[0.06]") : ""}`}
+        style={{ transitionProperty: "color,background-color" }}
+      >
+        {label}
+        <ChevronDown
+          className="w-3 h-3 duration-300"
+          style={{ transitionProperty: "transform", transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
+        />
+      </button>
+
+      {/* Panel */}
+      <div
+        className={`absolute top-full left-1/2 -translate-x-1/2 pt-3 z-50 duration-300 ${
+          open ? "opacity-100 pointer-events-auto translate-y-0" : "opacity-0 pointer-events-none -translate-y-1"
+        }`}
+        style={{ transitionProperty: "opacity, transform" }}
+      >
+        <div className={`bg-graphite/95 backdrop-blur-2xl border border-bone/[0.08] rounded-2xl p-5 ${panelWidth} shadow-[0_32px_80px_-16px_rgba(0,0,0,0.85)]`}>
+          <div className={multi ? "grid grid-cols-3 gap-6" : ""}>
+            {sections.map((section, i) => (
+              <div key={i} className={!multi && i > 0 ? "mt-3 pt-3 border-t border-bone/[0.06]" : ""}>
+                {section.title && (
+                  <p className="eyebrow text-bone/35 mb-3">{section.title}</p>
+                )}
+                <div className="space-y-0.5">
+                  {section.entries.map((entry) => {
+                    const Icon = entry.Icon;
+                    return (
+                      <Link
+                        key={entry.name}
+                        href={entry.href}
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-[13px] text-bone/70 hover:text-bone hover:bg-bone/[0.05] duration-200"
+                        style={{ transitionProperty: "color,background-color" }}
+                      >
+                        {Icon && <Icon className="w-3.5 h-3.5 text-bone/40" />}
+                        <span className="font-medium">{entry.name}</span>
+                        {entry.desc && (
+                          <span className="text-bone/35 text-[11px] ml-auto">{entry.desc}</span>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* Ribbon sweep — hairline Bone echo of the logo's underline. Decorative only. */
 function RibbonSweep({
   className = "",
@@ -1189,11 +1371,77 @@ export default function HomePage() {
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  const navLinks = [
-    { label: "How it works", href: "#how-it-works" },
-    { label: "Features", href: "#features" },
-    { label: "Demo", href: "#demo" },
-    { label: "Pricing", href: "#pricing" },
+  // Navigation groups — simple links and dropdown groups mixed.
+  // Order left→right matches scannable hierarchy (what it is → what it connects to → who we are → learn → cost).
+  const navGroups: (
+    | { kind: "link"; label: string; href: string }
+    | { kind: "group"; label: string; sections: NavSection[] }
+  )[] = [
+    { kind: "link", label: "How it works", href: "#how-it-works" },
+    {
+      kind: "group",
+      label: "Integrations",
+      sections: [
+        {
+          title: "Point of Sale",
+          entries: [
+            { name: "Square", href: "#integrations" },
+            { name: "Toast", href: "#integrations" },
+            { name: "Clover", href: "#integrations" },
+            { name: "Aloha", href: "#integrations" },
+            { name: "SpotOn", href: "#integrations" },
+          ],
+        },
+        {
+          title: "Online Ordering",
+          entries: [
+            { name: "Olo", href: "#integrations" },
+            { name: "Popmenu", href: "#integrations" },
+            { name: "OpenTable", href: "#integrations" },
+            { name: "DoorDash", href: "#integrations" },
+            { name: "Uber Eats", href: "#integrations" },
+          ],
+        },
+        {
+          title: "CRM & Comms",
+          entries: [
+            { name: "GoHighLevel", href: "#integrations", desc: "CRM" },
+            { name: "Stripe", href: "#integrations", desc: "Billing" },
+            { name: "Twilio", href: "#integrations", desc: "Voice + SMS" },
+          ],
+        },
+      ],
+    },
+    {
+      kind: "group",
+      label: "Company",
+      sections: [
+        {
+          entries: [
+            { name: "About Ringo", href: "/about" },
+            { name: "Partners", href: "/partners" },
+            { name: "Careers", href: "/careers" },
+            { name: "Contact", href: "/contact" },
+          ],
+        },
+      ],
+    },
+    {
+      kind: "group",
+      label: "Resources",
+      sections: [
+        {
+          entries: [
+            { name: "ROI Calculator", href: "#roi", Icon: BarChart3 },
+            { name: "FAQ", href: "#faq", Icon: MessageSquare },
+            { name: "Case Studies", href: "/case-studies", Icon: TrendingUp },
+            { name: "Blog", href: "/blog", Icon: Play },
+            { name: "Help Center", href: "/help", Icon: Headphones },
+          ],
+        },
+      ],
+    },
+    { kind: "link", label: "Pricing", href: "#pricing" },
   ];
 
   return (
@@ -1239,11 +1487,22 @@ export default function HomePage() {
           <div className={`hidden lg:flex items-center gap-0.5 rounded-full px-1.5 py-1.5 border transition-colors ${
             scrolled ? "bg-bone/[0.03] border-bone/[0.06]" : "bg-obsidian/[0.04] border-obsidian/[0.08]"
           }`}>
-            {navLinks.map((l) => (
-              <Link key={l.label} href={l.href} className={`px-4 py-1.5 rounded-full text-[13px] font-medium tracking-tight transition-colors duration-200 ${
-                scrolled ? "text-bone/50 hover:text-bone hover:bg-bone/[0.06]" : "text-obsidian/50 hover:text-obsidian hover:bg-obsidian/[0.06]"
-              }`}>{l.label}</Link>
-            ))}
+            {navGroups.map((g) =>
+              g.kind === "link" ? (
+                <Link
+                  key={g.label}
+                  href={g.href}
+                  className={`px-3.5 py-1.5 rounded-full text-[13px] font-medium tracking-tight duration-200 ${
+                    scrolled ? "text-bone/55 hover:text-bone hover:bg-bone/[0.06]" : "text-obsidian/55 hover:text-obsidian hover:bg-obsidian/[0.06]"
+                  }`}
+                  style={{ transitionProperty: "color,background-color" }}
+                >
+                  {g.label}
+                </Link>
+              ) : (
+                <NavGroup key={g.label} label={g.label} sections={g.sections} scrolled={scrolled} />
+              )
+            )}
           </div>
           <div className="hidden md:flex items-center gap-3">
             <Link href="/login" className={`transition-colors text-[13px] font-medium px-4 py-2 ${
@@ -1261,10 +1520,49 @@ export default function HomePage() {
         </div>
         {mobileMenuOpen && (
           <div className={`md:hidden backdrop-blur-2xl border-t ${scrolled ? "bg-obsidian/95 border-bone/[0.06]" : "bg-bone/95 border-obsidian/[0.06]"}`}>
-            <div className="px-5 py-4 space-y-1">
-              {navLinks.map((l) => (
-                <Link key={l.label} href={l.href} onClick={() => setMobileMenuOpen(false)} className={`block py-2.5 text-sm font-medium ${scrolled ? "text-bone/60 hover:text-bone" : "text-obsidian/60 hover:text-obsidian"}`}>{l.label}</Link>
-              ))}
+            <div className="px-5 py-4 space-y-1 max-h-[75vh] overflow-y-auto">
+              {navGroups.map((g) =>
+                g.kind === "link" ? (
+                  <Link
+                    key={g.label}
+                    href={g.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`block py-2.5 text-sm font-medium ${scrolled ? "text-bone/70 hover:text-bone" : "text-obsidian/70 hover:text-obsidian"}`}
+                  >
+                    {g.label}
+                  </Link>
+                ) : (
+                  <details key={g.label} className={`group py-1 ${scrolled ? "" : ""}`}>
+                    <summary className={`flex items-center justify-between py-2 text-sm font-medium cursor-pointer list-none [&::-webkit-details-marker]:hidden ${
+                      scrolled ? "text-bone/70 hover:text-bone" : "text-obsidian/70 hover:text-obsidian"
+                    }`}>
+                      {g.label}
+                      <ChevronDown className="w-3.5 h-3.5 duration-300 group-open:rotate-180" style={{ transitionProperty: "transform" }} />
+                    </summary>
+                    <div className="pl-3 py-1 space-y-2.5">
+                      {g.sections.map((section, si) => (
+                        <div key={si}>
+                          {section.title && (
+                            <p className={`eyebrow mb-1.5 ${scrolled ? "text-bone/30" : "text-obsidian/30"}`}>{section.title}</p>
+                          )}
+                          <div className="space-y-0.5">
+                            {section.entries.map((entry) => (
+                              <Link
+                                key={entry.name}
+                                href={entry.href}
+                                onClick={() => setMobileMenuOpen(false)}
+                                className={`block py-1.5 text-[13px] ${scrolled ? "text-bone/55 hover:text-bone" : "text-obsidian/55 hover:text-obsidian"}`}
+                              >
+                                {entry.name}
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+                )
+              )}
               <hr className={`my-2 ${scrolled ? "border-bone/[0.06]" : "border-obsidian/[0.06]"}`} />
               <Link href="/login" className={`block py-2.5 text-sm font-medium ${scrolled ? "text-bone/60 hover:text-bone" : "text-obsidian/60 hover:text-obsidian"}`}>Log in</Link>
               <a href="#demo" className={`block text-center py-2.5 rounded-full text-sm font-bold mt-2 ${scrolled ? "bg-bone text-obsidian" : "bg-obsidian text-bone"}`}>Try live demo</a>
@@ -1397,14 +1695,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Gradient transition from bone hero to dark */}
-      <div className="relative h-32 bg-gradient-to-b from-bone via-bone/50 to-obsidian" />
+      {/* Hero (bone) → iPad live call (obsidian) — organic wave, no hard line */}
+      <WaveDivider fromClass="text-bone" toBgClass="bg-obsidian" height={150} seed={1} variant="deep" />
 
       {/* ═══ SECTION 2 — IPAD LIVE CALL ═══ */}
       <IPadLiveCallSection />
 
       {/* ═══ SOCIAL PROOF STRIP ═══ */}
-      <section className="relative border-y border-bone/[0.04] py-10 md:py-12 bg-obsidian">
+      <section className="relative py-10 md:py-12 bg-obsidian">
         <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12">
             {[
