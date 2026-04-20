@@ -50,6 +50,8 @@ const config: Config = {
         // Fraunces carries the brand — display, headlines, money moments.
         display: ['Fraunces', 'serif'],
         serif:   ['Fraunces', 'serif'],
+        // Playfair Display — high-contrast editorial serif for dramatic comparisons.
+        playfair: ['Playfair Display', 'Georgia', 'serif'],
         // Inter handles everything else — body, UI, dashboard, forms.
         sans:    ['Inter', 'system-ui', 'sans-serif'],
       },
