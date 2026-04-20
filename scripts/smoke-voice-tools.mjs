@@ -378,20 +378,41 @@ async function t7_finalize_end_to_end() {
   record('payment link sent OR read aloud', /payment link/i.test(body?.result || ''), body?.result);
 }
 
-async function t8_remove_from_order_speakable() {
-  section('T8 — remove-from-order returns speakable result');
-  const callId = await newSmokeCall();
-  // First add something
+async function t8_remove_from_order_token_match() {
+  section('T8 — remove-from-order uses token matching (partial names work)');
+
+  // Single-match case: "remove the pepperoni" should find "Nonna's Pepperoni 18-inch"
+  const callId1 = await newSmokeCall();
   await callTool('add-to-order', makeReq({
-    callId,
-    args: { item_name: 'pepperoni', quantity: 1 },
+    callId: callId1,
+    args: { item_name: 'Nonna\'s Pepperoni 18-inch', quantity: 1 },
   }));
-  const { status, body } = await callTool('remove-from-order', makeReq({
-    callId,
+  const { status: s1, body: b1 } = await callTool('remove-from-order', makeReq({
+    callId: callId1,
     args: { item_name: 'pepperoni' },
   }));
-  record('HTTP 200', status === 200, `status=${status}`);
-  record('result speakable', isSpeakable(body?.result), body?.result);
+  record('single-match remove HTTP 200', s1 === 200, `status=${s1}`);
+  record('single-match result speakable', isSpeakable(b1?.result), b1?.result);
+  record('single-match item actually removed', /removed/i.test(b1?.result || ''), b1?.result);
+
+  // Disambiguation case: add two pepperonis of different sizes, ask to remove "pepperoni"
+  // → should ask "did you mean the X or the Y?" rather than silently pick one
+  const callId2 = await newSmokeCall();
+  await callTool('add-to-order', makeReq({
+    callId: callId2,
+    args: { item_name: 'Nonna\'s Pepperoni 10-inch', quantity: 1 },
+  }));
+  await callTool('add-to-order', makeReq({
+    callId: callId2,
+    args: { item_name: 'Nonna\'s Pepperoni 18-inch', quantity: 1 },
+  }));
+  const { status: s2, body: b2 } = await callTool('remove-from-order', makeReq({
+    callId: callId2,
+    args: { item_name: 'pepperoni' },
+  }));
+  record('ambiguous remove HTTP 200', s2 === 200, `status=${s2}`);
+  record('ambiguous remove asks to clarify', /which|did you mean|few matches/i.test(b2?.result || ''),
+    b2?.result);
 }
 
 async function t9_get_modifiers_speakable() {
@@ -403,6 +424,52 @@ async function t9_get_modifiers_speakable() {
   }));
   record('HTTP 200', status === 200, `status=${status}`);
   record('result speakable', isSpeakable(body?.result), body?.result);
+}
+
+async function t11_v9_drinks_and_wings() {
+  section('T11 — V9 seed: drinks + wings resolve by natural phrasing');
+  if (process.env.SMOKE_V9_SEED !== '1') {
+    record('skipped (waiting on Brain\'s V9 seed)', true, 'set SMOKE_V9_SEED=1 once new seed is live');
+    return;
+  }
+
+  // Drinks — every phrasing a real caller might use should resolve.
+  const drinkCases = [
+    { query: '2L Coke',           desc: '2L Coke (exact)' },
+    { query: '2 liter Coke',      desc: '2-liter Coke (spelled out)' },
+    { query: 'Coke 2 liter',      desc: 'Coke 2-liter (word order swap)' },
+    { query: 'large Coke',        desc: '"large Coke" (vague)' },
+    { query: '2L Diet Coke',      desc: '2L Diet Coke' },
+    { query: 'fountain Coke',     desc: 'fountain Coke' },
+    { query: 'fountain drink',    desc: 'fountain drink (generic)' },
+  ];
+  for (const { query, desc } of drinkCases) {
+    const callId = await newSmokeCall();
+    const { body } = await callTool('lookup-item', makeReq({
+      callId,
+      args: { item_name: query },
+    }));
+    const found = typeof body?.result === 'string' && !/don'?t have/i.test(body.result);
+    record(`drink: ${desc}`, found, found ? extractItemName(body.result) : body?.result);
+  }
+
+  // Wings — agent needs to resolve count phrasings.
+  const wingCases = [
+    { query: '10 wings',          desc: '10 wings (count only)' },
+    { query: 'ten wings',         desc: 'ten wings (spelled out)' },
+    { query: '10 piece wings',    desc: '10 piece wings' },
+    { query: '6 wings buffalo',   desc: '6 wings buffalo (count + flavor)' },
+    { query: '20 piece party',    desc: '20 piece party' },
+  ];
+  for (const { query, desc } of wingCases) {
+    const callId = await newSmokeCall();
+    const { body } = await callTool('lookup-item', makeReq({
+      callId,
+      args: { item_name: query },
+    }));
+    const found = typeof body?.result === 'string' && !/don'?t have/i.test(body.result);
+    record(`wing: ${desc}`, found, found ? extractItemName(body.result) : body?.result);
+  }
 }
 
 async function t10_missing_args_never_freezes_agent() {
@@ -446,9 +513,10 @@ async function main() {
   await t5_item_not_found_is_speakable();
   await t6_finalize_no_order_recovers();
   await t7_finalize_end_to_end();
-  await t8_remove_from_order_speakable();
+  await t8_remove_from_order_token_match();
   await t9_get_modifiers_speakable();
   await t10_missing_args_never_freezes_agent();
+  await t11_v9_drinks_and_wings();
 
   // Always cleanup before exit.
   await cleanupSmokeRows();

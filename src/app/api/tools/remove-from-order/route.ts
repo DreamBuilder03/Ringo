@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { tokenizeMenuName } from '@/lib/menu-search';
 
 interface RetellRequest {
   call: {
@@ -117,18 +118,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Filter out the item (case-insensitive match)
+    // Token-based matching (see src/lib/menu-search.ts).
+    // Customer says "remove the pepperoni" → we tokenize their phrase,
+    // then find order items whose names contain every query token.
+    // Handles word-order swaps and size omissions: "the pepperoni" matches
+    // "Nonna's Pepperoni 18-inch" just fine.
     const currentItems = (order.items as OrderItem[]) || [];
-    const updatedItems = currentItems.filter(
-      (item) => item.name.toLowerCase() !== item_name.toLowerCase()
-    );
+    const queryTokens = tokenizeMenuName(item_name);
 
-    // Check if anything was actually removed
-    if (updatedItems.length === currentItems.length) {
-      return NextResponse.json({
-        result: `Item "${item_name}" not found in your order.`,
+    const matchedIndices: number[] = [];
+    if (queryTokens.length > 0) {
+      currentItems.forEach((item, idx) => {
+        const itemTokens = new Set(tokenizeMenuName(item.name));
+        const allHit = queryTokens.every((t) => itemTokens.has(t));
+        if (allHit) matchedIndices.push(idx);
       });
     }
+
+    // No matches — speakable "I don't see it" message.
+    if (matchedIndices.length === 0) {
+      return NextResponse.json({
+        result: `I don't see ${item_name} in your order yet. What would you like me to take off?`,
+      });
+    }
+
+    // Multiple matches — ask which one instead of guessing.
+    if (matchedIndices.length > 1) {
+      const options = matchedIndices
+        .map((i) => currentItems[i].name)
+        .join(' or the ');
+      return NextResponse.json({
+        result: `I see a few matches — did you mean the ${options}? Let me know which and I'll take it off.`,
+      });
+    }
+
+    // Exactly one match — remove it.
+    const removedItem = currentItems[matchedIndices[0]];
+    const updatedItems = currentItems.filter((_, i) => i !== matchedIndices[0]);
 
     const taxRate = restaurant.tax_rate ?? DEFAULT_TAX_RATE;
     const totals = calculateTotals(updatedItems, taxRate);
@@ -153,7 +179,7 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      result: `Removed ${item_name}. ${formatOrderSummary(updatedItems, totals)}`,
+      result: `Removed ${removedItem.name}. ${formatOrderSummary(updatedItems, totals)}`,
     });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Remove-from-order error:`, error);
