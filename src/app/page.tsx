@@ -1475,51 +1475,54 @@ export default function HomePage() {
         .border-glow { animation: borderGlow 4s ease-in-out infinite; }
       `}</style>
 
-      {/* ═══ NAV ═══ */}
-      <nav className={`anim-nav fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        scrolled ? "bg-obsidian/90 backdrop-blur-2xl border-b border-bone/[0.06]" : "bg-bone/80 backdrop-blur-2xl border-b border-obsidian/[0.06]"
-      }`}>
-        <div className={`max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 flex items-center justify-between transition-all duration-500 ${scrolled ? "h-14" : "h-20"}`}>
-          <Link href="/" className="flex items-center group">
+      {/* ═══ NAV — floating pill over obsidian hero ═══ */}
+      <nav className={`anim-nav fixed top-0 left-0 right-0 z-50 duration-500 ${
+        scrolled ? "bg-obsidian/85 backdrop-blur-2xl border-b border-bone/[0.06]" : "bg-transparent"
+      }`} style={{ transitionProperty: "background-color,backdrop-filter,border-color" }}>
+        <div className={`max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 flex items-center justify-between duration-500 ${scrolled ? "py-3" : "py-5 md:py-6"}`} style={{ transitionProperty: "padding" }}>
+          {/* Logo — always bone on obsidian */}
+          <Link href="/" className="flex items-center group shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/ringo-logo.png" alt="Ringo" className={`h-8 w-auto transition-all duration-300 group-hover:scale-105 ${scrolled ? "brightness-0 invert" : "brightness-0"}`} />
+            <img src="/ringo-logo.png" alt="Ringo" className="h-8 w-auto brightness-0 invert duration-300 group-hover:scale-105" style={{ transitionProperty: "transform" }} />
           </Link>
-          <div className={`hidden lg:flex items-center gap-0.5 rounded-full px-1.5 py-1.5 border transition-colors ${
-            scrolled ? "bg-bone/[0.03] border-bone/[0.06]" : "bg-obsidian/[0.04] border-obsidian/[0.08]"
-          }`}>
+
+          {/* Centered floating pill */}
+          <div className={`hidden lg:flex items-center gap-0.5 rounded-full px-1.5 py-1.5 border duration-300 ${
+            scrolled ? "bg-bone/[0.04] border-bone/[0.08]" : "bg-bone/[0.06] border-bone/[0.1] backdrop-blur-xl shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]"
+          }`} style={{ transitionProperty: "background-color,border-color,box-shadow" }}>
             {navGroups.map((g) =>
               g.kind === "link" ? (
                 <Link
                   key={g.label}
                   href={g.href}
-                  className={`px-3.5 py-1.5 rounded-full text-[13px] font-medium tracking-tight duration-200 ${
-                    scrolled ? "text-bone/55 hover:text-bone hover:bg-bone/[0.06]" : "text-obsidian/55 hover:text-obsidian hover:bg-obsidian/[0.06]"
-                  }`}
+                  className="px-4 py-2 rounded-full text-[13px] font-medium tracking-tight text-bone/60 hover:text-bone hover:bg-bone/[0.06] duration-200"
                   style={{ transitionProperty: "color,background-color" }}
                 >
                   {g.label}
                 </Link>
               ) : (
-                <NavGroup key={g.label} label={g.label} sections={g.sections} scrolled={scrolled} />
+                <NavGroup key={g.label} label={g.label} sections={g.sections} scrolled={true} />
               )
             )}
           </div>
-          <div className="hidden md:flex items-center gap-3">
-            <Link href="/login" className={`transition-colors text-[13px] font-medium px-4 py-2 ${
-              scrolled ? "text-bone/50 hover:text-bone" : "text-obsidian/50 hover:text-obsidian"
-            }`}>Log in</Link>
-            <a href="#demo" className={`group relative inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[13px] font-bold transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
-              scrolled ? "bg-bone text-obsidian hover:shadow-[0_0_0_4px_rgba(243,238,227,0.15)]" : "bg-obsidian text-bone hover:shadow-[0_0_0_4px_rgba(10,10,10,0.15)]"
-            }`}>
-              Try live demo <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
+
+          {/* Right cluster — Log in + Book a demo */}
+          <div className="hidden md:flex items-center gap-3 shrink-0">
+            <Link href="/login" className="duration-200 text-[13px] font-medium px-4 py-2 text-bone/55 hover:text-bone" style={{ transitionProperty: "color" }}>
+              Log in
+            </Link>
+            <a href="#demo" className="group relative inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[13px] font-bold bg-bone text-obsidian duration-300 hover:scale-[1.02] active:scale-[0.98] hover:shadow-[0_0_0_4px_rgba(243,238,227,0.15)]" style={{ transitionProperty: "transform,box-shadow" }}>
+              Book a demo <ArrowRight className="w-3.5 h-3.5 duration-200 group-hover:translate-x-0.5" style={{ transitionProperty: "transform" }} />
             </a>
           </div>
-          <button className={`md:hidden ${scrolled ? "text-bone/60" : "text-obsidian/60"}`} onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+
+          <button className="md:hidden text-bone/70" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} aria-label="Toggle menu">
             {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
         </div>
+
         {mobileMenuOpen && (
-          <div className={`md:hidden backdrop-blur-2xl border-t ${scrolled ? "bg-obsidian/95 border-bone/[0.06]" : "bg-bone/95 border-obsidian/[0.06]"}`}>
+          <div className="md:hidden backdrop-blur-2xl border-t bg-obsidian/95 border-bone/[0.06]">
             <div className="px-5 py-4 space-y-1 max-h-[75vh] overflow-y-auto">
               {navGroups.map((g) =>
                 g.kind === "link" ? (
@@ -1527,15 +1530,13 @@ export default function HomePage() {
                     key={g.label}
                     href={g.href}
                     onClick={() => setMobileMenuOpen(false)}
-                    className={`block py-2.5 text-sm font-medium ${scrolled ? "text-bone/70 hover:text-bone" : "text-obsidian/70 hover:text-obsidian"}`}
+                    className="block py-2.5 text-sm font-medium text-bone/70 hover:text-bone"
                   >
                     {g.label}
                   </Link>
                 ) : (
-                  <details key={g.label} className={`group py-1 ${scrolled ? "" : ""}`}>
-                    <summary className={`flex items-center justify-between py-2 text-sm font-medium cursor-pointer list-none [&::-webkit-details-marker]:hidden ${
-                      scrolled ? "text-bone/70 hover:text-bone" : "text-obsidian/70 hover:text-obsidian"
-                    }`}>
+                  <details key={g.label} className="group py-1">
+                    <summary className="flex items-center justify-between py-2 text-sm font-medium cursor-pointer list-none [&::-webkit-details-marker]:hidden text-bone/70 hover:text-bone">
                       {g.label}
                       <ChevronDown className="w-3.5 h-3.5 duration-300 group-open:rotate-180" style={{ transitionProperty: "transform" }} />
                     </summary>
@@ -1543,7 +1544,7 @@ export default function HomePage() {
                       {g.sections.map((section, si) => (
                         <div key={si}>
                           {section.title && (
-                            <p className={`eyebrow mb-1.5 ${scrolled ? "text-bone/30" : "text-obsidian/30"}`}>{section.title}</p>
+                            <p className="eyebrow mb-1.5 text-bone/30">{section.title}</p>
                           )}
                           <div className="space-y-0.5">
                             {section.entries.map((entry) => (
@@ -1551,7 +1552,7 @@ export default function HomePage() {
                                 key={entry.name}
                                 href={entry.href}
                                 onClick={() => setMobileMenuOpen(false)}
-                                className={`block py-1.5 text-[13px] ${scrolled ? "text-bone/55 hover:text-bone" : "text-obsidian/55 hover:text-obsidian"}`}
+                                className="block py-1.5 text-[13px] text-bone/55 hover:text-bone"
                               >
                                 {entry.name}
                               </Link>
@@ -1563,128 +1564,147 @@ export default function HomePage() {
                   </details>
                 )
               )}
-              <hr className={`my-2 ${scrolled ? "border-bone/[0.06]" : "border-obsidian/[0.06]"}`} />
-              <Link href="/login" className={`block py-2.5 text-sm font-medium ${scrolled ? "text-bone/60 hover:text-bone" : "text-obsidian/60 hover:text-obsidian"}`}>Log in</Link>
-              <a href="#demo" className={`block text-center py-2.5 rounded-full text-sm font-bold mt-2 ${scrolled ? "bg-bone text-obsidian" : "bg-obsidian text-bone"}`}>Try live demo</a>
+              <hr className="my-2 border-bone/[0.06]" />
+              <Link href="/login" className="block py-2.5 text-sm font-medium text-bone/60 hover:text-bone">Log in</Link>
+              <a href="#demo" className="block text-center py-2.5 rounded-full text-sm font-bold mt-2 bg-bone text-obsidian">Book a demo</a>
             </div>
           </div>
         )}
       </nav>
 
-      {/* ═══ HERO — BONE BACKGROUND (Inverted) ═══ */}
-      <section className="relative overflow-hidden pt-24 pb-20 md:pt-32 md:pb-32 lg:pt-28">
-        {/* BONE background with grain */}
-        <div className="absolute inset-0 bg-bone z-0" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_100%_50%_at_50%_0%,rgba(10,10,10,0.08),transparent)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_600px_at_80%_20%,rgba(10,10,10,0.04),transparent)]" />
-        <GrainOverlay opacity={0.05} />
+      {/* ═══ HERO — OBSIDIAN (per Design Agent spec) ═══ */}
+      <section className="relative overflow-hidden pt-32 pb-20 md:pt-40 md:pb-28 lg:pt-44">
+        {/* Obsidian base + radial glow + grain */}
+        <div className="absolute inset-0 bg-obsidian z-0" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_90%_50%_at_50%_0%,rgba(243,238,227,0.05),transparent)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_500px_at_20%_80%,rgba(243,238,227,0.02),transparent)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_500px_at_85%_25%,rgba(243,238,227,0.025),transparent)] pointer-events-none" />
+        <GrainOverlay opacity={0.04} />
 
-        {/* Decorative floating shapes */}
-        <div className="absolute top-20 left-[10%] w-64 h-64 rounded-full border border-obsidian/[0.04] animate-[pulseScale_12s_ease-in-out_infinite] pointer-events-none" />
-        <div className="absolute bottom-10 right-[5%] w-48 h-48 rounded-full border border-obsidian/[0.03] animate-[pulseScale_10s_ease-in-out_infinite_2s] pointer-events-none" />
-        <svg className="absolute top-32 right-[15%] w-32 h-32 text-obsidian/[0.04] pointer-events-none" viewBox="0 0 100 100">
-          <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="4 6" />
-          <circle cx="50" cy="50" r="20" fill="none" stroke="currentColor" strokeWidth="0.5" />
-        </svg>
+        {/* Decorative floating dots (bone-tinted, very subtle) */}
+        <div className="absolute top-[18%] left-[6%] w-2 h-2 rounded-full bg-bone/[0.08] pointer-events-none" />
+        <div className="absolute top-[68%] left-[4%] w-3 h-3 rounded-full bg-bone/[0.06] pointer-events-none" />
+        <div className="absolute top-[28%] right-[7%] w-2.5 h-2.5 rounded-full bg-bone/[0.07] pointer-events-none" />
+        <div className="absolute top-[75%] right-[10%] w-1.5 h-1.5 rounded-full bg-bone/[0.09] pointer-events-none" />
 
-        <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 w-full">
-          <div className="grid lg:grid-cols-[1fr,380px] gap-12 lg:gap-16 items-center">
-            {/* Left — Text on bone */}
-            <div className="order-2 lg:order-1 max-w-2xl">
-              <div className="anim-h1 inline-flex items-center gap-2.5 bg-obsidian/[0.06] border border-obsidian/[0.12] rounded-full px-4 py-2 mb-8">
-                <span className="w-2 h-2 rounded-full bg-obsidian animate-pulse" />
-                <span className="text-[11px] text-obsidian/60 font-medium uppercase tracking-[0.1em]">AI phone + text agent</span>
-              </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-6 lg:px-8 w-full text-center">
+          {/* Live ticker eyebrow */}
+          <div className="anim-h1 inline-flex items-center gap-2.5 bg-bone/[0.04] border border-bone/[0.08] rounded-full px-4 py-2 mb-10 backdrop-blur-sm">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full rounded-full bg-bone/70 animate-ping opacity-60" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-bone" />
+            </span>
+            <span className="text-[10.5px] text-bone/70 font-medium uppercase tracking-[0.14em]">
+              Answering for 47 restaurants in Central Valley right now
+            </span>
+          </div>
 
-              <h1 className="anim-h2">
-                <span className="block hero-display text-obsidian text-[2.75rem] sm:text-[3.5rem] lg:text-[4.5rem]">
-                  Every missed call is
-                </span>
-                <span className="relative inline-block mt-2">
-                  <span className="money-number text-obsidian text-[5rem] sm:text-[7rem] lg:text-[9rem] block">
-                    <Counter prefix="$" target={31050} immediate />
-                  </span>
-                  <span className="text-obsidian/30 font-sans text-base sm:text-lg font-normal align-top">/month leaked</span>
-                  {/* Ribbon sweep — decorative echo of the Ringo logo underline */}
-                  <RibbonSweep className="absolute -bottom-3 left-0 w-[80%] h-8 text-obsidian" opacity={0.22} strokeWidth={1.2} />
-                </span>
-              </h1>
+          {/* Spec headline — "The phone rings. Ringo handles it." */}
+          <h1 className="anim-h2 max-w-4xl mx-auto">
+            <span className="block hero-display text-bone text-[3rem] sm:text-[4rem] md:text-[5rem] lg:text-[6rem] leading-[0.95]">
+              The phone rings.
+            </span>
+            <span className="block hero-display italic text-bone text-[3.25rem] sm:text-[4.5rem] md:text-[5.5rem] lg:text-[6.5rem] leading-[0.95] mt-1">
+              Ringo handles it.
+            </span>
+          </h1>
 
-              <p className="anim-h3 text-obsidian/70 text-base sm:text-lg mt-8 max-w-xl leading-relaxed font-medium">
-                Ringo answers every call and text, takes orders, upsells, and collects payment before your kitchen starts prep — 24/7, in English and Spanish.
-              </p>
+          {/* Subhead */}
+          <p className="anim-h3 text-bone/60 text-base md:text-lg lg:text-xl mt-8 max-w-2xl mx-auto leading-relaxed font-normal">
+            24/7 AI phone agent that takes the order, upsells, collects payment by SMS before the kitchen preps, and pushes it to your POS. Live in 48 hours.
+          </p>
 
-              <div className="anim-h4 mt-10 max-w-xl">
-                {/* Inverted search box on bone */}
-                <div className="relative group">
-                  <div className="relative flex items-center bg-white/60 backdrop-blur-xl border border-obsidian/[0.1] rounded-2xl overflow-hidden focus-within:border-obsidian/[0.3] transition-all duration-500 shadow-[0_8px_32px_-8px_rgba(0,0,0,0.15)]">
-                    <Search className="absolute left-5 w-5 h-5 text-obsidian/30 pointer-events-none" />
-                    <input
-                      className="w-full bg-transparent text-obsidian placeholder:text-obsidian/25 pl-14 pr-5 py-5 text-lg outline-none font-sans"
-                      placeholder="Search for your restaurant..."
-                      disabled
-                    />
-                    <div className="absolute right-5 bg-obsidian text-bone text-xs font-bold px-3 py-1.5 rounded-lg">
-                      Try it
-                    </div>
-                  </div>
+          {/* Dual CTAs */}
+          <div className="anim-h4 mt-10 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <a href="#demo" className="group relative inline-flex items-center gap-2 px-6 py-3.5 rounded-full text-sm font-bold bg-bone text-obsidian duration-300 hover:scale-[1.02] active:scale-[0.98] hover:shadow-[0_0_0_4px_rgba(243,238,227,0.15)]" style={{ transitionProperty: "transform,box-shadow" }}>
+              Book a demo <ArrowRight className="w-4 h-4 duration-200 group-hover:translate-x-0.5" style={{ transitionProperty: "transform" }} />
+            </a>
+            <a href="#roi" className="group inline-flex items-center gap-1.5 px-6 py-3.5 rounded-full text-sm font-semibold text-bone/70 hover:text-bone border border-bone/[0.12] hover:border-bone/[0.24] bg-bone/[0.02] hover:bg-bone/[0.05] duration-300" style={{ transitionProperty: "color,border-color,background-color" }}>
+              See the ROI math
+            </a>
+          </div>
+
+          {/* Support line — restaurant-owner language */}
+          <div className="anim-h5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 mt-8 text-bone/35 text-[11px] font-medium">
+            <span className="flex items-center gap-1.5"><Phone className="w-3 h-3" /> Voice orders</span>
+            <span className="flex items-center gap-1.5"><MessageCircle className="w-3 h-3" /> Text orders</span>
+            <span className="flex items-center gap-1.5"><Mic className="w-3 h-3" /> EN + ES</span>
+            <span className="flex items-center gap-1.5"><ShieldCheck className="w-3 h-3" /> Pay-before-prep</span>
+          </div>
+
+          {/* Phone mockup — Fluffy's Pizza transcript (centered under CTAs, spec layout) */}
+          <div className="anim-phone mt-16 md:mt-20 flex justify-center">
+            <div className="relative" style={{ width: 320 }}>
+              {/* Glow ring */}
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[420px] h-[420px] rounded-full bg-bone/[0.02] blur-[80px] pointer-events-none" />
+
+              <div className="relative rounded-[2.8rem] bg-[#050505] p-2.5 border border-bone/[0.08] shadow-[0_40px_100px_-20px_rgba(0,0,0,0.85),0_0_0_1px_rgba(243,238,227,0.04)]">
+                {/* Notch */}
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-7 bg-[#050505] rounded-b-2xl z-20 flex items-center justify-center">
+                  <div className="w-12 h-3 bg-coal rounded-full" />
                 </div>
-              </div>
 
-              <div className="anim-h5 flex flex-wrap items-center gap-x-5 gap-y-2 mt-8 text-obsidian/40 text-[11px] font-medium">
-                <span className="flex items-center gap-1.5"><Phone className="w-3 h-3" /> Voice orders</span>
-                <span className="flex items-center gap-1.5"><MessageCircle className="w-3 h-3" /> Text orders</span>
-                <span className="flex items-center gap-1.5"><Mic className="w-3 h-3" /> EN + ES</span>
-              </div>
-            </div>
-
-            {/* Right — Phone mockup on bone */}
-            <div className="order-1 lg:order-2 anim-phone flex justify-center lg:justify-end">
-              <div className="relative" style={{ width: 280 }}>
-                {/* Subtle glow ring */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[360px] h-[360px] rounded-full border border-obsidian/[0.08] animate-[pulseScale_6s_ease-in-out_infinite] pointer-events-none" />
-
-                <div className="relative rounded-[2.8rem] bg-obsidian p-2 border border-obsidian/[0.15] shadow-[0_32px_80px_-16px_rgba(0,0,0,0.25),0_0_0_1px_rgba(0,0,0,0.1)]">
-                  {/* Notch */}
-                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-28 h-7 bg-obsidian rounded-b-2xl z-20 flex items-center justify-center">
-                    <div className="w-12 h-3 bg-coal rounded-full" />
+                <div className="rounded-[2.4rem] overflow-hidden bg-bone" style={{ minHeight: 520 }}>
+                  {/* Status bar */}
+                  <div className="flex items-center justify-between px-6 pt-9 pb-2 text-obsidian/80">
+                    <span className="text-[10px] font-semibold">9:41</span>
+                    <div className="flex items-center gap-1.5">
+                      {[1,2,3,4].map(i => <div key={i} className="w-[2.5px] rounded-full bg-obsidian/60" style={{ height: 3 + i * 1.5 }} />)}
+                      <span className="text-[9px] font-semibold ml-0.5">Wi-Fi</span>
+                    </div>
                   </div>
 
-                  <div className="rounded-[2.4rem] overflow-hidden bg-coal" style={{ minHeight: 460 }}>
-                    {/* Status bar */}
-                    <div className="flex items-center justify-between px-6 pt-9 pb-2">
-                      <span className="text-[10px] text-bone/40 font-semibold">9:41</span>
-                      <div className="flex items-center gap-1">
-                        {[1,2,3,4].map(i => <div key={i} className="w-[2.5px] rounded-full bg-bone/40" style={{ height: 3 + i * 1.5 }} />)}
+                  {/* Header row — restaurant name + LIVE */}
+                  <div className="flex items-center justify-between px-5 py-3 border-b border-obsidian/[0.06]">
+                    <div className="text-left">
+                      <p className="text-obsidian text-[13px] font-bold">Fluffy&apos;s Pizza</p>
+                      <p className="text-obsidian/50 text-[10px] font-medium mt-0.5">+1 (209) 555-0184 · incoming</p>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className="relative flex h-1.5 w-1.5">
+                        <span className="absolute inline-flex h-full w-full rounded-full bg-obsidian opacity-60 animate-ping" />
+                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-obsidian" />
+                      </span>
+                      <span className="text-obsidian text-[10px] font-bold uppercase tracking-[0.08em]">Live</span>
+                      <span className="text-obsidian/40 text-[10px] font-medium ml-1.5">09:10</span>
+                    </div>
+                  </div>
+
+                  {/* Transcript — per spec */}
+                  <div className="px-4 py-4 space-y-3 text-left">
+                    {/* Ringo */}
+                    <div className="flex flex-col items-start">
+                      <p className="text-obsidian/40 text-[9px] font-bold uppercase tracking-[0.1em] ml-3 mb-1">Ringo</p>
+                      <div className="max-w-[85%] px-3.5 py-2.5 text-[12px] leading-relaxed bg-obsidian/[0.05] text-obsidian/85 rounded-2xl rounded-bl-sm">
+                        Fluffy&apos;s Pizza, this is Ringo. What can I get you?
                       </div>
                     </div>
-
-                    {/* Messages — simpler version */}
-                    <div className="px-3.5 py-3 space-y-2 overflow-hidden" style={{ maxHeight: 380 }}>
-                      <div className="flex justify-start">
-                        <div className="max-w-[80%] px-3.5 py-2 text-[12px] leading-relaxed bg-bone/[0.08] text-bone/80 rounded-2xl rounded-bl-sm">
-                          Hi, how can I help?
-                        </div>
+                    {/* Caller */}
+                    <div className="flex flex-col items-end">
+                      <p className="text-obsidian/40 text-[9px] font-bold uppercase tracking-[0.1em] mr-3 mb-1">Caller</p>
+                      <div className="max-w-[85%] px-3.5 py-2.5 text-[12px] leading-relaxed bg-obsidian text-bone rounded-2xl rounded-br-sm font-medium">
+                        Large pepperoni, half mushroom please.
                       </div>
-                      <div className="flex justify-end">
-                        <div className="max-w-[80%] px-3.5 py-2 text-[12px] leading-relaxed bg-bone text-obsidian rounded-2xl rounded-br-sm font-medium shadow-[0_2px_8px_rgba(243,238,227,0.1)]">
-                          Large pepperoni
-                        </div>
+                    </div>
+                    {/* Ringo — upsell */}
+                    <div className="flex flex-col items-start">
+                      <p className="text-obsidian/40 text-[9px] font-bold uppercase tracking-[0.1em] ml-3 mb-1">Ringo</p>
+                      <div className="max-w-[85%] px-3.5 py-2.5 text-[12px] leading-relaxed bg-obsidian/[0.05] text-obsidian/85 rounded-2xl rounded-bl-sm">
+                        Got it. Make it a meal with garlic knots for $3 more?
                       </div>
-                      <div className="flex justify-start">
-                        <div className="max-w-[80%] px-3.5 py-2 text-[12px] leading-relaxed bg-bone/[0.08] text-bone/80 rounded-2xl rounded-bl-sm">
-                          +$3.99 garlic knots?
-                        </div>
+                    </div>
+                    {/* Caller */}
+                    <div className="flex flex-col items-end">
+                      <p className="text-obsidian/40 text-[9px] font-bold uppercase tracking-[0.1em] mr-3 mb-1">Caller</p>
+                      <div className="max-w-[85%] px-3.5 py-2.5 text-[12px] leading-relaxed bg-obsidian text-bone rounded-2xl rounded-br-sm font-medium">
+                        Sure, throw &rsquo;em in.
                       </div>
-                      <div className="flex justify-end">
-                        <div className="max-w-[80%] px-3.5 py-2 text-[12px] leading-relaxed bg-bone text-obsidian rounded-2xl rounded-br-sm font-medium shadow-[0_2px_8px_rgba(243,238,227,0.1)]">
-                          Yes
-                        </div>
-                      </div>
-                      <div className="flex justify-center w-full">
-                        <div className="bg-bone/[0.06] border border-bone/[0.1] rounded-xl px-3 py-1.5 text-[10px] text-bone/50 text-center font-medium">
-                          💳 Payment link sent
-                        </div>
+                    </div>
+                    {/* Ringo — payment link */}
+                    <div className="flex flex-col items-start">
+                      <p className="text-obsidian/40 text-[9px] font-bold uppercase tracking-[0.1em] ml-3 mb-1">Ringo</p>
+                      <div className="max-w-[85%] px-3.5 py-2.5 text-[12px] leading-relaxed bg-obsidian/[0.05] text-obsidian/85 rounded-2xl rounded-bl-sm">
+                        Sending the pay-link to your phone now. Kitchen fires when it clears.
                       </div>
                     </div>
                   </div>
@@ -1694,9 +1714,6 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* Hero (bone) → iPad live call (obsidian) — organic wave, no hard line */}
-      <WaveDivider fromClass="text-bone" toBgClass="bg-obsidian" height={150} seed={1} variant="deep" />
 
       {/* ═══ SECTION 2 — IPAD LIVE CALL ═══ */}
       <IPadLiveCallSection />
