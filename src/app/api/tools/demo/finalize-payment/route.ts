@@ -63,6 +63,7 @@ export async function POST(req: NextRequest) {
     const customerPhone = args?.customer_phone || args?.phone || '';
 
     if (!customerPhone) {
+      // 200 — speakable fallback (Retell ignores result on non-2xx).
       return NextResponse.json({
         result: "I didn't catch your phone number — could you say it again, digit by digit?",
       });
@@ -148,6 +149,7 @@ export async function POST(req: NextRequest) {
     if (!smsOk) {
       console.error(`[${t0}] [demo/finalize-payment] SMS send failed:`, smsErr);
       // Tell the agent something graceful to say — don't promise a text we didn't send.
+      // 200 — speakable fallback (Retell ignores result on non-2xx).
       return NextResponse.json({
         result:
           "Looks like our demo texting line had a hiccup. In a real Ringo install, the payment link would already be on its way. Want me to email the demo summary instead?",
@@ -163,6 +165,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     console.error(`[${t0}] [demo/finalize-payment] exception`, err);
+    // 200 — speakable fallback (Retell ignores result on non-2xx).
     return NextResponse.json({
       result:
         "Sorry — I hit a snag sending that. In a real Ringo install we'd retry automatically. Want to try one more time?",

@@ -71,16 +71,22 @@ export async function POST(request: NextRequest) {
     // Use plain conversational English so the agent can recover smoothly instead of
     // freezing on a terse `Error:` prefix. Never start a result with "Error:".
     if (!call?.agent_id || !call?.call_id) {
+      // STATUS 200 ON ALL FALLBACKS: Retell treats non-2xx as a hard tool failure
+      // and refuses to speak the `result` field — agent goes silent until the
+      // reminder_message fires. We learned this on call_d920aad6087e00095bd08f0eb95
+      // (2026-04-21): empty-args fallback returned 400, agent froze 13s. Speakable
+      // fallbacks must always return 200.
       return NextResponse.json(
         { result: "Sorry, I'm having trouble looking up your call right now. Could you give me just a second?" },
-        { status: 400 }
+        { status: 200 }
       );
     }
 
     if (!customer_phone) {
+      // 200 — speakable fallback, see note at top of handler.
       return NextResponse.json(
         { result: "I just need the phone number to text the payment link. What's the best number to send it to?" },
-        { status: 400 }
+        { status: 200 }
       );
     }
 
@@ -96,9 +102,10 @@ export async function POST(request: NextRequest) {
 
     if (restaurantError || !restaurant) {
       console.error(`[${new Date().toISOString()}] Restaurant lookup failed:`, restaurantError);
+      // 200 — speakable fallback, see note at top of handler.
       return NextResponse.json(
         { result: "Give me just one second — I'm having trouble pulling up the restaurant's system. I'll try again." },
-        { status: 404 }
+        { status: 200 }
       );
     }
 
@@ -157,9 +164,10 @@ export async function POST(request: NextRequest) {
 
       if (insertError || !newOrder) {
         console.error(`[${new Date().toISOString()}] Order creation failed:`, insertError);
+        // 200 — speakable fallback, see note at top of handler.
         return NextResponse.json(
           { result: "Hmm, I hit a snag saving the order on our end. Let me try that again in just a second." },
-          { status: 500 }
+          { status: 200 }
         );
       }
 
@@ -198,9 +206,10 @@ export async function POST(request: NextRequest) {
 
     if (!squareAccessToken || !squareLocationId) {
       console.error(`[${new Date().toISOString()}] Missing Square credentials for restaurant ${restaurant.id}`);
+      // 200 — speakable fallback, see note at top of handler.
       return NextResponse.json(
         { result: "Our payment system looks like it needs a quick tune-up on our end. Let me have someone from the restaurant call you right back to finish this." },
-        { status: 500 }
+        { status: 200 }
       );
     }
 
@@ -276,9 +285,10 @@ export async function POST(request: NextRequest) {
           status: squareResponse.status,
         },
       });
+      // 200 — speakable fallback, see note at top of handler.
       return NextResponse.json(
         { result: "The payment system just hiccuped on our end. Give me one more second and I'll get the link out to you." },
-        { status: 500 }
+        { status: 200 }
       );
     }
 
@@ -349,9 +359,10 @@ export async function POST(request: NextRequest) {
           order_id: orderId,
         },
       });
+      // 200 — speakable fallback, see note at top of handler.
       return NextResponse.json(
         { result: "One second — I'm finishing up your order on our end. Thanks for hanging in there." },
-        { status: 500 }
+        { status: 200 }
       );
     }
 
@@ -399,9 +410,10 @@ export async function POST(request: NextRequest) {
         duration_ms: Date.now() - startedAt,
       },
     });
+    // 200 — speakable fallback, see note at top of handler.
     return NextResponse.json(
       { result: "Sorry — give me just a second. Something hiccuped on our end." },
-      { status: 500 }
+      { status: 200 }
     );
   }
 }

@@ -26,6 +26,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     console.error('[demo/add-to-order]', err);
+    // 200 — speakable fallback (Retell ignores result on non-2xx).
     return NextResponse.json({ result: 'Added.' });
   }
 }

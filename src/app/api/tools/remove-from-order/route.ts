@@ -56,16 +56,22 @@ export async function POST(request: NextRequest) {
     // Every `result` string below is spoken verbatim by the Retell agent.
     // Use natural spoken English so the agent never freezes. Never "Error:".
     if (!call?.agent_id || !call?.call_id) {
+      // STATUS 200 ON ALL FALLBACKS: Retell treats non-2xx as a hard tool failure
+      // and refuses to speak the `result` field — agent goes silent until the
+      // reminder_message fires. We learned this on call_d920aad6087e00095bd08f0eb95
+      // (2026-04-21): empty-args fallback returned 400, agent froze 13s. Speakable
+      // fallbacks must always return 200.
       return NextResponse.json(
         { result: "Give me one second — I'm updating your order." },
-        { status: 400 }
+        { status: 200 }
       );
     }
 
     if (!item_name) {
+      // 200 — speakable fallback, see note at top of handler.
       return NextResponse.json(
         { result: "Sure — which item would you like me to remove?" },
-        { status: 400 }
+        { status: 200 }
       );
     }
 
@@ -81,9 +87,10 @@ export async function POST(request: NextRequest) {
 
     if (restaurantError || !restaurant) {
       console.error(`[${new Date().toISOString()}] Restaurant lookup failed:`, restaurantError);
+      // 200 — speakable fallback, see note at top of handler.
       return NextResponse.json(
         { result: "Give me one second — I'm pulling up your order." },
-        { status: 404 }
+        { status: 200 }
       );
     }
 
@@ -172,9 +179,10 @@ export async function POST(request: NextRequest) {
 
     if (updateError) {
       console.error(`[${new Date().toISOString()}] Order update failed:`, updateError);
+      // 200 — speakable fallback, see note at top of handler.
       return NextResponse.json(
         { result: "Hmm, I hit a snag updating the order. Let me try that again." },
-        { status: 500 }
+        { status: 200 }
       );
     }
 
@@ -183,9 +191,10 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Remove-from-order error:`, error);
+    // 200 — speakable fallback, see note at top of handler.
     return NextResponse.json(
       { result: "Sorry — give me just a second. Something hiccuped on our end." },
-      { status: 500 }
+      { status: 200 }
     );
   }
 }

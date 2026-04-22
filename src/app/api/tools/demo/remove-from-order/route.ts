@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
       success: true,
     });
   } catch {
+    // 200 — speakable fallback (Retell ignores result on non-2xx).
     return NextResponse.json({ result: 'Removed.' });
   }
 }

@@ -42,6 +42,7 @@ export async function POST(req: NextRequest) {
     });
   } catch (err) {
     console.error('[demo/confirm-order]', err);
+    // 200 — speakable fallback (Retell ignores result on non-2xx).
     return NextResponse.json({
       result: "Got it. What's the best mobile number to send the payment link to?",
     });

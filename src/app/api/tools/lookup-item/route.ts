@@ -22,17 +22,24 @@ export async function POST(request: NextRequest) {
 
     // Every `result` string below is spoken verbatim by the Retell agent.
     // Use natural spoken English so the agent never freezes. Never "Error:".
+    // NOTE: status 200 (not 400) on the friendly fallbacks below is deliberate.
+    // Retell treats non-2xx tool responses as hard failures and refuses to speak
+    // the `result` back to the caller — the agent goes silent until the
+    // reminder_message fires. We learned this the hard way on call
+    // call_d920aad6087e00095bd08f0eb95 (2026-04-21): agent invoked lookup_item
+    // with empty item_name, hit the 400 fallback, and froze for 13s instead of
+    // asking the caller what they wanted. Speakable fallbacks must return 200.
     if (!call?.agent_id) {
       return NextResponse.json(
         { result: "Give me one second — I'm pulling that up." },
-        { status: 400 }
+        { status: 200 }
       );
     }
 
     if (!item_name) {
       return NextResponse.json(
         { result: "Sure — what would you like me to look up on the menu?" },
-        { status: 400 }
+        { status: 200 }
       );
     }
 
@@ -48,9 +55,10 @@ export async function POST(request: NextRequest) {
 
     if (restaurantError || !restaurant) {
       console.error(`[${new Date().toISOString()}] Restaurant lookup failed:`, restaurantError);
+      // 200 — speakable fallback, see note at top of handler.
       return NextResponse.json(
         { result: "Give me just a second — I'm having trouble pulling up the menu." },
-        { status: 404 }
+        { status: 200 }
       );
     }
 
@@ -65,9 +73,10 @@ export async function POST(request: NextRequest) {
 
     if (itemError) {
       console.error(`[${new Date().toISOString()}] Menu item search failed:`, itemError);
+      // 200 — speakable fallback, see note at top of handler.
       return NextResponse.json(
         { result: "Hmm, the menu search just hiccuped. Let me try once more." },
-        { status: 500 }
+        { status: 200 }
       );
     }
 
@@ -106,9 +115,10 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Lookup-item error:`, error);
+    // 200 — speakable fallback, see note at top of handler.
     return NextResponse.json(
       { result: "Sorry — give me one second. Something hiccuped on our end." },
-      { status: 500 }
+      { status: 200 }
     );
   }
 }
