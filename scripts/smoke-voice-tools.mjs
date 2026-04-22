@@ -481,12 +481,21 @@ async function t11_v9_drinks_and_wings() {
 
 async function t10_missing_args_never_freezes_agent() {
   section('T10 — every tool with empty args returns a speakable prompt (not a stacktrace)');
+  // Two assertions per tool:
+  //   (a) result is speakable — the agent must have something to say.
+  //   (b) HTTP status is 200 — Retell silently drops `result` on non-2xx and
+  //       the agent freezes. We learned this on call_d920aad6087e00095bd08f0eb95
+  //       (2026-04-21) where lookup-item returned 400 with a friendly fallback
+  //       and the caller heard 13 seconds of silence before the reminder fired.
+  //       Commit 7b59cfb flipped all speakable fallbacks to 200; this test
+  //       ensures nobody regresses that.
   const tools = ['lookup-item', 'add-to-order', 'get-modifiers', 'confirm-order',
     'remove-from-order', 'finalize-payment'];
   for (const tool of tools) {
     const callId = await newSmokeCall();
-    const { body } = await callTool(tool, makeReq({ callId, args: {} }));
+    const { status, body } = await callTool(tool, makeReq({ callId, args: {} }));
     record(`${tool}: speakable`, isSpeakable(body?.result), body?.result);
+    record(`${tool}: HTTP 200 (Retell speaks 2xx only)`, status === 200, `status=${status}`);
   }
 }
 
