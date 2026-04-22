@@ -97,7 +97,32 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Return the first matching item
+    // Multiple-match disambiguation.
+    //
+    // Why: callers say "large pepperoni" but the DB has 10/14/18/24-inch
+    // variants. Before 2026-04-22 the tokenizer would drop the caller's
+    // query entirely on size adjectives and we'd hit the no-match fallback.
+    // Now that size adjectives are STOPWORDS, "large pepperoni" correctly
+    // matches every pepperoni variant — but silently returning menuItems[0]
+    // (the 10-inch) quotes the wrong price for "large".
+    //
+    // When more than one variant matches (and they clearly differ by size
+    // or count), return a list of all matches with prices so the agent can
+    // ask "which size?". Single match → return as before.
+    //
+    // Safety cap at 5 to keep the spoken response short. Ordered by
+    // rankMenuMatches' hit-count sort, so best matches speak first.
+    if (menuItems.length > 1) {
+      const options = menuItems
+        .slice(0, 5)
+        .map((m) => `${m.name} for $${m.price.toFixed(2)}`)
+        .join(', ');
+      return NextResponse.json({
+        result: `We have a few options: ${options}. Which one would you like?`,
+      });
+    }
+
+    // Single match — return it with price + modifiers.
     const item = menuItems[0];
     let modifiersText = '';
 

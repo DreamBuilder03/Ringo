@@ -20,6 +20,25 @@ const STOPWORDS = new Set([
   'please',
   'that',
   'this',
+  // Size adjectives — callers say "large pepperoni" but the menu stores
+  // dimensional descriptors ("18-inch"). Dropping the adjective leaves
+  // just the item tokens so "large pepperoni" → {pepperoni} still
+  // matches every pepperoni variant. Ranking by hit-count means exact
+  // dimensional matches ("18 inch pepperoni") still win when present.
+  //
+  // Added 2026-04-22 after Sal's seed test where "I'll take a large
+  // pepperoni" hit the no-match fallback — every variant row had
+  // {pepperoni, nonnas, Xinch} tokens but the query contributed "large"
+  // which none of them had.
+  'small',
+  'medium',
+  'large',
+  'extra',
+  'xl',
+  'xlarge',
+  'sm',
+  'md',
+  'lg',
 ]);
 
 // Spoken word-numbers we see on real calls. Keep this conservative —
