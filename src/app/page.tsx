@@ -1828,17 +1828,26 @@ export default function HomePage() {
           </Reveal>
         </div>
 
-        {/* Marquee Row 1 */}
-        <div className="relative overflow-hidden mb-4">
+        {/* Marquee Row 1 — FULL COLOR brand chips, Loman-style parade */}
+        <div className="relative overflow-hidden mb-6">
           <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-obsidian to-transparent z-10" />
           <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-obsidian to-transparent z-10" />
-          <div className="marquee-track flex items-center gap-8 whitespace-nowrap" style={{ width: "fit-content" }}>
+          <div className="marquee-track flex items-center gap-6 whitespace-nowrap" style={{ width: "fit-content" }}>
             {[...Array(4)].map((_, setIdx) =>
               integrationList.map((int, i) => (
-                <div key={`a${setIdx}-${i}`} className="flex items-center justify-center bg-coal/60 border border-bone/[0.06] rounded-xl px-7 py-5 hover:border-bone/[0.14] hover:bg-coal duration-300 group" style={{ transitionProperty: "border-color,background-color" }}>
-                  <div className="opacity-55 group-hover:opacity-95 duration-300" style={{ transitionProperty: "opacity" }}>
-                    <int.Logo className="h-8 w-auto" />
-                  </div>
+                <div
+                  key={`a${setIdx}-${i}`}
+                  className="shrink-0 duration-300 hover:scale-[1.06] hover:-translate-y-0.5"
+                  style={{ transitionProperty: "transform" }}
+                  title={int.name}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={int.src}
+                    alt={int.name}
+                    className="h-20 w-20 md:h-24 md:w-24 object-cover rounded-2xl ring-1 ring-bone/[0.08] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]"
+                    draggable={false}
+                  />
                 </div>
               ))
             )}
@@ -1849,13 +1858,22 @@ export default function HomePage() {
         <div className="relative overflow-hidden">
           <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-obsidian to-transparent z-10" />
           <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-obsidian to-transparent z-10" />
-          <div className="marquee-track flex items-center gap-8 whitespace-nowrap" style={{ width: "fit-content", animationDirection: "reverse", animationDuration: "55s" }}>
+          <div className="marquee-track flex items-center gap-6 whitespace-nowrap" style={{ width: "fit-content", animationDirection: "reverse", animationDuration: "55s" }}>
             {[...Array(4)].map((_, setIdx) =>
               [...integrationList].reverse().map((int, i) => (
-                <div key={`b${setIdx}-${i}`} className="flex items-center justify-center bg-coal/60 border border-bone/[0.06] rounded-xl px-7 py-5 hover:border-bone/[0.14] hover:bg-coal duration-300 group" style={{ transitionProperty: "border-color,background-color" }}>
-                  <div className="opacity-55 group-hover:opacity-95 duration-300" style={{ transitionProperty: "opacity" }}>
-                    <int.Logo className="h-8 w-auto" />
-                  </div>
+                <div
+                  key={`b${setIdx}-${i}`}
+                  className="shrink-0 duration-300 hover:scale-[1.06] hover:-translate-y-0.5"
+                  style={{ transitionProperty: "transform" }}
+                  title={int.name}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={int.src}
+                    alt={int.name}
+                    className="h-20 w-20 md:h-24 md:w-24 object-cover rounded-2xl ring-1 ring-bone/[0.08] shadow-[0_8px_32px_-8px_rgba(0,0,0,0.6)]"
+                    draggable={false}
+                  />
                 </div>
               ))
             )}

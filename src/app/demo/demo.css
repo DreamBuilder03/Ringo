@@ -4,15 +4,16 @@
   --obsidian: #0A0A0A;
   --obsidian-2: #141414;
   --obsidian-3: #1E1E1E;
-  --bone: #141414;
-  --bone-2: #C8C8C8;
-  --bone-dim: rgba(245, 242, 236, 0.6);
-  --hairline: rgba(245, 242, 236, 0.08);
-  --accent: #141414; /* keep neutral; no brand color per rebrand */
+  --bone: #F3EEE3;           /* warm off-white — primary text, CTAs, logo */
+  --bone-2: #C8C8C8;         /* Chalk — tertiary body */
+  --bone-dim: rgba(243, 238, 227, 0.6);
+  --hairline: rgba(243, 238, 227, 0.08);
+  --accent: #F3EEE3;         /* neutral per rebrand — bone-only accent */
 
   font-family: var(--font-inter), system-ui, sans-serif;
   font-feature-settings: 'ss01', 'cv11';
   letter-spacing: -0.01em;
+  color: var(--bone);        /* default text = bone so anything unstyled is readable */
 }
 
 .demo-root .display {

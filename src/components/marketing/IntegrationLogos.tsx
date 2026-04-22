@@ -1,15 +1,16 @@
 /* ═══════════════════════════════════════════════════════════════════════
-   INTEGRATION LOGOS — Real brand marks, rendered in pure Bone (#F3EEE3)
-   Source images are background-isolated PNGs stored at /public/pos/*.png
-   (already converted to transparent bone-colored silhouettes — no CSS
-   blend-mode tricks needed). Heights tuned to ~24–28px in the stack row.
-   No color anywhere. Icon-only marks per brand-guideline friendly usage.
+   INTEGRATION LOGOS
+   Two distinct sets:
+     • MONO (bone, transparent) — used in the calm "Works with your
+       existing stack" strip above the marquee. Pure-monochrome-safe.
+     • COLOR (original brand imagery) — used in the rotating marquee rows.
+       These are the full-color source assets Misael uploaded. Loman-style
+       parade of colored brand chips. Rendered as rounded square tiles.
    ═══════════════════════════════════════════════════════════════════════ */
 
 type LogoProps = { className?: string };
 
-// One shared wrapper — every logo is an <img> with a fixed height so the
-// row stays optically balanced regardless of native aspect ratio.
+// Shared wrapper — every logo is an <img> sized by height with aspect lock.
 function BrandMark({
   src,
   alt,
@@ -26,6 +27,7 @@ function BrandMark({
   );
 }
 
+// ── MONO set (bone silhouettes on transparent bg) ─────────────────────────
 export function SquareLogo(p: LogoProps) {
   return <BrandMark {...p} src="/pos/square.png" alt="Square" aspect="aspect-square" />;
 }
@@ -38,30 +40,42 @@ export function CloverLogo(p: LogoProps) {
 export function SpotOnLogo(p: LogoProps) {
   return <BrandMark {...p} src="/pos/spoton.png" alt="SpotOn" aspect="aspect-[3/4]" />;
 }
-export function OpenTableLogo(p: LogoProps) {
-  return <BrandMark {...p} src="/pos/opentable.png" alt="OpenTable" aspect="aspect-square" />;
+
+// ── COLOR set (original brand JPG/PNG assets, rendered as rounded chips) ──
+// Because the source images carry their own brand-color background, we
+// render them as square tiles and let each image's internal layout speak.
+function ColorChip({ src, alt, className = "" }: LogoProps & { src: string; alt: string }) {
+  return (
+    <img
+      src={src}
+      alt={alt}
+      className={`${className} aspect-square w-auto object-cover rounded-xl select-none pointer-events-none shadow-[0_4px_20px_-8px_rgba(0,0,0,0.4)]`}
+      draggable={false}
+    />
+  );
 }
-export function GrubhubLogo(p: LogoProps) {
-  return <BrandMark {...p} src="/pos/grubhub.png" alt="Grubhub" aspect="aspect-[4/3]" />;
-}
-export function OloLogo(p: LogoProps) {
-  return <BrandMark {...p} src="/pos/olo.png" alt="Olo" aspect="aspect-[7/6]" />;
-}
-export function OtterLogo(p: LogoProps) {
-  return <BrandMark {...p} src="/pos/otter.png" alt="Otter" aspect="aspect-[11/4]" />;
-}
-export function PopmenuLogo(p: LogoProps) {
-  return <BrandMark {...p} src="/pos/popmenu.png" alt="Popmenu" aspect="aspect-square" />;
-}
-export function FocusPOSLogo(p: LogoProps) {
-  return <BrandMark {...p} src="/pos/focuspos.png" alt="Focus POS" aspect="aspect-[5/3]" />;
+
+export const colorIntegrations = [
+  { name: "Square",    src: "/pos/square.jpg" },
+  { name: "Toast",     src: "/pos/toast.jpg" },
+  { name: "Clover",    src: "/pos/clover.jpg" },
+  { name: "SpotOn",    src: "/pos/spoton.jpg" },
+  { name: "OpenTable", src: "/pos/opentable.jpg" },
+  { name: "Olo",       src: "/pos/olo.jpg" },
+  { name: "Popmenu",   src: "/pos/popmenu.jpg" },
+  { name: "Otter",     src: "/pos/otter.jpg" },
+  { name: "Grubhub",   src: "/pos/grubhub.png" },
+  { name: "Focus POS", src: "/pos/focuspos.png" },
+];
+
+export function ColorLogo({ src, alt, className }: { src: string; alt: string; className?: string }) {
+  return <ColorChip src={src} alt={alt} className={className} />;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
    LISTS
-   `coreStack` = the four priority integrations shown in the calm
-   Aesop-style "Works with your existing stack" strip above the marquee.
-   `integrationList` = the full lineup for the marquee rows below.
+   coreStack       — 4 monochrome bone logos for the calm stack strip
+   integrationList — 10 full-color source brand chips for the rotating marquee
    ═══════════════════════════════════════════════════════════════════════ */
 export const coreStack = [
   { name: "Square", Logo: SquareLogo },
@@ -70,15 +84,4 @@ export const coreStack = [
   { name: "SpotOn", Logo: SpotOnLogo },
 ];
 
-export const integrationList = [
-  { name: "Square", Logo: SquareLogo },
-  { name: "Toast", Logo: ToastLogo },
-  { name: "Clover", Logo: CloverLogo },
-  { name: "SpotOn", Logo: SpotOnLogo },
-  { name: "OpenTable", Logo: OpenTableLogo },
-  { name: "Olo", Logo: OloLogo },
-  { name: "Popmenu", Logo: PopmenuLogo },
-  { name: "Otter", Logo: OtterLogo },
-  { name: "Grubhub", Logo: GrubhubLogo },
-  { name: "Focus POS", Logo: FocusPOSLogo },
-];
+export const integrationList = colorIntegrations;
