@@ -24,6 +24,11 @@ const STOPWORDS = new Set([
 
 // Spoken word-numbers we see on real calls. Keep this conservative —
 // callers almost never say "thirty-two wings," but "ten wings" is daily.
+//
+// Teens (13, 14, 16, 17, 18, 19) added 2026-04-21 after call
+// call_d920aad6087e00095bd08f0eb95 where caller said "eighteen inch
+// pepperoni pizza" and the tokenizer didn't resolve "eighteen" to 18,
+// so the lookup missed the 18-inch pizza rows entirely.
 const WORD_NUMBERS: Record<string, string> = {
   // "one" intentionally left in STOPWORDS instead of being mapped here — it
   // doubles as filler ("one pepperoni"), so normalizing it to "1" would break
@@ -39,12 +44,38 @@ const WORD_NUMBERS: Record<string, string> = {
   ten: '10',
   eleven: '11',
   twelve: '12',
+  thirteen: '13',
+  fourteen: '14',
   fifteen: '15',
+  sixteen: '16',
+  seventeen: '17',
+  eighteen: '18',
+  nineteen: '19',
   twenty: '20',
   thirty: '30',
   forty: '40',
   fifty: '50',
 };
+
+/**
+ * Collapse runs of a repeated lowercase letter to a single letter.
+ * Applied to both the query and the menu-item names, so matching stays
+ * symmetric — "Nonna's" → "nonas" and "Nona's" → "nonas" both collide.
+ *
+ * Motivation: STT sometimes drops a letter in a doubled consonant
+ * ("Nonna's" heard as "Nona's"). Strict token match then fails. Collapsing
+ * doubled letters before comparison makes matching resilient to that.
+ *
+ * Only runs on [a-z]; digits are untouched so "2L" / "10pc" survive.
+ *
+ * Risk: collides words where doubled letters are contrastive (e.g.,
+ * "bitter" vs "biter"). Restaurant-menu domain is safe — in practice we
+ * haven't seen a collision, and the precision loss is worth the recall
+ * gain on STT errors.
+ */
+function collapseRepeats(token: string): string {
+  return token.replace(/([a-z])\1+/g, '$1');
+}
 
 /**
  * Tokenize a menu/query string into a comparable bag of tokens.
@@ -80,7 +111,10 @@ export function tokenizeMenuName(s: string): string[] {
     // it doesn't rewrite "10 of the wings" or similar.
     .replace(/\b(\d+)\s+wings?\b/g, '$1pc wings')
     .split(/\s+/)
-    .filter((t) => t.length > 0 && !STOPWORDS.has(t));
+    // Filter on raw tokens (so STOPWORDS like "pizza" still match before
+    // collapseRepeats turns them into "piza"), then collapse for matching.
+    .filter((t) => t.length > 0 && !STOPWORDS.has(t))
+    .map(collapseRepeats);
 }
 
 /**
