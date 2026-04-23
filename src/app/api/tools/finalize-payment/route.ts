@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createHash } from 'crypto';
 import * as Sentry from '@sentry/nextjs';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { sendFounderAlert, reportToolFailure } from '@/lib/alerts';
 
 interface OrderItemModifier {
   name: string;
@@ -285,6 +286,19 @@ export async function POST(request: NextRequest) {
           status: squareResponse.status,
         },
       });
+      // Build 2: Square-side failure during a real order is a pay-before-prep hard stop.
+      // The caller is on the line expecting an SMS — Misael needs to know within 60s.
+      sendFounderAlert({
+        restaurantId,
+        failureType: 'payment_link_failure',
+        shortReason: `Square Payment Link API returned ${squareResponse.status}`,
+        retellCallId: callId ?? null,
+        metadata: {
+          square_errors: squareData.errors,
+          square_status: squareResponse.status,
+          order_id: orderId,
+        },
+      }).catch(() => {}); // fire-and-forget, never blocks the speakable fallback
       // 200 — speakable fallback, see note at top of handler.
       return NextResponse.json(
         { result: "The payment system just hiccuped on our end. Give me one more second and I'll get the link out to you." },
@@ -359,6 +373,13 @@ export async function POST(request: NextRequest) {
           order_id: orderId,
         },
       });
+      reportToolFailure({
+        toolName: 'finalize-payment',
+        restaurantId,
+        retellCallId: callId ?? null,
+        shortReason: `order status update failed: ${updateError.message ?? 'unknown'}`,
+        metadata: { order_id: orderId, error: updateError.message },
+      }).catch(() => {});
       // 200 — speakable fallback, see note at top of handler.
       return NextResponse.json(
         { result: "One second — I'm finishing up your order on our end. Thanks for hanging in there." },
@@ -387,6 +408,14 @@ export async function POST(request: NextRequest) {
     // If SMS failed but Square succeeded, hand the URL back to the agent so it
     // can read the link aloud instead of silently promising a text that never arrived.
     if (!smsDelivered) {
+      // Critical: customer won't receive payment link via text. Alert even though Square succeeded.
+      reportToolFailure({
+        toolName: 'finalize-payment',
+        restaurantId,
+        retellCallId: callId ?? null,
+        shortReason: 'SMS send failed after Square Payment Link created',
+        metadata: { order_id: orderId, payment_url_captured: true },
+      }).catch(() => {});
       return NextResponse.json({
         result: `Looks like our text system just hiccuped — the payment link is ${paymentUrl}. Say it back to me and I can also have Sal email it to you.`,
       });
@@ -410,6 +439,13 @@ export async function POST(request: NextRequest) {
         duration_ms: Date.now() - startedAt,
       },
     });
+    reportToolFailure({
+      toolName: 'finalize-payment',
+      restaurantId: restaurantId ?? null,
+      retellCallId: callId ?? null,
+      shortReason: `unhandled exception: ${error instanceof Error ? error.message.slice(0, 120) : 'unknown'}`,
+      metadata: { order_id: orderId },
+    }).catch(() => {});
     // 200 — speakable fallback, see note at top of handler.
     return NextResponse.json(
       { result: "Sorry — give me just a second. Something hiccuped on our end." },

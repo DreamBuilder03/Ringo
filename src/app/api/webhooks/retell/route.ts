@@ -3,11 +3,13 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
 import {
   parseCallDuration,
   classifyCallOutcome,
+  isErrorDisconnection,
   type RetellCallEvent,
 } from '@/lib/retell';
 import { sendEmail } from '@/lib/email';
 import { failedCallAlertEmail } from '@/lib/email-templates';
 import { alertDemoLead } from '@/lib/demo-alerts';
+import { sendFounderAlert } from '@/lib/alerts';
 
 export async function POST(request: Request) {
   try {
@@ -30,11 +32,12 @@ export async function POST(request: Request) {
 
     const supabase = await createServiceRoleClient();
 
-    // Look up restaurant by agent ID (try English agent first, then Spanish)
-    let restaurant = null;
+    // Look up restaurant by agent ID (try English agent first, then Spanish).
+    // `name` is pulled so downstream alert/email paths can reference it without a second query.
+    let restaurant: { id: string; name: string; owner_user_id?: string } | null = null;
     const { data: enRestaurant } = await supabase
       .from('restaurants')
-      .select('id')
+      .select('id, name, owner_user_id')
       .eq('retell_agent_id', event.call.agent_id)
       .single();
 
@@ -43,7 +46,7 @@ export async function POST(request: Request) {
     } else {
       const { data: esRestaurant } = await supabase
         .from('restaurants')
-        .select('id')
+        .select('id, name, owner_user_id')
         .eq('retell_agent_id_es', event.call.agent_id)
         .single();
       restaurant = esRestaurant;
@@ -150,6 +153,60 @@ export async function POST(request: Request) {
             console.error(`[${new Date().toISOString()}] Failed to send missed call alert:`, emailError);
             // Don't fail the webhook if email fails
           }
+        }
+
+        // Build 2: founder alerts on hard-failure signals.
+        // Non-blocking — sendFounderAlert never throws (internal catch).
+        try {
+          const disconnectionReason = event.call.disconnection_reason ?? null;
+          const callStatus = event.call.call_status ?? '';
+          const isHardError = callStatus === 'error' || isErrorDisconnection(disconnectionReason);
+
+          if (isHardError) {
+            await sendFounderAlert({
+              restaurantId: restaurant.id,
+              failureType: 'retell_call_error',
+              shortReason: disconnectionReason || `call_status=${callStatus}`,
+              retellCallId: event.call.call_id,
+              metadata: {
+                call_status: callStatus,
+                disconnection_reason: disconnectionReason,
+                duration_seconds: duration,
+              },
+            });
+          } else if (duration > 0 && duration < 5) {
+            // Short call with no order created = likely pre-greeting crash or caller hit hangup
+            // after IVR noise. Confirm there's no order before alerting.
+            const { data: callRow } = await supabase
+              .from('calls')
+              .select('id')
+              .eq('retell_call_id', event.call.call_id)
+              .maybeSingle();
+
+            let hasOrder = false;
+            if (callRow?.id) {
+              const { count } = await supabase
+                .from('orders')
+                .select('id', { count: 'exact', head: true })
+                .eq('call_id', callRow.id)
+                .neq('status', 'building');
+              hasOrder = (count ?? 0) > 0;
+            }
+
+            if (!hasOrder) {
+              await sendFounderAlert({
+                restaurantId: restaurant.id,
+                failureType: 'premature_hangup',
+                shortReason: `call_duration=${duration}s, no order created`,
+                retellCallId: event.call.call_id,
+                metadata: { duration_seconds: duration },
+              });
+            }
+          }
+        } catch (alertErr) {
+          // Double-safety — sendFounderAlert already has its own try/catch but we don't want
+          // any alert path to fail a webhook response.
+          console.error(`[${new Date().toISOString()}] founder-alert dispatch failed:`, alertErr);
         }
         break;
       }

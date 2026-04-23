@@ -20,12 +20,35 @@ export function verifyRetellWebhook(
   }
 }
 
+// Retell disconnection_reason values that count as real failures (not clean hangups).
+// Source: Retell API docs + observed production traffic.
+// machine_detected included because an agent answering a voicemail is a broken inbound route.
+export const RETELL_ERROR_DISCONNECTION_REASONS = new Set<string>([
+  'error_inbound_webhook',
+  'error_llm_websocket_open',
+  'error_llm_websocket_lost_connection',
+  'error_llm_websocket_runtime',
+  'error_no_audio_received',
+  'error_user_not_responsive',
+  'machine_detected',
+]);
+
+export function isErrorDisconnection(reason: string | null | undefined): boolean {
+  return !!reason && RETELL_ERROR_DISCONNECTION_REASONS.has(reason);
+}
+
 export interface RetellCallEvent {
   event: 'call_started' | 'call_ended' | 'call_analyzed';
   call: {
     call_id: string;
     agent_id: string;
     call_status: string;
+    /**
+     * Populated by Retell on call_ended / call_analyzed events. Values like
+     * 'user_hangup', 'agent_hangup', 'end_call_tool' are benign; see
+     * RETELL_ERROR_DISCONNECTION_REASONS for the set that should fire alerts.
+     */
+    disconnection_reason?: string;
     start_timestamp: number;
     end_timestamp?: number;
     transcript?: string;

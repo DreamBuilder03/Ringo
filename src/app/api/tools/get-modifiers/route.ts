@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { rankMenuMatches } from '@/lib/menu-search';
+import { reportToolFailure } from '@/lib/alerts';
 
 interface RetellRequest {
   call: {
@@ -15,9 +16,12 @@ interface RetellRequest {
 }
 
 export async function POST(request: NextRequest) {
+  let callId: string | undefined;
+  let restaurantId: string | undefined;
   try {
     const body = (await request.json()) as RetellRequest;
     const { call, args } = body;
+    callId = call?.call_id;
     const { item_name } = args;
 
     // Every `result` string below is spoken verbatim by the Retell agent.
@@ -61,6 +65,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    restaurantId = restaurant.id;
+
     // Token-matched search (see src/lib/menu-search.ts).
     const { data: allMenu, error: itemError } = await supabase
       .from('menu_items')
@@ -101,6 +107,12 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Get-modifiers error:`, error);
+    reportToolFailure({
+      toolName: 'get-modifiers',
+      restaurantId: restaurantId ?? null,
+      retellCallId: callId ?? null,
+      shortReason: `unhandled exception: ${error instanceof Error ? error.message.slice(0, 120) : 'unknown'}`,
+    }).catch(() => {});
     // 200 — speakable fallback, see note at top of handler.
     return NextResponse.json(
       { result: "Sorry — give me just a second. Something hiccuped on our end." },

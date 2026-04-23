@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { reportToolFailure } from '@/lib/alerts';
 
 interface RetellRequest {
   call: {
@@ -21,9 +22,12 @@ interface OrderItem {
 }
 
 export async function POST(request: NextRequest) {
+  let callId: string | undefined;
+  let restaurantId: string | undefined;
   try {
     const body = (await request.json()) as RetellRequest;
     const { call, args } = body;
+    callId = call?.call_id;
     // Phone resolution: explicit arg → legacy alias → inbound call's caller ID.
     // Mirrors finalize-payment so the agent never dead-loops asking for a phone.
     const customer_phone = (args as any).customer_phone || (args as any).phone || call?.from_number;
@@ -68,6 +72,8 @@ export async function POST(request: NextRequest) {
         { status: 200 }
       );
     }
+
+    restaurantId = restaurant.id;
 
     // Look up internal call ID from Retell call ID
     const { data: callRecord } = await supabase
@@ -131,6 +137,12 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Confirm-order error:`, error);
+    reportToolFailure({
+      toolName: 'confirm-order',
+      restaurantId: restaurantId ?? null,
+      retellCallId: callId ?? null,
+      shortReason: `unhandled exception: ${error instanceof Error ? error.message.slice(0, 120) : 'unknown'}`,
+    }).catch(() => {});
     // 200 — speakable fallback, see note at top of handler.
     return NextResponse.json(
       { result: "Sorry — give me just a second. Something hiccuped on our end." },
