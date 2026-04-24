@@ -24,10 +24,17 @@ interface RetellRequest {
     [key: string]: any;
   };
   args: {
+    // All three alias names accepted — see phone-resolution block below.
+    // Retell tool schema is source of truth at runtime; prompt is guidance only.
+    // We accept every alias we've ever shipped so prompt/schema drift is non-fatal.
     customer_phone?: string;
     phone?: string;
+    phone_number?: string;
     items?: OrderItem[];
     total_amount?: number;
+    // Some Retell schema versions include order_id; we read from DB by call_id,
+    // so this is accepted-and-ignored to prevent the "extra args → tool fails" mode.
+    order_id?: string;
   };
 }
 
@@ -59,14 +66,19 @@ export async function POST(request: NextRequest) {
     const { call, args } = body;
     callId = call?.call_id;
     agentId = call?.agent_id;
-    // Phone resolution order:
-    //   1. customer_phone (preferred — agent passes it explicitly)
-    //   2. phone          (legacy alias some prompt versions use)
-    //   3. call.from_number (fallback — the Twilio CallerID of the inbound call)
-    // The fallback is critical: if the prompt forgets to pass the phone, the
-    // demo would otherwise dead-loop with "we need your phone number" messages.
-    // 99% of inbound callers want the SMS sent to the number they called from.
-    const customer_phone = args.customer_phone || args.phone || call?.from_number;
+    // Phone resolution order — accept every arg alias we've ever shipped:
+    //   1. customer_phone (canonical — what the prompt and interface type say)
+    //   2. phone          (legacy alias from pre-V10 prompts)
+    //   3. phone_number   (current Retell tool schema name — prompt/schema drift protection)
+    //   4. call.from_number (fallback — the Twilio CallerID of the inbound call)
+    // The Retell schema at runtime is authoritative, and historically the schema
+    // and prompt have drifted (e.g., finalize_payment schema uses `phone_number`
+    // while the prompt says `customer_phone`). Rather than let drift break a live
+    // call, the backend accepts any alias and the Twilio caller ID is the final
+    // safety net. Build 2 founder-alerts will flag if we ever hit the final
+    // "no phone anywhere" fallback so we can fix the drift upstream.
+    const customer_phone =
+      args.customer_phone || args.phone || args.phone_number || call?.from_number;
 
     // IMPORTANT: every `result` string below is spoken verbatim by the Retell agent.
     // Use plain conversational English so the agent can recover smoothly instead of

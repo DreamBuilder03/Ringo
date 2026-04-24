@@ -10,7 +10,11 @@ interface RetellRequest {
     [key: string]: any;
   };
   args: {
-    customer_phone: string;
+    // Accept every phone-arg alias we've ever shipped — see phone resolution
+    // block below. Prompt/schema drift must not strand a live call.
+    customer_phone?: string;
+    phone?: string;
+    phone_number?: string;
   };
 }
 
@@ -28,9 +32,12 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as RetellRequest;
     const { call, args } = body;
     callId = call?.call_id;
-    // Phone resolution: explicit arg → legacy alias → inbound call's caller ID.
+    // Phone resolution — accept every arg alias we've ever shipped:
+    //   customer_phone (canonical) → phone (legacy) → phone_number (Retell schema drift)
+    //   → call.from_number (Twilio caller ID fallback)
     // Mirrors finalize-payment so the agent never dead-loops asking for a phone.
-    const customer_phone = (args as any).customer_phone || (args as any).phone || call?.from_number;
+    const customer_phone =
+      args.customer_phone || args.phone || args.phone_number || call?.from_number;
 
     // Every `result` string below is spoken verbatim by the Retell agent.
     // Use natural spoken English so the agent never freezes. Never "Error:".
