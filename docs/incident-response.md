@@ -157,3 +157,5 @@ Every real production incident gets a one-paragraph entry here. Date, what happe
 ### 2026-04-24 — Build 4 audit baseline
 
 No active incident. This file was committed as part of the pre-pilot security audit (Build 4). First real incident entry will follow.
+
+<!-- deploy trigger 2026-04-25T22:14:05Z -->
