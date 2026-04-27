@@ -1,11 +1,13 @@
 # Ringo Security Audit — Pre-Pilot Gate
 
-**Audit date:** 2026-04-24
+**Audit date:** 2026-04-24 (original 6-item) + 2026-04-27 (extended to 9-item gate per LC franchisee pre-pilot prep)
 **Auditor:** Builder Agent
-**Spec:** `~/Desktop/Brain Agent/builder_spec_security_audit_pre_pilot.md`
-**Status:** 4 of 6 acceptance criteria PASS via repo audit. 2 require live dashboard verification by Misael (SQL execution + Supabase Pro upgrade + MFA enable).
+**Spec:** `~/Desktop/Brain Agent/builder_spec_security_audit_pre_pilot.md` + LC franchisee handoff
+**Status:** 7 of 9 acceptance criteria PASS via code. 2 require live dashboard action by Misael (Supabase Pro upgrade + MFA enable).
 
 This audit blocks pilot #1 go-live. Re-run before each new pilot onboarding.
+
+**Extension on 2026-04-27:** added items 7 (rate limiting), 8 (input validation), 9 (key handling + OWASP) per the LC franchisee pre-pilot prep handoff.
 
 ---
 
@@ -18,7 +20,10 @@ This audit blocks pilot #1 go-live. Re-run before each new pilot onboarding.
 | 3 | Storage buckets private + signed URLs | **PASS** (N/A) | Ringo uses no Supabase Storage buckets — recordings hosted by Retell |
 | 4 | Point-in-Time Recovery enabled (Pro plan) | **PENDING** | Misael action — Supabase dashboard upgrade |
 | 5 | MFA on Misael's Supabase login | **PENDING** | Misael action — Supabase account settings |
-| 6 | Incident-response runbook in repo | **PASS** | `docs/incident-response.md` committed this same change |
+| 6 | Incident-response runbook in repo | **PASS** | `docs/incident-response.md` committed |
+| 7 | Rate limiting on every public endpoint | **PASS** | Upstash Ratelimit via `src/lib/rate-limit-upstash.ts`. Per-tier `LIMITS` catalog. Wired into all 12 tool routes + key public + webhooks. Returns 429 with Retry-After. Voice tool routes return 200+speakable on rate hit (Retell goes silent on non-2xx). |
+| 8 | Strict input validation on every API route | **PASS** | Zod schemas in `src/lib/schemas/{tools,demo,orders,admin,pos,comms,common}.ts`. `with-validation.ts` + `with-retell-validation.ts` wrappers. `.strict()` mode rejects unexpected fields. Length caps on all text fields. |
+| 9 | Hardcoded-key audit + key-rotation runbook + OWASP review | **PASS** | Repo-wide grep clean (no hardcoded keys). `docs/security/key-rotation.md` runbook. `docs/security/owasp-api-top-10.md` review — 8 PASS / 0 FAIL / 2 PASS-with-followup. |
 
 ---
 
@@ -231,9 +236,10 @@ Kept to one page so it actually gets read during a real incident.
 ## What still needs to happen before pilot #1
 
 1. **Misael runs Query A, B, C** above against production Supabase → pastes output into this file under "Live verification SQL output 2026-04-24" section. Any FAIL row gets a remediation PR.
-2. **Misael upgrades to Supabase Pro and enables 7-day PITR.** Fill in the timestamp above.
+2. **Misael upgrades to Supabase Pro and enables 7-day PITR.** Fill in the timestamp above. (Trigger: the moment a paying client signs.)
 3. **Misael enables MFA on his Supabase account.** Fill in the timestamp above.
-4. **Brain Agent updates `MEMORY.md`** with `project_pilot_readiness_done_2026_04_24.md` once all 6 boxes are green.
+4. **Misael provisions an Upstash Redis instance** (free tier: console.upstash.com → Create Database → Region nearest to Vercel build region) → copy REST URL + REST Token → add to Vercel env vars as `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` (Production + Preview). Without this, `src/lib/rate-limit-upstash.ts` no-ops gracefully (logs `Upstash env vars missing in production` once per cold start, allows traffic). Free tier sufficient for pre-pilot.
+5. **Brain Agent updates `MEMORY.md`** with `project_pilot_readiness_done.md` once all 9 boxes are green.
 
 ---
 

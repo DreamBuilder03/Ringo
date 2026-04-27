@@ -169,51 +169,87 @@ export async function POST(request: NextRequest) {
       // Don't fail the webhook if email fails
     }
 
-    // Push to the restaurant's POS (non-blocking). Route by pos_type — Square
-    // payment links may be used even when the merchant runs Clover/Toast/SpotOn.
+    // Branch on pos_mode (Build 1 — Handoff Mode for proprietary-POS franchises).
+    //   - direct_api      → push order ticket to the connected POS (existing behavior)
+    //   - handoff_tablet  → write to handoff_orders for the /handoff tablet view to
+    //                       pick up via Supabase Realtime; staff transcribes manually.
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://useringo.ai';
     const { data: posLookup } = await supabase
       .from('restaurants')
-      .select('pos_type')
+      .select('pos_type, pos_mode')
       .eq('id', order.restaurant_id)
       .single();
     const posType = (posLookup as { pos_type?: string } | null)?.pos_type || 'square';
-    const posPath = ['square', 'clover', 'toast', 'spoton'].includes(posType)
-      ? `/api/pos/${posType}`
-      : '/api/pos/square';
+    const posMode = (posLookup as { pos_mode?: string } | null)?.pos_mode || 'direct_api';
 
-    // Each POS route accepts slightly different payload shapes. We pass the
-    // superset — unused fields are ignored.
-    fetch(`${baseUrl}${posPath}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        // Square expects orderId/restaurantId (camelCase); Clover expects order_id/restaurant_id (snake_case).
-        orderId: order.id,
-        order_id: order.id,
-        restaurantId: order.restaurant_id,
+    if (posMode === 'handoff_tablet') {
+      // Insert into handoff_orders. Tablet UI receives via Supabase Realtime.
+      // No POS push — the kitchen is on a proprietary POS we can't drive directly.
+      const { error: handoffError } = await supabase.from('handoff_orders').insert({
         restaurant_id: order.restaurant_id,
-        items: order.items,
-        subtotal: order.subtotal,
-        tax: order.tax,
-        total: order.total,
-      }),
-    }).then(async (res) => {
-      if (res.ok) {
+        order_id: order.id,
+        customer_name: order.customer_name || null,
+        customer_phone: order.customer_phone || null,
+        items: order.items || [],
+        total_cents: Math.round((order.total || 0) * 100),
+        eta_minutes: order.eta_minutes ?? null,
+        notes: order.notes || null,
+      });
+
+      if (handoffError) {
+        // Log + leave order paid; staff will see the issue in /admin/health.
+        // Don't fail the webhook — Square retries on non-2xx + we'd double-charge.
+        console.error(`[Square Webhook] Handoff insert failed for order ${order.id}:`, handoffError);
+      } else {
+        // Mark order as queued-for-handoff so reports distinguish it from direct-api.
         await supabase
           .from('orders')
           .update({
             pos_pushed_at: new Date().toISOString(),
-            status: 'preparing',
+            status: 'awaiting_handoff',
           })
           .eq('id', order.id);
-        console.log(`[Square Webhook] Order ${order.id} pushed to ${posType} POS, status → preparing`);
-      } else {
-        console.error(`[Square Webhook] POS push failed for order ${order.id} (${posType}): ${res.status}`);
+        console.log(`[Square Webhook] Order ${order.id} queued for handoff tablet (${posType} POS not driven directly)`);
       }
-    }).catch((err) => {
-      console.error(`[Square Webhook] POS push error for order ${order.id} (${posType}):`, err);
-    });
+    } else {
+      // direct_api: push order ticket to the merchant's connected POS.
+      const posPath = ['square', 'clover', 'toast', 'spoton'].includes(posType)
+        ? `/api/pos/${posType}`
+        : '/api/pos/square';
+
+      // Each POS route accepts slightly different payload shapes. We pass the
+      // superset — unused fields are ignored.
+      fetch(`${baseUrl}${posPath}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          // Square expects orderId/restaurantId (camelCase); Clover expects order_id/restaurant_id (snake_case).
+          orderId: order.id,
+          order_id: order.id,
+          restaurantId: order.restaurant_id,
+          restaurant_id: order.restaurant_id,
+          items: order.items,
+          subtotal: order.subtotal,
+          tax: order.tax,
+          total: order.total,
+        }),
+      }).then(async (res) => {
+        if (res.ok) {
+          await supabase
+            .from('orders')
+            .update({
+              pos_pushed_at: new Date().toISOString(),
+              status: 'preparing',
+            })
+            .eq('id', order.id);
+          console.log(`[Square Webhook] Order ${order.id} pushed to ${posType} POS, status → preparing`);
+        } else {
+          console.error(`[Square Webhook] POS push failed for order ${order.id} (${posType}): ${res.status}`);
+        }
+      }).catch((err) => {
+        console.error(`[Square Webhook] POS push error for order ${order.id} (${posType}):`, err);
+      });
+    }
 
     // Update call record
     if (order.call_id) {

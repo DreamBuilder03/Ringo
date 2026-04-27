@@ -20,6 +20,7 @@ import {
   Headphones,
   UtensilsCrossed,
   ShoppingCart,
+  Tablet,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
@@ -42,6 +43,7 @@ const restaurantLinks = [
   { href: '/dashboard/calls', label: 'Call Log', icon: Phone, description: 'All call history' },
   { href: '/dashboard/menu', label: 'Menu', icon: UtensilsCrossed, description: 'Manage menu items' },
   { href: '/dashboard/orders', label: 'Orders', icon: ShoppingCart, description: 'Order history' },
+  { href: '/handoff', label: 'Handoff', icon: Tablet, description: 'Tablet view for handoff_tablet POS mode' },
   { href: '/dashboard/customers', label: 'Customers', icon: Users, description: 'Customer insights' },
   { href: '/dashboard/analytics', label: 'Analytics', icon: BarChart3, description: 'Deep insights' },
   { href: '/settings', label: 'Settings', icon: Settings, description: 'POS & billing' },
