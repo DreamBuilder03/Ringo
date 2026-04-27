@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { reportToolFailure } from '@/lib/alerts';
+import { validateRetellBody } from '@/lib/with-retell-validation';
+import { confirmOrderSchema } from '@/lib/schemas/tools';
 
 interface RetellRequest {
   call: {
@@ -26,12 +28,14 @@ interface OrderItem {
 }
 
 export async function POST(request: NextRequest) {
-  let callId: string | undefined;
+  // Rate limit + Zod validation. On failure returns 200 + speakable fallback.
+  const check = await validateRetellBody(request, confirmOrderSchema, 'confirm-order');
+  if (!check.ok) return check.response;
+
+  let callId: string | undefined = check.callId;
   let restaurantId: string | undefined;
   try {
-    const body = (await request.json()) as RetellRequest;
-    const { call, args } = body;
-    callId = call?.call_id;
+    const { call, args } = check.body as any;
     // Phone resolution — accept every arg alias we've ever shipped:
     //   customer_phone (canonical) → phone (legacy) → phone_number (Retell schema drift)
     //   → call.from_number (Twilio caller ID fallback)

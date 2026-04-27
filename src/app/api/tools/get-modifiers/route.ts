@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { rankMenuMatches } from '@/lib/menu-search';
 import { reportToolFailure } from '@/lib/alerts';
+import { validateRetellBody } from '@/lib/with-retell-validation';
+import { getModifiersSchema } from '@/lib/schemas/tools';
 
 interface RetellRequest {
   call: {
@@ -16,12 +18,14 @@ interface RetellRequest {
 }
 
 export async function POST(request: NextRequest) {
-  let callId: string | undefined;
+  // Rate limit + Zod validation. On failure returns 200 + speakable fallback.
+  const check = await validateRetellBody(request, getModifiersSchema, 'get-modifiers');
+  if (!check.ok) return check.response;
+
+  let callId: string | undefined = check.callId;
   let restaurantId: string | undefined;
   try {
-    const body = (await request.json()) as RetellRequest;
-    const { call, args } = body;
-    callId = call?.call_id;
+    const { call, args } = check.body;
     const { item_name } = args;
 
     // Every `result` string below is spoken verbatim by the Retell agent.

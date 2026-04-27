@@ -1,24 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
-import { rateLimit } from '@/lib/rate-limit';
-
-const limiter = rateLimit({ max: 5, windowMs: 60_000, message: 'Too many demo requests — please wait a moment.' });
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
+import { demoRequestSchema } from '@/lib/schemas/demo';
 
 export async function POST(req: NextRequest) {
-  const blocked = limiter(req);
+  // Upstash rate limit (DEMO_PUBLIC tier — 30/min/IP).
+  const blocked = await checkRateLimit(req, 'DEMO_PUBLIC');
   if (blocked) return blocked;
 
   try {
-    const body = await req.json();
-    const { restaurantName, email } = body;
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body.' }, { status: 400 });
+    }
 
-    // Validate required fields
-    if (!restaurantName || !email) {
+    const parsed = demoRequestSchema.safeParse(body);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: 'Missing required fields: restaurantName and email' },
+        {
+          error: 'Validation failed.',
+          details: parsed.error.issues.map((i: any) => ({ path: i.path.join('.'), message: i.message })),
+        },
         { status: 400 }
       );
     }
+    const { restaurantName, email } = parsed.data;
 
     const supabase = await createServiceRoleClient();
 

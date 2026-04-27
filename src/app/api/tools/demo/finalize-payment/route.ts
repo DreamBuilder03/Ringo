@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { validateRetellBody } from '@/lib/with-retell-validation';
+import { finalizePaymentSchema } from '@/lib/schemas/tools';
 
 // Demo-only finalize-payment tool for the Ringo Website Demo agent.
 // The production /api/tools/finalize-payment route looks up restaurants by retell_agent_id;
@@ -54,9 +56,12 @@ function computeTotal(args: RetellRequest['args']): number {
 
 export async function POST(req: NextRequest) {
   const t0 = new Date().toISOString();
+  // Rate limit + Zod validation. On failure returns 200 + speakable fallback.
+  const check = await validateRetellBody(req, finalizePaymentSchema, 'demo/finalize-payment');
+  if (!check.ok) return check.response;
+
   try {
-    const body = (await req.json()) as RetellRequest;
-    const { call, args } = body;
+    const { call, args } = check.body as any;
 
     const leadId = call?.metadata?.lead_id || null;
     const callId = call?.call_id || null;

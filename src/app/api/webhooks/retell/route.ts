@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import {
   parseCallDuration,
@@ -10,8 +10,15 @@ import { sendEmail } from '@/lib/email';
 import { failedCallAlertEmail } from '@/lib/email-templates';
 import { alertDemoLead } from '@/lib/demo-alerts';
 import { sendFounderAlert } from '@/lib/alerts';
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // Rate limit at WEBHOOK tier (200/min). Retell retries on non-2xx so a 429
+  // is recoverable for them; defends against a hostile actor spamming the
+  // webhook URL. Body is signature-verified separately by Retell SDK semantics.
+  const blocked = await checkRateLimit(request, 'WEBHOOK');
+  if (blocked) return blocked;
+
   try {
     const body = await request.text();
 

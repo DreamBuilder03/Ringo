@@ -1,24 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { validateRetellBody } from '@/lib/with-retell-validation';
+import { addToOrderSchema } from '@/lib/schemas/tools';
 
 // Demo-only add_to_order. Always succeeds; no database writes.
 // Just echoes the item count so the agent has something coherent to speak.
 
-interface RetellRequest {
-  args: {
-    item_name?: string;
-    name?: string;
-    quantity?: number;
-    price?: number;
-    modifiers?: string[];
-  };
-}
-
 export async function POST(req: NextRequest) {
+  // Rate limit + Zod validation. On failure returns 200 + speakable fallback.
+  const check = await validateRetellBody(req, addToOrderSchema, 'demo/add-to-order');
+  if (!check.ok) return check.response;
+
   try {
-    const body = (await req.json()) as RetellRequest;
-    const name = body.args?.item_name || body.args?.name || 'item';
-    const qty = body.args?.quantity || 1;
-    const mods = (body.args?.modifiers || []).filter(Boolean);
+    const args = check.body.args as any;
+    const name = args.item_name || args.name || 'item';
+    const qty = args.quantity || 1;
+    const mods = (args.modifiers || []).filter(Boolean);
     const modsStr = mods.length ? ` (${mods.join(', ')})` : '';
     return NextResponse.json({
       result: `Added ${qty} ${name}${modsStr} to the order.`,

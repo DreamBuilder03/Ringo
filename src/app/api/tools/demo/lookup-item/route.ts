@@ -1,19 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { validateRetellBody } from '@/lib/with-retell-validation';
+import { lookupItemSchema } from '@/lib/schemas/tools';
 
 // Demo-only lookup_item. Production route hits Supabase menu tables keyed by
 // restaurant_id; the demo agent isn't a real restaurant, so we fake it.
 // Just echoes back that the item exists and assigns a reasonable stub price.
 // The real menu (stub_menu dynamic var) is already in the prompt context.
 
-interface RetellRequest {
-  call?: { call_id?: string; metadata?: { lead_id?: string } };
-  args: { item_name?: string; name?: string; query?: string };
-}
-
 export async function POST(req: NextRequest) {
+  // Rate limit + Zod validation. On failure returns 200 + speakable fallback.
+  const check = await validateRetellBody(req, lookupItemSchema, 'demo/lookup-item');
+  if (!check.ok) return check.response;
+
   try {
-    const body = (await req.json()) as RetellRequest;
-    const name = body.args?.item_name || body.args?.name || body.args?.query || '';
+    const args = check.body.args as any;
+    const name = args.item_name || args.name || args.query || '';
     if (!name) {
       return NextResponse.json({ result: "I didn't catch the item — which one?" });
     }

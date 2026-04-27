@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { validateRetellBody } from '@/lib/with-retell-validation';
+import { removeFromOrderSchema } from '@/lib/schemas/tools';
 
 // Demo-only remove_from_order stub.
-interface RetellRequest {
-  args: { item_name?: string; name?: string; quantity?: number };
-}
 
 export async function POST(req: NextRequest) {
+  // Rate limit + Zod validation. On failure returns 200 + speakable fallback.
+  const check = await validateRetellBody(req, removeFromOrderSchema, 'demo/remove-from-order');
+  if (!check.ok) return check.response;
+
   try {
-    const body = (await req.json()) as RetellRequest;
-    const name = body.args?.item_name || body.args?.name || 'that item';
+    const args = check.body.args as any;
+    const name = args.item_name || args.name || 'that item';
     return NextResponse.json({
       result: `Removed ${name} from the order.`,
       success: true,

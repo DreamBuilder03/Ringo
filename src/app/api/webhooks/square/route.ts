@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { sendEmail } from '@/lib/email';
 import { orderPaidEmail } from '@/lib/email-templates';
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
 /**
  * Square webhook handler for payment completion events.
@@ -16,6 +17,11 @@ import { orderPaidEmail } from '@/lib/email-templates';
  * Once matched, we mark the order as 'paid' and push it to Square POS.
  */
 export async function POST(request: NextRequest) {
+  // Rate limit at WEBHOOK tier (200/min). Square retries on non-2xx so 429
+  // is recoverable for them; defends against URL spam.
+  const blocked = await checkRateLimit(request, 'WEBHOOK');
+  if (blocked) return blocked;
+
   try {
     const body = await request.text();
     const signature = request.headers.get('x-square-hmacsha256-signature');

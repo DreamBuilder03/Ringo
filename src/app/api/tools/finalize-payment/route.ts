@@ -3,6 +3,8 @@ import { createHash } from 'crypto';
 import * as Sentry from '@sentry/nextjs';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { sendFounderAlert, reportToolFailure } from '@/lib/alerts';
+import { validateRetellBody } from '@/lib/with-retell-validation';
+import { finalizePaymentSchema } from '@/lib/schemas/tools';
 
 interface OrderItemModifier {
   name: string;
@@ -54,7 +56,11 @@ function hashPhone(phone: string): string {
 
 export async function POST(request: NextRequest) {
   const startedAt = Date.now();
-  let callId: string | undefined;
+  // Rate limit + Zod validation. On failure returns 200 + speakable fallback.
+  const check = await validateRetellBody(request, finalizePaymentSchema, 'finalize-payment');
+  if (!check.ok) return check.response;
+
+  let callId: string | undefined = check.callId;
   let agentId: string | undefined;
   let restaurantId: string | undefined;
   let orderId: string | undefined;
@@ -62,9 +68,7 @@ export async function POST(request: NextRequest) {
   let smsProvider: 'ghl' | 'twilio' | 'none' | undefined;
 
   try {
-    const body = (await request.json()) as RetellRequest;
-    const { call, args } = body;
-    callId = call?.call_id;
+    const { call, args } = check.body as any;
     agentId = call?.agent_id;
     // Phone resolution order — accept every arg alias we've ever shipped:
     //   1. customer_phone (canonical — what the prompt and interface type say)
@@ -151,8 +155,11 @@ export async function POST(request: NextRequest) {
       const taxRate = restaurant.tax_rate ?? DEFAULT_TAX_RATE;
       const subtotal = args.total_amount
         ? parseFloat((args.total_amount / (1 + taxRate)).toFixed(2))
-        : items.reduce((sum, item) => {
-            const modifierTotal = (item.modifiers || []).reduce((m, mod) => m + (mod.price || 0), 0);
+        : items.reduce((sum: number, item: any) => {
+            const modifierTotal = (item.modifiers || []).reduce(
+              (m: number, mod: any) => m + (mod.price || 0),
+              0
+            );
             return sum + (item.price + modifierTotal) * item.quantity;
           }, 0);
       const tax = parseFloat((subtotal * taxRate).toFixed(2));

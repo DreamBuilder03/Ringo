@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { rankMenuMatches } from '@/lib/menu-search';
 import { reportToolFailure } from '@/lib/alerts';
+import { validateRetellBody } from '@/lib/with-retell-validation';
+import { addToOrderSchema } from '@/lib/schemas/tools';
 
 interface RetellRequest {
   call: {
@@ -55,13 +57,15 @@ function formatOrderSummary(items: OrderItem[], totals: ReturnType<typeof calcul
 }
 
 export async function POST(request: NextRequest) {
-  let callId: string | undefined;
+  // Rate limit + Zod validation. On failure returns 200 + speakable fallback.
+  const check = await validateRetellBody(request, addToOrderSchema, 'add-to-order');
+  if (!check.ok) return check.response;
+
+  let callId: string | undefined = check.callId;
   let restaurantId: string | undefined;
   try {
-    const body = (await request.json()) as RetellRequest;
-    const { call, args } = body;
-    callId = call?.call_id;
-    const { item_name, quantity, modifiers, customer_phone } = args;
+    const { call, args } = check.body;
+    const { item_name, quantity, modifiers, customer_phone } = args as any;
 
     // Every `result` string below is spoken verbatim by the Retell agent.
     // Use natural spoken English so the agent never freezes. Never "Error:".

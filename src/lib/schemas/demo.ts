@@ -4,13 +4,14 @@ import { z } from 'zod';
 import { shortText, mediumText, personName, email, phone } from './common';
 
 // ─── /api/demo-request — restaurant lead capture ──────────────────────────────
+// Note: live form uses camelCase keys; do not "snake_case-ify" without updating
+// the form simultaneously. This is what the production landing page sends.
 export const demoRequestSchema = z.object({
-  name: personName,
+  restaurantName: shortText,
   email,
+  name: personName.optional(),
   phone: phone.optional(),
-  restaurant_name: shortText,
   city: shortText.optional(),
-  monthly_calls: z.number().int().min(0).max(1_000_000).optional(),
   notes: mediumText.optional(),
   source: shortText.optional(),
   utm_source: shortText.optional(),

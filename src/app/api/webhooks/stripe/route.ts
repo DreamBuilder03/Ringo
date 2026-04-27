@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 import type Stripe from 'stripe';
 
 type SupabaseClient = Awaited<ReturnType<typeof createServiceRoleClient>>;
@@ -49,7 +50,11 @@ async function syncSubscriptionToRestaurant(
     .eq('stripe_subscription_id', subscription.id);
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // Rate limit at WEBHOOK tier (200/min). Stripe retries on non-2xx.
+  const blocked = await checkRateLimit(request, 'WEBHOOK');
+  if (blocked) return blocked;
+
   try {
     const body = await request.text();
     const signature = request.headers.get('stripe-signature');

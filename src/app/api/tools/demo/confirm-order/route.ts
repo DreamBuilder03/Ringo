@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { validateRetellBody } from '@/lib/with-retell-validation';
+import { confirmOrderSchema } from '@/lib/schemas/tools';
 
 // Demo-only confirm_order. Always succeeds; no DB writes.
 // Echoes the total so the agent has a concrete number to read.
@@ -31,11 +33,15 @@ function total(args: RetellRequest['args']): number {
 }
 
 export async function POST(req: NextRequest) {
+  // Rate limit + Zod validation. On failure returns 200 + speakable fallback.
+  const check = await validateRetellBody(req, confirmOrderSchema, 'demo/confirm-order');
+  if (!check.ok) return check.response;
+
   try {
-    const body = (await req.json()) as RetellRequest;
-    const t = total(body.args);
+    const args = check.body.args as any;
+    const t = total(args);
     const totalStr = t > 0 ? ` Total: $${t.toFixed(2)}.` : '';
-    const itemsStr = formatItems(body.args.items);
+    const itemsStr = formatItems(args.items);
     return NextResponse.json({
       result: `Confirmed: ${itemsStr}.${totalStr} Ready to send the payment link — what's the best mobile number?`,
       success: true,
