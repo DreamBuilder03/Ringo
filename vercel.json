@@ -10,7 +10,7 @@
     },
     {
       "path": "/api/cron/silent-line-check",
-      "schedule": "*/30 * * * *"
+      "schedule": "0 12 * * *"
     }
   ]
 }
