@@ -1,0 +1,26 @@
+# CODEOWNERS — who reviews what.
+# Syntax: <pattern> <owner> [<owner>...]
+# https://docs.github.com/en/repositories/managing-your-repositories-settings-and-security/customizing-your-repository/about-code-owners
+#
+# Today @DreamBuilder03 owns everything (solo founder). When collaborators
+# join, replace with per-area owners — e.g. one human reviews backend
+# routes, another reviews dashboard UI, another reviews migrations.
+
+* @DreamBuilder03
+
+# When you add collaborators, the pattern looks like this:
+#
+# # Backend / API routes
+# /src/app/api/**         @DreamBuilder03 @backend-engineer-handle
+#
+# # Marketing site
+# /src/app/(marketing)/** @DreamBuilder03 @design-engineer-handle
+#
+# # Dashboard UI
+# /src/app/(dashboard)/** @DreamBuilder03 @frontend-engineer-handle
+#
+# # Database migrations — always reviewed by founder + a second pair of eyes
+# /supabase/migrations/** @DreamBuilder03 @senior-engineer-handle
+#
+# # Security / audit docs — founder review required
+# /docs/security/**       @DreamBuilder03
