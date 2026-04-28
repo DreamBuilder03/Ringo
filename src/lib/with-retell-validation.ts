@@ -48,6 +48,80 @@ type RetellHandler<TBody extends ZodSchema> = (args: {
 
 const DEFAULT_FALLBACK = "Sorry — give me one second. Something hiccuped on our end.";
 
+/**
+ * Lower-level helper for routes that prefer to keep their existing handler
+ * structure rather than wrap the whole POST. Returns { ok, body } or
+ * { ok:false, response } — the route prepends 3 lines and otherwise stays
+ * intact. Same rate-limit + validation + speakable-fallback semantics as
+ * withRetellValidation.
+ *
+ * Usage at the top of an existing POST handler:
+ *
+ *   const check = await validateRetellBody(request, lookupItemSchema, 'lookup-item');
+ *   if (!check.ok) return check.response;
+ *   const { call, args } = check.body;
+ *   // ... existing logic
+ */
+export type ValidateRetellResult<TBody extends ZodSchema> =
+  | { ok: true; body: z.infer<TBody>; callId?: string }
+  | { ok: false; response: NextResponse };
+
+export async function validateRetellBody<TBody extends ZodSchema>(
+  req: NextRequest,
+  schema: TBody,
+  toolName: string,
+  opts: { tier?: LimitTier; fallbackResult?: string } = {}
+): Promise<ValidateRetellResult<TBody>> {
+  const fallbackResult = opts.fallbackResult || DEFAULT_FALLBACK;
+  const tier = opts.tier || 'TOOL';
+
+  let raw: unknown;
+  try {
+    raw = await req.json();
+  } catch {
+    reportToolFailure({
+      toolName,
+      restaurantId: null,
+      retellCallId: null,
+      shortReason: 'Invalid JSON body',
+    }).catch(() => {});
+    return { ok: false, response: NextResponse.json({ result: fallbackResult }, { status: 200 }) };
+  }
+
+  const callId =
+    (raw as any)?.call?.call_id && typeof (raw as any).call.call_id === 'string'
+      ? (raw as any).call.call_id
+      : undefined;
+
+  const blocked = await checkRateLimit(req, tier, callId ? { key: callId } : {});
+  if (blocked) {
+    reportToolFailure({
+      toolName,
+      restaurantId: null,
+      retellCallId: callId ?? null,
+      shortReason: 'rate limit hit',
+    }).catch(() => {});
+    return { ok: false, response: NextResponse.json({ result: fallbackResult }, { status: 200 }) };
+  }
+
+  const parsed = schema.safeParse(raw);
+  if (!parsed.success) {
+    reportToolFailure({
+      toolName,
+      restaurantId: null,
+      retellCallId: callId ?? null,
+      shortReason: `validation: ${parsed.error.issues
+        .slice(0, 3)
+        .map((i: any) => i.path.join('.') + ':' + i.message)
+        .join('; ')
+        .slice(0, 200)}`,
+    }).catch(() => {});
+    return { ok: false, response: NextResponse.json({ result: fallbackResult }, { status: 200 }) };
+  }
+
+  return { ok: true, body: parsed.data, callId };
+}
+
 export function withRetellValidation<TBody extends ZodSchema>(
   opts: RetellValidationOptions<TBody>,
   handler: RetellHandler<TBody>
