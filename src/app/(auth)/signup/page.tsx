@@ -43,8 +43,8 @@ export default function SignupPage() {
     <main className="flex min-h-screen items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-8">
         <div className="text-center">
-          <h1 className="text-4xl font-bold text-ringo-teal mb-2">Ringo</h1>
-          <p className="text-ringo-muted text-sm">Create your account</p>
+          <h1 className="text-4xl font-bold text-omri-teal mb-2">OMRI</h1>
+          <p className="text-omri-muted text-sm">Create your account</p>
         </div>
 
         <form onSubmit={handleSignup} className="space-y-4">
@@ -88,9 +88,9 @@ export default function SignupPage() {
           </Button>
         </form>
 
-        <p className="text-center text-sm text-ringo-muted">
+        <p className="text-center text-sm text-omri-muted">
           Already have an account?{' '}
-          <Link href="/login" className="text-ringo-teal hover:text-ringo-teal-light transition-colors">
+          <Link href="/login" className="text-omri-teal hover:text-omri-teal-light transition-colors">
             Sign in
           </Link>
         </p>

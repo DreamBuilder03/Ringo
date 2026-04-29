@@ -19,7 +19,7 @@
 //
 // Configuration:
 //   In Retell agent settings → "Inbound Dynamic Variables Webhook URL"
-//   point at https://www.useringo.ai/api/retell/inbound
+//   point at https://www.omriapp.com/api/retell/inbound
 //
 // Performance:
 //   This is on the live-call critical path. Retell waits for our response
@@ -109,28 +109,60 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createServiceRoleClient();
 
-    // ─── Step 1: identify the restaurant ────────────────────────────────────
-    // Try English agent_id first, then Spanish.
+    // ─── Step 1: identify the restaurant + read prompt_overrides ────────────
+    // Try English agent_id first, then Spanish. Pull prompt_overrides in the
+    // same query so we don't need a second round-trip — every byte of latency
+    // here is a byte the caller waits on the line.
     let restaurantId: string | null = null;
+    let promptOverrides: Record<string, unknown> = {};
     {
       const { data } = await supabase
         .from('restaurants')
-        .select('id')
+        .select('id, prompt_overrides')
         .eq('retell_agent_id', agentId)
         .single();
-      if (data) restaurantId = data.id;
+      if (data) {
+        restaurantId = data.id;
+        promptOverrides = (data.prompt_overrides as Record<string, unknown>) || {};
+      }
     }
     if (!restaurantId) {
       const { data } = await supabase
         .from('restaurants')
-        .select('id')
+        .select('id, prompt_overrides')
         .eq('retell_agent_id_es', agentId)
         .single();
-      if (data) restaurantId = data.id;
+      if (data) {
+        restaurantId = data.id;
+        promptOverrides = (data.prompt_overrides as Record<string, unknown>) || {};
+      }
     }
     if (!restaurantId) {
       // Demo agent or unknown agent — no recognition possible.
       return emptyResponse();
+    }
+
+    // Sanitize prompt_overrides before serving to Retell.
+    // Defends against (a) a 1MB JSONB blob smuggled past the dashboard, (b)
+    // non-string values that Retell wouldn't know how to substitute, (c) keys
+    // that collide with our reserved returning-customer fields.
+    const RESERVED_KEYS = new Set([
+      'is_returning',
+      'customer_name',
+      'total_orders',
+      'total_spent',
+      'last_order_summary',
+    ]);
+    const sanitizedOverrides: Record<string, string> = {};
+    let kept = 0;
+    for (const [key, val] of Object.entries(promptOverrides)) {
+      if (kept >= 20) break; // cap at 20 keys
+      if (RESERVED_KEYS.has(key)) continue; // don't let overrides shadow reserved fields
+      if (typeof val !== 'string') continue; // strings only
+      if (val.length > 500) continue; // 500-char cap per value
+      if (!/^[a-zA-Z_][a-zA-Z0-9_]*$/.test(key)) continue; // safe key shape only
+      sanitizedOverrides[key] = val;
+      kept++;
     }
 
     // ─── Step 2: aggregate order history for this caller ────────────────────
@@ -150,8 +182,13 @@ export async function POST(request: NextRequest) {
     const completedOrders = (orders || []) as OrderSnapshot[];
 
     if (completedOrders.length === 0) {
-      // First-time caller (or first paid order). Agent will use default greeting.
-      return emptyResponse();
+      // First-time caller (or first paid order). Agent will use default greeting,
+      // but per-restaurant prompt_overrides still apply.
+      return NextResponse.json({
+        call_inbound: {
+          dynamic_variables: { is_returning: false, ...sanitizedOverrides },
+        },
+      });
     }
 
     // ─── Step 3: build the dynamic variables for the agent ──────────────────
@@ -172,6 +209,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       call_inbound: {
         dynamic_variables: {
+          // Sanitized per-restaurant overrides land first; reserved
+          // returning-customer fields below override any same-named keys
+          // (RESERVED_KEYS filter above prevents that, but we order this
+          // way as a defense-in-depth belt-and-suspenders.)
+          ...sanitizedOverrides,
           is_returning: true,
           customer_name: customerName,
           total_orders: totalOrders,

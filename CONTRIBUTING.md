@@ -1,14 +1,14 @@
-# Contributing to Ringo
+# Contributing to OMRI
 
-Welcome. This is the playbook for making changes to the Ringo platform without breaking restaurant phones in the middle of dinner rush.
+Welcome. This is the playbook for making changes to the OMRI platform without breaking restaurant phones in the middle of dinner rush.
 
 If you're reading this for the first time, **read the whole thing once**. After that, treat it as the rulebook — when something here conflicts with what feels easier, the rulebook wins.
 
 ---
 
-## What Ringo is in 60 seconds
+## What OMRI is in 60 seconds
 
-Ringo is an AI voice agent that answers inbound restaurant phone calls 24/7. It takes orders, upsells, sends an SMS payment link, and — only after payment clears — pushes the order to the restaurant's POS. Real customer phones, real money, every minute.
+OMRI is an AI voice agent that answers inbound restaurant phone calls 24/7. It takes orders, upsells, sends an SMS payment link, and — only after payment clears — pushes the order to the restaurant's POS. Real customer phones, real money, every minute.
 
 This means: **shipping a bug at 7pm on a Friday is the same as shutting down a restaurant's order line during their busiest hour.** Code accordingly.
 
@@ -20,8 +20,8 @@ You need: Node 20.x, npm 10+, git.
 
 ```bash
 # 1. Clone
-git clone https://github.com/DreamBuilder03/Ringo.git
-cd Ringo
+git clone https://github.com/DreamBuilder03/OMRI.git
+cd OMRI
 
 # 2. Install
 npm install
@@ -43,7 +43,7 @@ If the dev server boots and `http://localhost:3000` renders the landing page, yo
 
 We use a single long-lived branch (`main`) and short-lived feature branches.
 
-- **`main`** is what's live in production on `www.useringo.ai`. Every commit on main auto-deploys to Vercel within ~2 minutes. **Never push directly to main.** Branch protection enforces this.
+- **`main`** is what's live in production on `www.omriapp.com`. Every commit on main auto-deploys to Vercel within ~2 minutes. **Never push directly to main.** Branch protection enforces this.
 - **Feature branches** branch from `main`, get one or more commits, then open a PR back to `main`. Naming: `<type>/<short-description>`. Examples:
   - `feat/handoff-tablet-printer`
   - `fix/lookup-item-stopwords`
@@ -185,7 +185,7 @@ Use option 1 for an active outage (faster). Use option 2 once the immediate fire
 ## Project structure cheat sheet
 
 ```
-ringo/
+omri/
 ├── .github/
 │   ├── workflows/ci.yml           CI workflow (build/test/lint)
 │   ├── pull_request_template.md   PR template

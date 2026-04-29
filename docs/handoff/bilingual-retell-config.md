@@ -1,6 +1,6 @@
 # Bilingual Retell Agent — Configuration
 
-For pilot restaurants whose customer base is bilingual (e.g., a Little Caesars in Modesto with a substantial Spanish-speaking customer base), Ringo's Retell agent should auto-detect the caller's language from their first utterance and respond in matching language for the rest of the call.
+For pilot restaurants whose customer base is bilingual (e.g., a Little Caesars in Modesto with a substantial Spanish-speaking customer base), OMRI's Retell agent should auto-detect the caller's language from their first utterance and respond in matching language for the rest of the call.
 
 This is a per-agent dashboard configuration in Retell — **no code changes required**. Apply at provisioning time when a restaurant's `language_preference` is set to `bilingual`.
 
@@ -8,7 +8,7 @@ This is a per-agent dashboard configuration in Retell — **no code changes requ
 
 ## Why Retell-native auto-detect, not "two agents"
 
-Earlier Ringo provisioning created two separate agents per restaurant — one English (`retell_agent_id`), one Spanish (`retell_agent_id_es`) — and routed inbound calls based on a guess from the dialed number or area code. That is no longer the right pattern:
+Earlier OMRI provisioning created two separate agents per restaurant — one English (`retell_agent_id`), one Spanish (`retell_agent_id_es`) — and routed inbound calls based on a guess from the dialed number or area code. That is no longer the right pattern:
 
 - Adds another row of state per restaurant
 - Doesn't handle code-switching mid-call
@@ -29,7 +29,7 @@ Retell now supports `multi_language_detection` natively. One agent, one prompt (
 4. **Prompt → System message:** add a bilingual greeting block at the very top, before any instructions:
 
    ```
-   You are Ringo answering for {{restaurant_name}}.
+   You are OMRI answering for {{restaurant_name}}.
    The caller's language is auto-detected from their first words.
 
    - If they speak English, respond in English using the prompt below.

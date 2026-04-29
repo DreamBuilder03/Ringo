@@ -415,7 +415,7 @@ function PaymentPageContent({ orderId }: { orderId: string }) {
                 ℜ
               </div>
               <h1 className="text-xl font-bold bg-gradient-to-r from-bone to-bone bg-clip-text text-transparent">
-                Ringo
+                OMRI
               </h1>
             </div>
           </div>
@@ -451,7 +451,7 @@ function PaymentPageContent({ orderId }: { orderId: string }) {
             <div className="mt-8 text-center">
               <p className="text-xs text-bone/40">
                 Powered by{' '}
-                <span className="text-bone/60 font-semibold">Ringo</span>
+                <span className="text-bone/60 font-semibold">OMRI</span>
               </p>
               <p className="text-xs text-bone/30 mt-2">
                 AI Voice Ordering for Restaurants

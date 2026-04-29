@@ -372,8 +372,8 @@ export default function SettingsPage() {
     return (
       <div className="w-full max-w-4xl space-y-6 animate-fade-in">
         <h1 className="text-xl sm:text-2xl font-bold text-foreground">Settings</h1>
-        <div className="rounded-2xl border border-ringo-border bg-ringo-card p-12 text-center">
-          <div className="h-8 w-8 mx-auto border-2 border-ringo-teal/30 border-t-ringo-teal rounded-full animate-spin" />
+        <div className="rounded-2xl border border-omri-border bg-omri-card p-12 text-center">
+          <div className="h-8 w-8 mx-auto border-2 border-omri-teal/30 border-t-omri-teal rounded-full animate-spin" />
         </div>
       </div>
     );
@@ -386,7 +386,7 @@ export default function SettingsPage() {
     <div className="w-full max-w-4xl space-y-8 animate-fade-in px-4 sm:px-0">
       <div>
         <h1 className="text-xl sm:text-2xl font-bold text-foreground">Settings</h1>
-        <p className="text-sm text-ringo-muted mt-1">
+        <p className="text-sm text-omri-muted mt-1">
           {restaurant ? `Managing ${restaurant.name}` : 'Manage your POS connections, billing, and preferences'}
         </p>
       </div>
@@ -411,7 +411,7 @@ export default function SettingsPage() {
           </p>
           <button
             onClick={() => setAlert(null)}
-            className="text-ringo-muted hover:text-foreground transition-colors flex-shrink-0"
+            className="text-omri-muted hover:text-foreground transition-colors flex-shrink-0"
           >
             <X className="h-4 w-4" />
           </button>
@@ -419,20 +419,20 @@ export default function SettingsPage() {
       )}
 
       {/* Current Plan */}
-      <div className="rounded-2xl border border-ringo-teal/20 bg-gradient-to-r from-ringo-teal/[0.08] via-ringo-card to-ringo-card p-6">
+      <div className="rounded-2xl border border-omri-teal/20 bg-gradient-to-r from-omri-teal/[0.08] via-omri-card to-omri-card p-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <div className="rounded-xl bg-ringo-teal/15 p-3">
-              <Zap className="h-6 w-6 text-ringo-teal" />
+            <div className="rounded-xl bg-omri-teal/15 p-3">
+              <Zap className="h-6 w-6 text-omri-teal" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-lg font-bold text-foreground">{planInfo.name} Plan</h3>
-                <span className="rounded-full bg-ringo-teal/10 border border-ringo-teal/20 px-2.5 py-0.5 text-[10px] font-bold text-ringo-teal uppercase tracking-wider">
+                <span className="rounded-full bg-omri-teal/10 border border-omri-teal/20 px-2.5 py-0.5 text-[10px] font-bold text-omri-teal uppercase tracking-wider">
                   {restaurant?.stripe_subscription_id ? 'Active' : 'Trial'}
                 </span>
               </div>
-              <p className="text-sm text-ringo-muted mt-0.5">{planInfo.price}</p>
+              <p className="text-sm text-omri-muted mt-0.5">{planInfo.price}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -461,16 +461,16 @@ export default function SettingsPage() {
                   'rounded-2xl border p-5 transition-all duration-200',
                   connected
                     ? 'border-bone/20 bg-bone/[0.03]'
-                    : 'border-ringo-border bg-ringo-card hover:border-ringo-border/80'
+                    : 'border-omri-border bg-omri-card hover:border-omri-border/80'
                 )}
               >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-4 flex-1">
-                    <div className={cn('rounded-xl p-3', connected ? 'bg-bone/10' : 'bg-ringo-border/30')}>
+                    <div className={cn('rounded-xl p-3', connected ? 'bg-bone/10' : 'bg-omri-border/30')}>
                       {connected ? (
                         <Wifi className="h-5 w-5 text-bone" />
                       ) : (
-                        <WifiOff className="h-5 w-5 text-ringo-muted" />
+                        <WifiOff className="h-5 w-5 text-omri-muted" />
                       )}
                     </div>
                     <div className="flex-1">
@@ -482,7 +482,7 @@ export default function SettingsPage() {
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-ringo-muted mt-0.5">{pos.description}</p>
+                      <p className="text-xs text-omri-muted mt-0.5">{pos.description}</p>
                     </div>
                   </div>
                   {connected ? (
@@ -517,7 +517,7 @@ export default function SettingsPage() {
 
                 {/* Toast API Key Form */}
                 {pos.id === 'toast' && !connected && (
-                  <div className="mt-4 pt-4 border-t border-ringo-border/50 space-y-3">
+                  <div className="mt-4 pt-4 border-t border-omri-border/50 space-y-3">
                     <div>
                       <label className="text-xs font-semibold text-foreground block mb-1.5">
                         Toast Restaurant GUID
@@ -532,7 +532,7 @@ export default function SettingsPage() {
                             toast_restaurant_guid: e.target.value,
                           }))
                         }
-                        className="w-full rounded-lg border border-ringo-border bg-ringo-card px-3 py-2 text-sm text-foreground placeholder-ringo-muted focus:outline-none focus:ring-2 focus:ring-ringo-teal/50"
+                        className="w-full rounded-lg border border-omri-border bg-omri-card px-3 py-2 text-sm text-foreground placeholder-omri-muted focus:outline-none focus:ring-2 focus:ring-omri-teal/50"
                       />
                     </div>
                     <div>
@@ -549,7 +549,7 @@ export default function SettingsPage() {
                             toast_api_key: e.target.value,
                           }))
                         }
-                        className="w-full rounded-lg border border-ringo-border bg-ringo-card px-3 py-2 text-sm text-foreground placeholder-ringo-muted focus:outline-none focus:ring-2 focus:ring-ringo-teal/50"
+                        className="w-full rounded-lg border border-omri-border bg-omri-card px-3 py-2 text-sm text-foreground placeholder-omri-muted focus:outline-none focus:ring-2 focus:ring-omri-teal/50"
                       />
                     </div>
                     <Button
@@ -566,7 +566,7 @@ export default function SettingsPage() {
 
                 {/* SpotOn API Key Form */}
                 {pos.id === 'spoton' && !connected && (
-                  <div className="mt-4 pt-4 border-t border-ringo-border/50 space-y-3">
+                  <div className="mt-4 pt-4 border-t border-omri-border/50 space-y-3">
                     <div>
                       <label className="text-xs font-semibold text-foreground block mb-1.5">
                         SpotOn API Key
@@ -581,7 +581,7 @@ export default function SettingsPage() {
                             spoton_api_key: e.target.value,
                           }))
                         }
-                        className="w-full rounded-lg border border-ringo-border bg-ringo-card px-3 py-2 text-sm text-foreground placeholder-ringo-muted focus:outline-none focus:ring-2 focus:ring-ringo-teal/50"
+                        className="w-full rounded-lg border border-omri-border bg-omri-card px-3 py-2 text-sm text-foreground placeholder-omri-muted focus:outline-none focus:ring-2 focus:ring-omri-teal/50"
                       />
                     </div>
                     <div>
@@ -598,7 +598,7 @@ export default function SettingsPage() {
                             spoton_location_id: e.target.value,
                           }))
                         }
-                        className="w-full rounded-lg border border-ringo-border bg-ringo-card px-3 py-2 text-sm text-foreground placeholder-ringo-muted focus:outline-none focus:ring-2 focus:ring-ringo-teal/50"
+                        className="w-full rounded-lg border border-omri-border bg-omri-card px-3 py-2 text-sm text-foreground placeholder-omri-muted focus:outline-none focus:ring-2 focus:ring-omri-teal/50"
                       />
                     </div>
                     <Button
@@ -621,7 +621,7 @@ export default function SettingsPage() {
       {/* Language & Voice Agent */}
       <div>
         <h2 className="text-lg font-bold text-foreground mb-4">Language & Voice Agent</h2>
-        <div className="rounded-2xl border border-ringo-border bg-ringo-card p-6 space-y-4">
+        <div className="rounded-2xl border border-omri-border bg-omri-card p-6 space-y-4">
           <div>
             <label className="text-sm font-semibold text-foreground block mb-3">
               Preferred Language
@@ -634,7 +634,7 @@ export default function SettingsPage() {
               ].map((option) => (
                 <label
                   key={option.value}
-                  className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-ringo-border/30 transition-colors"
+                  className="flex items-center gap-3 cursor-pointer p-3 rounded-lg hover:bg-omri-border/30 transition-colors"
                 >
                   <input
                     type="radio"
@@ -660,9 +660,9 @@ export default function SettingsPage() {
                 placeholder="agent_xxxxxxxx"
                 value={spanishAgentId}
                 onChange={(e) => setSpanishAgentId(e.target.value)}
-                className="w-full rounded-lg border border-ringo-border bg-ringo-card px-3 py-2 text-sm text-foreground placeholder-ringo-muted focus:outline-none focus:ring-2 focus:ring-ringo-teal/50"
+                className="w-full rounded-lg border border-omri-border bg-omri-card px-3 py-2 text-sm text-foreground placeholder-omri-muted focus:outline-none focus:ring-2 focus:ring-omri-teal/50"
               />
-              <p className="text-xs text-ringo-muted mt-2">
+              <p className="text-xs text-omri-muted mt-2">
                 Your Retell AI agent ID for Spanish language calls
               </p>
             </div>
@@ -689,17 +689,17 @@ export default function SettingsPage() {
             return (
               <button
                 key={section.id}
-                className="group rounded-2xl border border-ringo-border bg-ringo-card p-5 text-left hover:border-ringo-teal/30 hover:bg-ringo-teal/[0.02] transition-all duration-200"
+                className="group rounded-2xl border border-omri-border bg-omri-card p-5 text-left hover:border-omri-teal/30 hover:bg-omri-teal/[0.02] transition-all duration-200"
               >
                 <div className="flex items-center gap-3">
-                  <div className="rounded-xl bg-ringo-border/30 p-2.5 group-hover:bg-ringo-teal/10 transition-colors">
-                    <Icon className="h-4 w-4 text-ringo-muted group-hover:text-ringo-teal transition-colors" />
+                  <div className="rounded-xl bg-omri-border/30 p-2.5 group-hover:bg-omri-teal/10 transition-colors">
+                    <Icon className="h-4 w-4 text-omri-muted group-hover:text-omri-teal transition-colors" />
                   </div>
                   <div className="flex-1">
                     <p className="text-sm font-semibold text-foreground">{section.label}</p>
-                    <p className="text-[11px] text-ringo-muted">{section.description}</p>
+                    <p className="text-[11px] text-omri-muted">{section.description}</p>
                   </div>
-                  <ChevronRight className="h-4 w-4 text-ringo-muted/30 group-hover:text-ringo-teal/50 transition-colors" />
+                  <ChevronRight className="h-4 w-4 text-omri-muted/30 group-hover:text-omri-teal/50 transition-colors" />
                 </div>
               </button>
             );
@@ -710,7 +710,7 @@ export default function SettingsPage() {
       {/* Danger Zone */}
       <div className="rounded-2xl border border-bone/20 bg-bone/[0.03] p-6">
         <h3 className="text-sm font-bold text-bone mb-1">Danger Zone</h3>
-        <p className="text-xs text-ringo-muted mb-4">These actions are permanent and cannot be undone.</p>
+        <p className="text-xs text-omri-muted mb-4">These actions are permanent and cannot be undone.</p>
         <div className="flex gap-3">
           <Button variant="danger" size="sm">
             Pause AI Agent

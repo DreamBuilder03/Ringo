@@ -1,4 +1,4 @@
-# Ringo — API Key Rotation Runbook
+# OMRI — API Key Rotation Runbook
 
 **When to use:** scheduled rotation (every 90 days), suspected key compromise, employee/contractor offboarding, public exposure (key pasted to a screenshot, GitHub gist, Slack channel etc.).
 
@@ -14,7 +14,7 @@ Highest blast radius — bypasses RLS, can read/write any row in the public sche
 
 1. Supabase dashboard → Project Settings → API → "service_role" row → **Reset**.
 2. Copy new key.
-3. Vercel → ringo project → Settings → Environment Variables → `SUPABASE_SERVICE_ROLE_KEY` → **Edit** → paste new value → **Save**. Apply to Production + Preview environments.
+3. Vercel → omri project → Settings → Environment Variables → `SUPABASE_SERVICE_ROLE_KEY` → **Edit** → paste new value → **Save**. Apply to Production + Preview environments.
 4. Trigger a Vercel redeploy from the Deployments tab (Reset doesn't auto-redeploy).
 5. Update `.env.local` on your dev box.
 6. **Audit `alerts_log`** (last 7 days) for anything you didn't trigger. If you see writes to `restaurants`, `orders`, `calls`, or `handoff_orders` from unknown sources, the key was used — escalate.
@@ -54,10 +54,10 @@ Validates inbound webhooks at `/api/webhooks/retell`.
 
 ## 4. Stripe (`STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET`)
 
-Billing tier subscriptions only — no customer card data passes through Ringo (Stripe Hosted Checkout owns it).
+Billing tier subscriptions only — no customer card data passes through OMRI (Stripe Hosted Checkout owns it).
 
 1. Stripe dashboard → Developers → API keys → roll secret key.
-2. Stripe dashboard → Developers → Webhooks → for the Ringo endpoint → **Roll secret**.
+2. Stripe dashboard → Developers → Webhooks → for the OMRI endpoint → **Roll secret**.
 3. Vercel env var updates: `STRIPE_SECRET_KEY` + `STRIPE_WEBHOOK_SECRET`.
 4. Redeploy.
 5. Trigger a test webhook from the Stripe dashboard to confirm delivery.
@@ -76,9 +76,9 @@ SMS delivery + voice fallback. Caller IDs (`FOUNDER_ALERT_PHONE` etc.) are not s
 
 ## 6. Square (`SQUARE_ACCESS_TOKEN` + `SQUARE_WEBHOOK_SIGNATURE_KEY`)
 
-Per-restaurant tokens are stored in `restaurants.square_access_token` (database, not env). The env-level token is only the **Ringo platform's** sandbox / merchant token used during OAuth dance.
+Per-restaurant tokens are stored in `restaurants.square_access_token` (database, not env). The env-level token is only the **OMRI platform's** sandbox / merchant token used during OAuth dance.
 
-1. Square Developer Dashboard → applications → Ringo → **Production** → revoke + regenerate access token.
+1. Square Developer Dashboard → applications → OMRI → **Production** → revoke + regenerate access token.
 2. Vercel env var update + redeploy.
 3. Per-restaurant tokens auto-rotate on next OAuth refresh; for any restaurant whose token can't refresh, send the SMS handover (template in `~/Desktop/Brain Agent/pilot_onboarding_playbook.md`) to re-authorize.
 
@@ -86,16 +86,16 @@ Per-restaurant tokens are stored in `restaurants.square_access_token` (database,
 
 ## 7. Clover (`CLOVER_APP_SECRET`)
 
-Same pattern as Square. Per-merchant tokens in DB; env-level is the Ringo Clover OAuth app secret.
+Same pattern as Square. Per-merchant tokens in DB; env-level is the OMRI Clover OAuth app secret.
 
-1. Clover Developer Dashboard → Ringo app → Settings → reset secret.
+1. Clover Developer Dashboard → OMRI app → Settings → reset secret.
 2. Vercel env var update + redeploy.
 
 ---
 
 ## 8. Toast / SpotOn
 
-Same pattern as Square/Clover. Refer to each provider's developer dashboard for the rotation flow. All Ringo env vars: `TOAST_*`, `SPOTON_*`.
+Same pattern as Square/Clover. Refer to each provider's developer dashboard for the rotation flow. All OMRI env vars: `TOAST_*`, `SPOTON_*`.
 
 ---
 
@@ -142,7 +142,7 @@ Used by the demo flow to enrich restaurant lookups.
 
 Used by `src/lib/rate-limit-upstash.ts`.
 
-1. Upstash dashboard → Ringo Redis instance → REST API tab → reset token.
+1. Upstash dashboard → OMRI Redis instance → REST API tab → reset token.
 2. Vercel env var update + redeploy.
 3. During rotation window, rate limiting briefly no-ops (limiter logs `Upstash env vars missing` once and falls through). New token live after redeploy.
 

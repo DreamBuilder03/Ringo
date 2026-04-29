@@ -3,7 +3,7 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
 import { discoverMenuFor } from '@/lib/demo-menu';
 import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
-// Outbound phone-call variant: Ringo dials the visitor's cell (Loman + edge).
+// Outbound phone-call variant: OMRI dials the visitor's cell (Loman + edge).
 // Uses Retell's create-phone-call endpoint with dynamic variables so the agent adapts
 // to the caller's restaurant in real time.
 

@@ -18,8 +18,8 @@ export function LegalLayout({
           <Link href="/" className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="/ringo-logo.png"
-              alt="Ringo"
+              src="/omri-logo.png"
+              alt="OMRI"
               className="h-7 w-auto brightness-0 invert"
             />
           </Link>
@@ -51,10 +51,10 @@ export function LegalLayout({
         <div className="mt-16 pt-8 border-t border-bone/[0.06] text-sm text-bone/40">
           Questions? Email{" "}
           <a
-            href="mailto:hello@useringo.ai"
+            href="mailto:hello@omriapp.com"
             className="text-bone/70 hover:text-bone underline underline-offset-2"
           >
-            hello@useringo.ai
+            hello@omriapp.com
           </a>
           .
         </div>

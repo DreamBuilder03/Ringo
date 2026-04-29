@@ -8,7 +8,7 @@ import { checkRateLimit } from '@/lib/rate-limit-upstash';
 // Auto-provisions a restaurant after they subscribe. Three steps:
 //
 //   1) Buy a local Twilio phone number in the restaurant's area code
-//   2) Clone the Ringo template Retell agent for this restaurant
+//   2) Clone the OMRI template Retell agent for this restaurant
 //   3) Register the Twilio number with Retell, attaching it to the new agent
 //
 // Invoked either by the Stripe webhook after checkout.session.completed, or
@@ -18,12 +18,12 @@ import { checkRateLimit } from '@/lib/rate-limit-upstash';
 //   TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN
 //   TWILIO_SIP_TRUNK_SID             — the TK... SID of the Elastic SIP Trunk
 //                                      purchased numbers should be assigned to
-//   TWILIO_SIP_TRUNK_TERMINATION_URI — e.g. "ringo.pstn.twilio.com" — passed
+//   TWILIO_SIP_TRUNK_TERMINATION_URI — e.g. "omri.pstn.twilio.com" — passed
 //                                      to Retell so it knows where to SIP calls
 //   TWILIO_SIP_TRUNK_USERNAME, TWILIO_SIP_TRUNK_PASSWORD  (optional, only if
 //                                      the trunk uses credential auth vs IP ACL)
 //   RETELL_API_KEY
-//   RINGO_TEMPLATE_AGENT_ID  (the shared Ringo — Default Restaurant agent)
+//   OMRI_TEMPLATE_AGENT_ID  (the shared OMRI — Default Restaurant agent)
 //   NEXT_PUBLIC_APP_URL
 //
 // Idempotent — rerunning against a restaurant that's already provisioned
@@ -58,7 +58,7 @@ async function twilioBuyLocalNumber(areaCode: string): Promise<{
 }> {
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://useringo.ai';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://omriapp.com';
   if (!accountSid || !authToken) {
     throw new Error('Missing TWILIO_ACCOUNT_SID or TWILIO_AUTH_TOKEN');
   }
@@ -95,7 +95,7 @@ async function twilioBuyLocalNumber(areaCode: string): Promise<{
   const trunkSid = process.env.TWILIO_SIP_TRUNK_SID;
   const buyBody = new URLSearchParams({
     PhoneNumber: phoneNumber,
-    FriendlyName: `Ringo — provisioned ${new Date().toISOString()}`,
+    FriendlyName: `OMRI — provisioned ${new Date().toISOString()}`,
   });
   if (trunkSid) {
     buyBody.set('TrunkSid', trunkSid);
@@ -126,9 +126,9 @@ async function retellCloneAgent(params: {
   restaurantId: string;
 }): Promise<{ agentId: string }> {
   const apiKey = process.env.RETELL_API_KEY;
-  const templateId = process.env.RINGO_TEMPLATE_AGENT_ID;
+  const templateId = process.env.OMRI_TEMPLATE_AGENT_ID;
   if (!apiKey) throw new Error('Missing RETELL_API_KEY');
-  if (!templateId) throw new Error('Missing RINGO_TEMPLATE_AGENT_ID');
+  if (!templateId) throw new Error('Missing OMRI_TEMPLATE_AGENT_ID');
 
   // Step 1: fetch the template so we inherit voice, LLM config, tools, etc.
   const getRes = await fetch(`https://api.retellai.com/get-agent/${templateId}`, {
@@ -176,7 +176,7 @@ async function retellCloneAgent(params: {
     }
   };
   scrub(body);
-  body.agent_name = `${params.restaurantName} — Ringo`;
+  body.agent_name = `${params.restaurantName} — OMRI`;
   // Stamp metadata so we can find the agent later
   body.metadata = {
     ringo_restaurant_id: params.restaurantId,
@@ -214,7 +214,7 @@ async function retellRegisterPhoneNumber(params: {
   const terminationUri = process.env.TWILIO_SIP_TRUNK_TERMINATION_URI;
   if (!terminationUri) {
     throw new Error(
-      'Missing TWILIO_SIP_TRUNK_TERMINATION_URI — set up a Twilio Elastic SIP Trunk and add its termination URI (e.g. ringo.pstn.twilio.com) to Vercel env vars.'
+      'Missing TWILIO_SIP_TRUNK_TERMINATION_URI — set up a Twilio Elastic SIP Trunk and add its termination URI (e.g. omri.pstn.twilio.com) to Vercel env vars.'
     );
   }
 
@@ -222,7 +222,7 @@ async function retellRegisterPhoneNumber(params: {
     phone_number: params.twilioPhoneNumber,
     termination_uri: terminationUri,
     inbound_agent_id: params.agentId,
-    nickname: `Ringo ${params.twilioPhoneNumber}`,
+    nickname: `OMRI ${params.twilioPhoneNumber}`,
   };
   // Optional SIP auth — only include if both are set (some trunks use ACL
   // instead of credentials, in which case these are empty).

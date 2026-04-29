@@ -45,21 +45,21 @@ export default async function OrderConfirmedPage({
 
         {/* Gradient Orbs */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-ringo-teal/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-ringo-teal/5 rounded-full blur-3xl" />
+          <div className="absolute top-0 right-0 w-96 h-96 bg-omri-teal/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-omri-teal/5 rounded-full blur-3xl" />
         </div>
 
         {/* Main Content */}
         <div className="relative z-10 flex flex-col min-h-screen">
           {/* Header */}
-          <div className="border-b border-ringo-border bg-background/80 backdrop-blur-sm">
+          <div className="border-b border-omri-border bg-background/80 backdrop-blur-sm">
             <div className="max-w-md mx-auto px-4 py-6">
               <div className="flex items-center justify-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-ringo-teal to-ringo-teal-light flex items-center justify-center text-bone font-bold text-sm">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-omri-teal to-omri-teal-light flex items-center justify-center text-bone font-bold text-sm">
                   ℜ
                 </div>
-                <h1 className="text-xl font-bold bg-gradient-to-r from-ringo-teal to-ringo-teal-light bg-clip-text text-transparent">
-                  Ringo
+                <h1 className="text-xl font-bold bg-gradient-to-r from-omri-teal to-omri-teal-light bg-clip-text text-transparent">
+                  OMRI
                 </h1>
               </div>
             </div>
@@ -69,13 +69,13 @@ export default async function OrderConfirmedPage({
           <div className="flex-1 flex items-center justify-center px-4 py-8">
             <div className="w-full max-w-md">
               {/* Glass Card */}
-              <div className="bg-ringo-card border border-ringo-border backdrop-blur-sm rounded-2xl p-6 sm:p-8">
+              <div className="bg-omri-card border border-omri-border backdrop-blur-sm rounded-2xl p-6 sm:p-8">
                 <div className="text-center space-y-4">
-                  <p className="text-ringo-muted text-sm">Order Not Found</p>
+                  <p className="text-omri-muted text-sm">Order Not Found</p>
                   <h2 className="text-xl font-bold text-foreground">
                     Unable to Load Order
                   </h2>
-                  <p className="text-ringo-muted text-sm">
+                  <p className="text-omri-muted text-sm">
                     We couldn't find this order. Please check the link and try again.
                   </p>
                 </div>
@@ -83,11 +83,11 @@ export default async function OrderConfirmedPage({
 
               {/* Footer Branding */}
               <div className="mt-8 text-center">
-                <p className="text-xs text-ringo-muted">
+                <p className="text-xs text-omri-muted">
                   Powered by{' '}
-                  <span className="text-foreground/60 font-semibold">Ringo</span>
+                  <span className="text-foreground/60 font-semibold">OMRI</span>
                 </p>
-                <p className="text-xs text-ringo-muted/50 mt-2">
+                <p className="text-xs text-omri-muted/50 mt-2">
                   AI Voice Ordering for Restaurants
                 </p>
               </div>
@@ -116,21 +116,21 @@ export default async function OrderConfirmedPage({
 
       {/* Gradient Orbs */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-ringo-teal/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-ringo-teal/5 rounded-full blur-3xl" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-omri-teal/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-omri-teal/5 rounded-full blur-3xl" />
       </div>
 
       {/* Main Content */}
       <div className="relative z-10 flex flex-col min-h-screen">
         {/* Header */}
-        <div className="border-b border-ringo-border bg-background/80 backdrop-blur-sm">
+        <div className="border-b border-omri-border bg-background/80 backdrop-blur-sm">
           <div className="max-w-md mx-auto px-4 py-6">
             <div className="flex items-center justify-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-ringo-teal to-ringo-teal-light flex items-center justify-center text-bone font-bold text-sm">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-omri-teal to-omri-teal-light flex items-center justify-center text-bone font-bold text-sm">
                 ℜ
               </div>
-              <h1 className="text-xl font-bold bg-gradient-to-r from-ringo-teal to-ringo-teal-light bg-clip-text text-transparent">
-                Ringo
+              <h1 className="text-xl font-bold bg-gradient-to-r from-omri-teal to-omri-teal-light bg-clip-text text-transparent">
+                OMRI
               </h1>
             </div>
           </div>
@@ -140,14 +140,14 @@ export default async function OrderConfirmedPage({
         <div className="flex-1 flex items-center justify-center px-4 py-8">
           <div className="w-full max-w-md">
             {/* Glass Card */}
-            <div className="bg-ringo-card border border-ringo-border backdrop-blur-sm rounded-2xl p-6 sm:p-8">
+            <div className="bg-omri-card border border-omri-border backdrop-blur-sm rounded-2xl p-6 sm:p-8">
               {/* Success Section */}
               <div className="text-center space-y-6">
                 {/* Green Checkmark */}
                 <div className="flex justify-center">
                   <div className="relative">
                     <CheckCircle2
-                      className="w-20 h-20 text-ringo-teal-light animate-pulse"
+                      className="w-20 h-20 text-omri-teal-light animate-pulse"
                       strokeWidth={1.5}
                     />
                   </div>
@@ -158,16 +158,16 @@ export default async function OrderConfirmedPage({
                   <h2 className="text-3xl font-bold text-foreground">
                     Payment Confirmed!
                   </h2>
-                  <p className="text-ringo-muted text-sm">
+                  <p className="text-omri-muted text-sm">
                     Your order has been placed successfully
                   </p>
                 </div>
 
                 {/* Order Details Card */}
-                <div className="bg-background/50 border border-ringo-border rounded-xl p-4 space-y-3 text-left">
+                <div className="bg-background/50 border border-omri-border rounded-xl p-4 space-y-3 text-left">
                   {/* Restaurant Name */}
                   <div>
-                    <p className="text-ringo-muted text-xs uppercase tracking-wide font-medium">
+                    <p className="text-omri-muted text-xs uppercase tracking-wide font-medium">
                       Restaurant
                     </p>
                     <p className="text-foreground font-semibold text-base mt-1">
@@ -176,8 +176,8 @@ export default async function OrderConfirmedPage({
                   </div>
 
                   {/* Order Items */}
-                  <div className="border-t border-ringo-border pt-3">
-                    <p className="text-ringo-muted text-xs uppercase tracking-wide font-medium mb-2">
+                  <div className="border-t border-omri-border pt-3">
+                    <p className="text-omri-muted text-xs uppercase tracking-wide font-medium mb-2">
                       Order Items
                     </p>
                     <div className="space-y-2 max-h-48 overflow-y-auto">
@@ -190,7 +190,7 @@ export default async function OrderConfirmedPage({
                             <p className="text-foreground font-medium">
                               {item.name}
                             </p>
-                            <p className="text-ringo-muted text-xs">
+                            <p className="text-omri-muted text-xs">
                               Qty: {item.quantity}
                             </p>
                           </div>
@@ -203,24 +203,24 @@ export default async function OrderConfirmedPage({
                   </div>
 
                   {/* Total */}
-                  <div className="border-t border-ringo-border pt-3 flex justify-between items-center">
+                  <div className="border-t border-omri-border pt-3 flex justify-between items-center">
                     <span className="font-semibold text-foreground">Total</span>
-                    <span className="text-ringo-teal-light text-xl font-bold">
+                    <span className="text-omri-teal-light text-xl font-bold">
                       ${total.toFixed(2)}
                     </span>
                   </div>
                 </div>
 
                 {/* Status Message */}
-                <div className="bg-ringo-teal/10 border border-ringo-teal/30 rounded-lg p-4">
-                  <p className="text-ringo-muted text-sm">
+                <div className="bg-omri-teal/10 border border-omri-teal/30 rounded-lg p-4">
+                  <p className="text-omri-muted text-sm">
                     Your order is being prepared. You'll receive updates via text message.
                   </p>
                 </div>
 
                 {/* Order ID */}
                 <div className="pt-2">
-                  <p className="text-ringo-muted text-xs">Order ID</p>
+                  <p className="text-omri-muted text-xs">Order ID</p>
                   <p className="text-foreground/70 font-mono text-xs mt-1">
                     {params.orderId}
                   </p>
@@ -230,11 +230,11 @@ export default async function OrderConfirmedPage({
 
             {/* Footer Branding */}
             <div className="mt-8 text-center">
-              <p className="text-xs text-ringo-muted">
+              <p className="text-xs text-omri-muted">
                 Powered by{' '}
-                <span className="text-foreground/60 font-semibold">Ringo</span>
+                <span className="text-foreground/60 font-semibold">OMRI</span>
               </p>
-              <p className="text-xs text-ringo-muted/50 mt-2">
+              <p className="text-xs text-omri-muted/50 mt-2">
                 AI Voice Ordering for Restaurants
               </p>
             </div>

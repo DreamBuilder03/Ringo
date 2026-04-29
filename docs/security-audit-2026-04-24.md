@@ -1,4 +1,4 @@
-# Ringo Security Audit — Pre-Pilot Gate
+# OMRI Security Audit — Pre-Pilot Gate
 
 **Audit date:** 2026-04-24 (original 6-item) + 2026-04-27 (extended to 9-item gate per LC franchisee pre-pilot prep)
 **Auditor:** Builder Agent
@@ -17,7 +17,7 @@ This audit blocks pilot #1 go-live. Re-run before each new pilot onboarding.
 |---|---|---|---|
 | 1 | RLS enabled + real policies on every public table | **PASS-PENDING** | All migrated tables have RLS + policies. Live SQL verification required. |
 | 2 | Service role key only in server-side code | **PASS** | Repo grep — all 30+ hits in `src/app/api/**` only |
-| 3 | Storage buckets private + signed URLs | **PASS** (N/A) | Ringo uses no Supabase Storage buckets — recordings hosted by Retell |
+| 3 | Storage buckets private + signed URLs | **PASS** (N/A) | OMRI uses no Supabase Storage buckets — recordings hosted by Retell |
 | 4 | Point-in-Time Recovery enabled (Pro plan) | **PENDING** | Misael action — Supabase dashboard upgrade |
 | 5 | MFA on Misael's Supabase login | **PENDING** | Misael action — Supabase account settings |
 | 6 | Incident-response runbook in repo | **PASS** | `docs/incident-response.md` committed |
@@ -160,7 +160,7 @@ If any of these are accidentally prefixed `NEXT_PUBLIC_` in Vercel → rotate im
 
 ### Evidence
 
-`grep -rn "createSignedUrl\|getPublicUrl" src/` returned **zero hits**. Ringo does not currently use Supabase Storage. Specifically:
+`grep -rn "createSignedUrl\|getPublicUrl" src/` returned **zero hits**. OMRI does not currently use Supabase Storage. Specifically:
 
 - **Call recordings** — `recording_url` field on `calls` table holds Retell's CDN URL (https://retell-ai.s3.amazonaws.com/...). Retell handles the storage; we just store the link.
 - **Call transcripts** — stored as text in `calls.transcript`, not as files.
@@ -168,7 +168,7 @@ If any of these are accidentally prefixed `NEXT_PUBLIC_` in Vercel → rotate im
 
 ### When this becomes load-bearing
 
-The moment Ringo starts uploading anything to a Supabase bucket — pilot menu photos, signed payment receipts, contracts, etc. — re-run this section:
+The moment OMRI starts uploading anything to a Supabase bucket — pilot menu photos, signed payment receipts, contracts, etc. — re-run this section:
 
 1. Create the bucket as **private** (`public = false`) by default.
 2. Always serve via `createSignedUrl(path, expiresInSeconds)` with `expiresInSeconds <= 3600`.
@@ -209,7 +209,7 @@ Without PITR, a malicious DELETE statement (or a script bug in a migration) mean
 
 1. Supabase dashboard → top-right account avatar → Account Settings → Security.
 2. Enable **MFA via authenticator app** (Google Authenticator, 1Password, Authy — pick one). Avoid SMS — SMS-based MFA is vulnerable to SIM-swap.
-3. Save the printed recovery codes into 1Password (or equivalent password manager) under a dedicated entry called "Supabase Ringo prod recovery codes." Do not save them in email or plaintext anywhere else.
+3. Save the printed recovery codes into 1Password (or equivalent password manager) under a dedicated entry called "Supabase OMRI prod recovery codes." Do not save them in email or plaintext anywhere else.
 4. Sign out of Supabase and sign back in to verify MFA prompt fires.
 5. If/when other humans get added to the Supabase org (Brain, Marketing, Design agent operators), enforce org-wide MFA.
 

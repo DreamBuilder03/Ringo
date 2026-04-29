@@ -84,7 +84,7 @@ describe('Email Utilities', () => {
       });
 
       const callBody = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
-      expect(callBody.from).toBe('Ringo <noreply@useringo.ai>');
+      expect(callBody.from).toBe('OMRI <noreply@omriapp.com>');
     });
 
     it('should return success with warning when API key is missing', async () => {

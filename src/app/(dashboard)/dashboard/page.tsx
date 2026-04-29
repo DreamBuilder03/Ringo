@@ -198,7 +198,7 @@ export default function DashboardPage() {
       {/* Gold status banner */}
       <div className="rounded-xl bg-[#F3EEE3]/10 border border-[#F3EEE3]/20 px-4 py-2.5 flex items-center gap-2 mb-4">
         <div className="w-2 h-2 rounded-full bg-[#F3EEE3] animate-pulse" />
-        <span className="text-sm font-semibold text-bone">Ringo is live and handling your calls</span>
+        <span className="text-sm font-semibold text-bone">OMRI is live and handling your calls</span>
       </div>
 
       {/* Welcome header */}
@@ -294,7 +294,7 @@ export default function DashboardPage() {
           {!hasData ? (
             <div className="rounded-2xl border border-[#F3EEE3]/20 bg-[#F3EEE3]/5 p-8 text-center">
               <Phone className="w-8 h-8 text-[#F3EEE3] mx-auto mb-3" />
-              <p className="text-base font-semibold text-foreground mb-1">Ringo is ready</p>
+              <p className="text-base font-semibold text-foreground mb-1">OMRI is ready</p>
               <p className="text-sm text-stone">Your first call will appear here in real time the moment it comes in.</p>
             </div>
           ) : (

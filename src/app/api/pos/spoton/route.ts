@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     const spotonOrderId = spotonData.id || spotonData.externalId;
 
     console.log(
-      `[${new Date().toISOString()}] Order pushed to SpotOn: ${spotonOrderId} (Ringo order: ${order_id})`
+      `[${new Date().toISOString()}] Order pushed to SpotOn: ${spotonOrderId} (OMRI order: ${order_id})`
     );
 
     // Update order with SpotOn POS order ID
@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * Build a SpotOn API order payload from Ringo order data
+ * Build a SpotOn API order payload from OMRI order data
  */
 function buildSpotOnOrderPayload(
   orderId: string,
@@ -103,7 +103,7 @@ function buildSpotOnOrderPayload(
     type: 'TAKEOUT',
     items: spotonItems,
     metadata: {
-      source: 'ringo',
+      source: 'omri',
       ringoOrderId: orderId,
     },
   };

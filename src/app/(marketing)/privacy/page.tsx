@@ -2,30 +2,30 @@ import type { Metadata } from "next";
 import { LegalLayout } from "../legal/legal-layout";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — Ringo",
+  title: "Privacy Policy — OMRI",
   description:
-    "How Ringo AI, Inc. collects, uses, and protects information when you use our voice ordering platform.",
+    "How OMRI AI, Inc. collects, uses, and protects information when you use our voice ordering platform.",
 };
 
 export default function PrivacyPage() {
   return (
     <LegalLayout title="Privacy Policy" effectiveDate="April 14, 2026">
       <p>
-        This Privacy Policy describes how <strong>Ringo AI, Inc.</strong>{" "}
-        (&ldquo;Ringo,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or
+        This Privacy Policy describes how <strong>OMRI AI, Inc.</strong>{" "}
+        (&ldquo;OMRI,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or
         &ldquo;our&rdquo;) collects, uses, shares, and protects information in
         connection with our AI voice ordering platform, websites at{" "}
-        <a href="https://useringo.ai">useringo.ai</a>, and related services
+        <a href="https://omriapp.com">omriapp.com</a>, and related services
         (collectively, the &ldquo;Service&rdquo;). By using the Service, you
         agree to the practices described here.
       </p>
 
       <h2>1. Who this policy covers</h2>
       <p>
-        Ringo serves two groups: (a) <strong>Restaurant customers</strong> who
-        subscribe to Ringo to handle inbound calls, and (b){" "}
+        OMRI serves two groups: (a) <strong>Restaurant customers</strong> who
+        subscribe to OMRI to handle inbound calls, and (b){" "}
         <strong>End callers</strong> — the diners who phone a restaurant that
-        uses Ringo. This policy applies to both, with the distinctions noted
+        uses OMRI. This policy applies to both, with the distinctions noted
         below.
       </p>
 
@@ -38,7 +38,7 @@ export default function PrivacyPage() {
         </li>
         <li>
           Billing information: payment method and billing address, processed by
-          our payment processor (Stripe). Ringo does not store full card
+          our payment processor (Stripe). OMRI does not store full card
           numbers.
         </li>
         <li>
@@ -50,7 +50,7 @@ export default function PrivacyPage() {
       <ul>
         <li>
           <strong>Voice recordings and transcripts</strong> of calls placed to
-          a Ringo-enabled restaurant number, used to take the order and
+          a OMRI-enabled restaurant number, used to take the order and
           improve call handling.
         </li>
         <li>
@@ -83,17 +83,17 @@ export default function PrivacyPage() {
 
       <h2>4. Call recording notice</h2>
       <p>
-        Calls placed to Ringo-enabled restaurant numbers are recorded and
+        Calls placed to OMRI-enabled restaurant numbers are recorded and
         transcribed. The restaurant is the caller&rsquo;s point of contact and
         is responsible for disclosing recording where its state or province
         requires notice or two-party consent (e.g., California&rsquo;s Invasion
-        of Privacy Act). Ringo provides a default spoken disclosure at the
+        of Privacy Act). OMRI provides a default spoken disclosure at the
         start of calls; restaurants may customize it but must remain compliant.
       </p>
 
       <h2>5. SMS and messaging</h2>
       <p>
-        When Ringo texts an end caller (for a payment link, receipt, or order
+        When OMRI texts an end caller (for a payment link, receipt, or order
         update), the message is sent only as a direct consequence of an order
         or demo the caller initiated. Standard message and data rates may
         apply. Reply <strong>STOP</strong> to opt out; reply{" "}
@@ -107,12 +107,12 @@ export default function PrivacyPage() {
           can fulfill the order.
         </li>
         <li>
-          <strong>With service providers</strong> that power Ringo under
+          <strong>With service providers</strong> that power OMRI under
           contract: voice AI (Retell), telephony and SMS (Twilio, GoHighLevel),
           cloud infrastructure (Vercel, Supabase), payments (Stripe), and
           transcription/LLM providers (OpenAI, Anthropic, Google). These
           providers are permitted to use data only to provide their services
-          to Ringo.
+          to OMRI.
         </li>
         <li>
           <strong>For legal reasons</strong>: to comply with a lawful request,
@@ -145,11 +145,11 @@ export default function PrivacyPage() {
         rights under the CCPA/CPRA, including the right to know what personal
         information we have collected, the right to delete, the right to
         correct, and the right to opt out of any &ldquo;sale&rdquo; or
-        &ldquo;sharing&rdquo; (Ringo does neither).
+        &ldquo;sharing&rdquo; (OMRI does neither).
       </p>
       <p>
         To exercise any right, email{" "}
-        <a href="mailto:privacy@useringo.ai">privacy@useringo.ai</a>. We will
+        <a href="mailto:privacy@omriapp.com">privacy@omriapp.com</a>. We will
         verify your request before responding. We will not discriminate against
         you for exercising a privacy right.
       </p>
@@ -167,12 +167,12 @@ export default function PrivacyPage() {
         The Service is not directed to children under 13 and we do not
         knowingly collect personal information from them. If you believe a
         child has provided us information, contact{" "}
-        <a href="mailto:privacy@useringo.ai">privacy@useringo.ai</a>.
+        <a href="mailto:privacy@omriapp.com">privacy@omriapp.com</a>.
       </p>
 
       <h2>11. International users</h2>
       <p>
-        Ringo operates in the United States. If you use the Service from
+        OMRI operates in the United States. If you use the Service from
         outside the U.S., your information will be transferred to and processed
         in the U.S.
       </p>
@@ -187,8 +187,8 @@ export default function PrivacyPage() {
 
       <h2>13. Contact</h2>
       <p>
-        Ringo AI, Inc. &middot; Modesto, California, USA <br />
-        Email: <a href="mailto:privacy@useringo.ai">privacy@useringo.ai</a>
+        OMRI AI, Inc. &middot; Modesto, California, USA <br />
+        Email: <a href="mailto:privacy@omriapp.com">privacy@omriapp.com</a>
       </p>
     </LegalLayout>
   );

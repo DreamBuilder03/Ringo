@@ -9,7 +9,7 @@ export const mockCalls: Call[] = [
     end_time: new Date(Date.now() + 180000).toISOString(),
     duration_seconds: 180,
     transcript:
-      'Ringo: Thank you for calling Mario\'s Pizza! How can I help you today?\nCustomer: Hi, I\'d like to place an order for delivery.\nRingo: Of course! What would you like to order?\nCustomer: I\'ll have a large pepperoni pizza and a Caesar salad.\nRingo: Great choices! Would you like to add garlic bread for just $3.99? It pairs perfectly with the pizza.\nCustomer: Sure, why not!\nRingo: Wonderful! So that\'s a large pepperoni pizza at $18.99, a Caesar salad at $8.99, and garlic bread at $3.99. Your total comes to $31.97. Can I confirm your delivery address?',
+      'OMRI: Thank you for calling Mario\'s Pizza! How can I help you today?\nCustomer: Hi, I\'d like to place an order for delivery.\nOMRI: Of course! What would you like to order?\nCustomer: I\'ll have a large pepperoni pizza and a Caesar salad.\nOMRI: Great choices! Would you like to add garlic bread for just $3.99? It pairs perfectly with the pizza.\nCustomer: Sure, why not!\nOMRI: Wonderful! So that\'s a large pepperoni pizza at $18.99, a Caesar salad at $8.99, and garlic bread at $3.99. Your total comes to $31.97. Can I confirm your delivery address?',
     call_outcome: 'order_placed',
     order_total: 31.97,
     upsell_total: 3.99,
@@ -23,7 +23,7 @@ export const mockCalls: Call[] = [
     end_time: new Date(Date.now() - 3600000 + 45000).toISOString(),
     duration_seconds: 45,
     transcript:
-      'Ringo: Thank you for calling Mario\'s Pizza!\nCustomer: Hi, what are your hours today?\nRingo: We\'re open today from 11 AM to 10 PM. Is there anything else I can help with?\nCustomer: No, that\'s all. Thanks!',
+      'OMRI: Thank you for calling Mario\'s Pizza!\nCustomer: Hi, what are your hours today?\nOMRI: We\'re open today from 11 AM to 10 PM. Is there anything else I can help with?\nCustomer: No, that\'s all. Thanks!',
     call_outcome: 'inquiry',
     order_total: 0,
     upsell_total: 0,
@@ -37,7 +37,7 @@ export const mockCalls: Call[] = [
     end_time: new Date(Date.now() - 7200000 + 240000).toISOString(),
     duration_seconds: 240,
     transcript:
-      'Ringo: Thank you for calling Mario\'s Pizza!\nCustomer: I want to order two large cheese pizzas, buffalo wings, and a 2-liter Coke.\nRingo: Perfect! Would you like to upgrade your wings to a double order for just $4 more?\nCustomer: Yeah, do that.\nRingo: Your total is $52.47. I\'ll confirm that order right away!',
+      'OMRI: Thank you for calling Mario\'s Pizza!\nCustomer: I want to order two large cheese pizzas, buffalo wings, and a 2-liter Coke.\nOMRI: Perfect! Would you like to upgrade your wings to a double order for just $4 more?\nCustomer: Yeah, do that.\nOMRI: Your total is $52.47. I\'ll confirm that order right away!',
     call_outcome: 'order_placed',
     order_total: 52.47,
     upsell_total: 4.0,
@@ -64,7 +64,7 @@ export const mockCalls: Call[] = [
     end_time: new Date(Date.now() - 14400000 + 300000).toISOString(),
     duration_seconds: 300,
     transcript:
-      'Ringo: Thank you for calling Mario\'s Pizza!\nCustomer: Hi, can I get a family combo deal?\nRingo: Absolutely! Our family combo includes two large pizzas, a salad, and breadsticks for $44.99. Would you like to add drinks for the whole family for just $7.99?\nCustomer: Yes please!\nRingo: Your total is $52.98. That\'s a great deal!',
+      'OMRI: Thank you for calling Mario\'s Pizza!\nCustomer: Hi, can I get a family combo deal?\nOMRI: Absolutely! Our family combo includes two large pizzas, a salad, and breadsticks for $44.99. Would you like to add drinks for the whole family for just $7.99?\nCustomer: Yes please!\nOMRI: Your total is $52.98. That\'s a great deal!',
     call_outcome: 'order_placed',
     order_total: 52.98,
     upsell_total: 7.99,

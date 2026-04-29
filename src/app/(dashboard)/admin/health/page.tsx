@@ -170,9 +170,9 @@ export default function HealthPage() {
       return ageMin < 60 && (a.failure_type === 'tool_call_failure' || a.failure_type === 'payment_link_failure' || a.failure_type === 'retell_call_error');
     }).length;
     const total = redCount + newAlertCount;
-    document.title = total > 0 ? `Ringo Ops (${total} 🔴)` : 'Ringo Ops';
+    document.title = total > 0 ? `OMRI Ops (${total} 🔴)` : 'OMRI Ops';
     return () => {
-      document.title = 'Ringo';
+      document.title = 'OMRI';
     };
   }, [data]);
 
@@ -180,9 +180,9 @@ export default function HealthPage() {
     return (
       <div className="space-y-6 animate-fade-in">
         <h1 className="text-2xl font-bold text-foreground">Ops</h1>
-        <div className="rounded-2xl border border-ringo-border bg-ringo-card p-12 text-center">
-          <RefreshCw className="h-6 w-6 mx-auto animate-spin text-ringo-muted" />
-          <p className="text-sm text-ringo-muted mt-3">Loading fleet…</p>
+        <div className="rounded-2xl border border-omri-border bg-omri-card p-12 text-center">
+          <RefreshCw className="h-6 w-6 mx-auto animate-spin text-omri-muted" />
+          <p className="text-sm text-omri-muted mt-3">Loading fleet…</p>
         </div>
       </div>
     );
@@ -194,7 +194,7 @@ export default function HealthPage() {
         <h1 className="text-2xl font-bold text-foreground">Ops</h1>
         <div className="rounded-2xl border border-red-500/40 bg-red-500/5 p-6">
           <p className="text-sm font-bold text-red-400">Failed to load</p>
-          <p className="text-xs text-ringo-muted mt-1">{error}</p>
+          <p className="text-xs text-omri-muted mt-1">{error}</p>
           <button
             onClick={load}
             className="mt-3 rounded-lg bg-bone/10 hover:bg-bone/20 px-3 py-1.5 text-xs font-bold text-bone transition-colors"
@@ -230,7 +230,7 @@ export default function HealthPage() {
               </span>
             )}
           </div>
-          <p className="text-sm text-ringo-muted">
+          <p className="text-sm text-omri-muted">
             {lastRefresh && (
               <>
                 Refreshed {fmtRelative(lastRefresh.toISOString())} · auto-refreshes every 60s
@@ -240,7 +240,7 @@ export default function HealthPage() {
         </div>
         <button
           onClick={load}
-          className="inline-flex items-center gap-2 rounded-lg border border-ringo-border bg-ringo-card hover:border-bone/30 px-3 py-2 text-xs font-bold text-bone transition-colors"
+          className="inline-flex items-center gap-2 rounded-lg border border-omri-border bg-omri-card hover:border-bone/30 px-3 py-2 text-xs font-bold text-bone transition-colors"
           aria-label="Refresh now"
         >
           <RefreshCw className={cn('h-3.5 w-3.5', loading && 'animate-spin')} />
@@ -280,11 +280,11 @@ export default function HealthPage() {
 
       {/* Fleet */}
       <section>
-        <h2 className="text-xs font-bold uppercase tracking-widest text-ringo-muted mb-3">
+        <h2 className="text-xs font-bold uppercase tracking-widest text-omri-muted mb-3">
           Fleet ({data.fleet.length})
         </h2>
         {data.fleet.length === 0 ? (
-          <div className="rounded-2xl border border-ringo-border bg-ringo-card p-6 text-center text-sm text-ringo-muted">
+          <div className="rounded-2xl border border-omri-border bg-omri-card p-6 text-center text-sm text-omri-muted">
             No active restaurants. Add a Retell agent ID to a restaurant to see it here.
           </div>
         ) : (
@@ -293,7 +293,7 @@ export default function HealthPage() {
               <Link
                 key={r.id}
                 href={`/admin/restaurants/${r.id}`}
-                className="group rounded-2xl border border-ringo-border bg-ringo-card p-4 hover:border-bone/30 transition-colors"
+                className="group rounded-2xl border border-omri-border bg-omri-card p-4 hover:border-bone/30 transition-colors"
               >
                 <div className="flex items-center justify-between gap-2 mb-3">
                   <div className="flex items-center gap-2 min-w-0">
@@ -306,7 +306,7 @@ export default function HealthPage() {
                     />
                     <p className="text-sm font-bold text-foreground truncate">{r.name}</p>
                   </div>
-                  <span className="text-[10px] font-semibold uppercase tracking-widest text-ringo-muted">
+                  <span className="text-[10px] font-semibold uppercase tracking-widest text-omri-muted">
                     {healthLabel[r.health_status]}
                   </span>
                 </div>
@@ -315,7 +315,7 @@ export default function HealthPage() {
                   <Cell label="Orders" value={String(r.orders_today)} />
                   <Cell label="GMV" value={fmtCurrency(r.revenue_today)} />
                 </div>
-                <p className="text-[10px] text-ringo-muted mt-3 flex items-center gap-1">
+                <p className="text-[10px] text-omri-muted mt-3 flex items-center gap-1">
                   <Clock className="h-3 w-3" /> Last call {fmtRelative(r.last_call_time)}
                 </p>
               </Link>
@@ -326,16 +326,16 @@ export default function HealthPage() {
 
       {/* Active alerts */}
       <section>
-        <h2 className="text-xs font-bold uppercase tracking-widest text-ringo-muted mb-3">
+        <h2 className="text-xs font-bold uppercase tracking-widest text-omri-muted mb-3">
           Recent alerts ({data.alerts.length})
         </h2>
         {data.alerts.length === 0 ? (
-          <div className="rounded-2xl border border-ringo-border bg-ringo-card p-6 text-center text-sm text-ringo-muted">
+          <div className="rounded-2xl border border-omri-border bg-omri-card p-6 text-center text-sm text-omri-muted">
             No alerts. Quiet on the wire.
           </div>
         ) : (
-          <div className="rounded-2xl border border-ringo-border bg-ringo-card overflow-hidden">
-            <ul className="divide-y divide-ringo-border">
+          <div className="rounded-2xl border border-omri-border bg-omri-card overflow-hidden">
+            <ul className="divide-y divide-omri-border">
               {data.alerts.map((a) => (
                 <li key={a.id} className="flex items-start gap-3 px-4 py-3 hover:bg-bone/[0.02]">
                   <AlertTriangle
@@ -352,11 +352,11 @@ export default function HealthPage() {
                         {failureTypeLabel[a.failure_type] || a.failure_type}
                       </span>
                       {a.restaurant_name && (
-                        <span className="text-xs text-ringo-muted">@ {a.restaurant_name}</span>
+                        <span className="text-xs text-omri-muted">@ {a.restaurant_name}</span>
                       )}
-                      <span className="text-[10px] text-ringo-muted/60">{fmtRelative(a.created_at)}</span>
+                      <span className="text-[10px] text-omri-muted/60">{fmtRelative(a.created_at)}</span>
                     </div>
-                    <p className="text-xs text-ringo-muted mt-0.5 line-clamp-2">{a.short_reason}</p>
+                    <p className="text-xs text-omri-muted mt-0.5 line-clamp-2">{a.short_reason}</p>
                   </div>
                   {a.retell_call_id && (
                     <a
@@ -377,35 +377,35 @@ export default function HealthPage() {
 
       {/* Recent calls */}
       <section>
-        <h2 className="text-xs font-bold uppercase tracking-widest text-ringo-muted mb-3">
+        <h2 className="text-xs font-bold uppercase tracking-widest text-omri-muted mb-3">
           Last 20 calls
         </h2>
         {data.recent_calls.length === 0 ? (
-          <div className="rounded-2xl border border-ringo-border bg-ringo-card p-6 text-center text-sm text-ringo-muted">
+          <div className="rounded-2xl border border-omri-border bg-omri-card p-6 text-center text-sm text-omri-muted">
             No calls yet.
           </div>
         ) : (
-          <div className="rounded-2xl border border-ringo-border bg-ringo-card overflow-hidden">
+          <div className="rounded-2xl border border-omri-border bg-omri-card overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="border-b border-ringo-border bg-bone/[0.02]">
-                    <th className="text-left font-semibold text-ringo-muted px-3 py-2">Restaurant</th>
-                    <th className="text-left font-semibold text-ringo-muted px-3 py-2">Started</th>
-                    <th className="text-right font-semibold text-ringo-muted px-3 py-2">Duration</th>
-                    <th className="text-left font-semibold text-ringo-muted px-3 py-2">Outcome</th>
-                    <th className="text-right font-semibold text-ringo-muted px-3 py-2">Order $</th>
-                    <th className="text-right font-semibold text-ringo-muted px-3 py-2">Retell</th>
+                  <tr className="border-b border-omri-border bg-bone/[0.02]">
+                    <th className="text-left font-semibold text-omri-muted px-3 py-2">Restaurant</th>
+                    <th className="text-left font-semibold text-omri-muted px-3 py-2">Started</th>
+                    <th className="text-right font-semibold text-omri-muted px-3 py-2">Duration</th>
+                    <th className="text-left font-semibold text-omri-muted px-3 py-2">Outcome</th>
+                    <th className="text-right font-semibold text-omri-muted px-3 py-2">Order $</th>
+                    <th className="text-right font-semibold text-omri-muted px-3 py-2">Retell</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-ringo-border">
+                <tbody className="divide-y divide-omri-border">
                   {data.recent_calls.map((c) => (
                     <tr key={c.id} className="hover:bg-bone/[0.02]">
                       <td className="px-3 py-2 font-bold text-foreground truncate max-w-[160px]">
                         {c.restaurant_name}
                       </td>
-                      <td className="px-3 py-2 text-ringo-muted">{fmtRelative(c.start_time)}</td>
-                      <td className="px-3 py-2 text-right text-ringo-muted">
+                      <td className="px-3 py-2 text-omri-muted">{fmtRelative(c.start_time)}</td>
+                      <td className="px-3 py-2 text-right text-omri-muted">
                         {fmtDuration(c.duration_seconds)}
                       </td>
                       <td className="px-3 py-2">
@@ -425,7 +425,7 @@ export default function HealthPage() {
                             <ArrowUpRight className="h-3 w-3" />
                           </a>
                         ) : (
-                          <span className="text-ringo-muted/30">—</span>
+                          <span className="text-omri-muted/30">—</span>
                         )}
                       </td>
                     </tr>
@@ -454,15 +454,15 @@ function StatCard({
   return (
     <div
       className={cn(
-        'rounded-2xl border bg-ringo-card p-4',
+        'rounded-2xl border bg-omri-card p-4',
         accent === 'red' && 'border-red-500/40 bg-red-500/5',
         accent === 'yellow' && 'border-amber-500/40 bg-amber-500/5',
-        accent === 'default' && 'border-ringo-border'
+        accent === 'default' && 'border-omri-border'
       )}
     >
       <div className="flex items-center justify-between mb-2">
-        <p className="text-[10px] font-bold uppercase tracking-widest text-ringo-muted">{label}</p>
-        <Icon className="h-3.5 w-3.5 text-ringo-muted" />
+        <p className="text-[10px] font-bold uppercase tracking-widest text-omri-muted">{label}</p>
+        <Icon className="h-3.5 w-3.5 text-omri-muted" />
       </div>
       <p className="text-2xl font-bold text-foreground">{value}</p>
     </div>
@@ -472,7 +472,7 @@ function StatCard({
 function Cell({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <p className="text-[9px] font-semibold uppercase tracking-widest text-ringo-muted">{label}</p>
+      <p className="text-[9px] font-semibold uppercase tracking-widest text-omri-muted">{label}</p>
       <p className="text-sm font-bold text-foreground">{value}</p>
     </div>
   );

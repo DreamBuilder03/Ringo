@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
             ringo_restaurant_id: restaurant_id,
           },
         },
-        idempotency_key: `ringo-${order_id}`,
+        idempotency_key: `omri-${order_id}`,
       }),
     });
 
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
     const squareData = await squareResponse.json();
     const squareOrderId = squareData.order?.id;
 
-    console.log(`[${new Date().toISOString()}] Order pushed to Square: ${squareOrderId} (Ringo order: ${order_id})`);
+    console.log(`[${new Date().toISOString()}] Order pushed to Square: ${squareOrderId} (OMRI order: ${order_id})`);
 
     // Update order with Square POS order ID
     const supabase = await createServerSupabaseClient();

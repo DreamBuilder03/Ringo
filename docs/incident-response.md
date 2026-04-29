@@ -1,4 +1,4 @@
-# Incident Response — Ringo Production
+# Incident Response — OMRI Production
 
 **Owner:** Misael Rodriguez Rivera (incident commander)
 **Pager:** Build 2 founder alerts → SMS to `FOUNDER_ALERT_PHONE` + email to `FOUNDER_ALERT_EMAIL`
@@ -15,7 +15,7 @@ If you are reading this during an active incident, jump to the section that matc
 3. Open Vercel dashboard → Functions → check error rate spike.
 4. Open Supabase dashboard → Database → Performance → check connection saturation.
 
-If `/admin/health` itself is down: try the Supabase dashboard directly. If both are down: it's likely a Vercel or Supabase outage, not Ringo. Check status.vercel.com and status.supabase.com.
+If `/admin/health` itself is down: try the Supabase dashboard directly. If both are down: it's likely a Vercel or Supabase outage, not OMRI. Check status.vercel.com and status.supabase.com.
 
 ---
 
@@ -79,7 +79,7 @@ If PITR isn't available: rely on Supabase's daily logical backups (less granular
 
 ## Incident: Twilio number went down (calls not coming in)
 
-**Symptoms:** silent-line-check cron fires (Build 2 alert: `silent_line` failure type) for a restaurant during business hours; restaurant owner calls saying "my Ringo phone isn't ringing."
+**Symptoms:** silent-line-check cron fires (Build 2 alert: `silent_line` failure type) for a restaurant during business hours; restaurant owner calls saying "my OMRI phone isn't ringing."
 
 **Triage:**
 

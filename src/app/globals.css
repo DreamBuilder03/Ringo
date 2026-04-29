@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Ringo — Pure Monochrome (v2, 2026-04-14)
+/* OMRI — Pure Monochrome (v2, 2026-04-14)
  * Fraunces (display, variable with ital/opsz/wght/SOFT) + Inter (body, 300-700)
  */
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,100..900,0..100;1,9..144,100..900,0..100&family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap');
@@ -87,7 +87,7 @@ body {
     @apply animate-pulse rounded bg-smoke;
   }
 
-  /* Hairline border — the Ringo default divider */
+  /* Hairline border — the OMRI default divider */
   .border-hairline {
     border-color: rgba(243, 238, 227, 0.06);
   }

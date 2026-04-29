@@ -175,7 +175,7 @@ describe('Add-to-Order Route - Calculation Logic', () => {
     });
 
     it('should handle the Modesto, CA tax rate (8.75%)', () => {
-      // Ringo is based in Modesto, CA
+      // OMRI is based in Modesto, CA
       const items: OrderItem[] = [
         { name: 'Taco', quantity: 3, price: 2.5 },
         { name: 'Burrito', quantity: 1, price: 6.99 },

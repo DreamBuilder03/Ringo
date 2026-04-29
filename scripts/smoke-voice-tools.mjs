@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Synthetic test harness for Ringo voice-tool routes.
+ * Synthetic test harness for OMRI voice-tool routes.
  *
  * Why this exists: we were using real phone calls as integration tests.
  * That's slow, flaky, and expensive. This script hits the HTTP endpoints
@@ -23,7 +23,7 @@
  *   SUPABASE_SERVICE_ROLE_KEY
  *
  * Optional env:
- *   BASE_URL              — defaults to https://www.useringo.ai
+ *   BASE_URL              — defaults to https://www.omriapp.com
  *   SMOKE_RESTAURANT_ID   — defaults to Sal's restaurant UUID
  *   SMOKE_AGENT_ID        — defaults to Sal's Retell agent ID
  *   SMOKE_FROM_NUMBER     — defaults to +15559990000 (fake caller ID)
@@ -56,7 +56,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 loadEnvFile(resolve(__dirname, '..', '.env.local'));
 loadEnvFile(resolve(__dirname, '..', '.env'));
 
-const BASE_URL = (process.env.BASE_URL || 'https://www.useringo.ai').replace(/\/$/, '');
+const BASE_URL = (process.env.BASE_URL || 'https://www.omriapp.com').replace(/\/$/, '');
 const RESTAURANT_ID = process.env.SMOKE_RESTAURANT_ID || 'a0000000-0000-0000-0000-000000005a15';
 const AGENT_ID = process.env.SMOKE_AGENT_ID || 'agent_2a06fef4b4adf81ffd9b8a72e2';
 const FROM_NUMBER = process.env.SMOKE_FROM_NUMBER || '+15559990000';
@@ -504,7 +504,7 @@ async function t10_missing_args_never_freezes_agent() {
 // ---------------------------------------------------------------------------
 
 async function main() {
-  console.log('Ringo synthetic voice-tool harness');
+  console.log('OMRI synthetic voice-tool harness');
   console.log('==================================');
   console.log(`BASE_URL:       ${BASE_URL}`);
   console.log(`RESTAURANT_ID:  ${RESTAURANT_ID}`);

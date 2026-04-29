@@ -43,8 +43,8 @@ async function getOrCreateGHLContact(phone: string, apiKey: string, locationId: 
     body: JSON.stringify({
       locationId,
       phone,
-      name: 'Ringo Customer',
-      source: 'Ringo AI',
+      name: 'OMRI Customer',
+      source: 'OMRI AI',
     }),
   });
 

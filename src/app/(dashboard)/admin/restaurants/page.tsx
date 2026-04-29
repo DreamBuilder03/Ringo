@@ -70,13 +70,13 @@ export default function AddRestaurantPage() {
 
   return (
     <div className="max-w-2xl animate-fade-in">
-      <Link href="/admin" className="inline-flex items-center gap-1.5 text-sm text-ringo-muted hover:text-foreground transition-colors mb-4">
+      <Link href="/admin" className="inline-flex items-center gap-1.5 text-sm text-omri-muted hover:text-foreground transition-colors mb-4">
         <ArrowLeft className="h-4 w-4" /> Back to Admin
       </Link>
 
       <h1 className="text-2xl font-semibold text-foreground mb-2">Add New Restaurant</h1>
-      <p className="text-sm text-ringo-muted mb-6">
-        Register a new restaurant location for Ringo AI ordering
+      <p className="text-sm text-omri-muted mb-6">
+        Register a new restaurant location for OMRI AI ordering
       </p>
 
       <Card>

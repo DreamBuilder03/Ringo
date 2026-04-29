@@ -18,9 +18,9 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: 'Try Ringo — Live AI Voice Demo for Your Restaurant',
+  title: 'Try OMRI — Live AI Voice Demo for Your Restaurant',
   description:
-    'Hear Ringo answer the phone for your restaurant in under a minute. Enter your restaurant, then talk live.',
+    'Hear OMRI answer the phone for your restaurant in under a minute. Enter your restaurant, then talk live.',
 };
 
 export default function DemoLayout({ children }: { children: React.ReactNode }) {
@@ -30,7 +30,7 @@ export default function DemoLayout({ children }: { children: React.ReactNode }) 
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
           <Link href="/" className="flex items-center gap-2">
             <span className="text-xl font-semibold tracking-tight text-[#F3EEE3]" style={{ fontFamily: 'var(--font-fraunces)' }}>
-              Ringo
+              OMRI
             </span>
           </Link>
           <Link

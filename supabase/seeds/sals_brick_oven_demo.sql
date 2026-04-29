@@ -7,7 +7,7 @@
 --   85 rows in public.menu_items across 10 categories
 --
 -- Square credentials below are SANDBOX only — they are tied to the
--- "Ringo — Sal's Demo" Square Developer sandbox app. No real money.
+-- "OMRI — Sal's Demo" Square Developer sandbox app. No real money.
 -- Swap to production credentials when the first paying client onboards.
 -- =====================================================================
 

@@ -102,7 +102,7 @@ function getLimiter(tier: LimitTier): Ratelimit | null {
       redis,
       limiter: Ratelimit.slidingWindow(max, `${windowSec} s`),
       analytics: true,
-      prefix: `ringo:rl:${tier.toLowerCase()}`,
+      prefix: `omri:rl:${tier.toLowerCase()}`,
     });
     limiterCache.set(tier, limiter);
   }

@@ -240,19 +240,19 @@ export default function OnboardingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-ringo-dark text-foreground">
+    <div className="min-h-screen bg-omri-dark text-foreground">
       {/* Grid background */}
       <div className="fixed inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:60px_60px] pointer-events-none" />
 
       {/* Gradient blobs */}
-      <div className="fixed top-20 left-1/4 w-[400px] h-[400px] bg-ringo-teal/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed top-20 left-1/4 w-[400px] h-[400px] bg-omri-teal/5 rounded-full blur-[120px] pointer-events-none" />
       <div className="fixed bottom-20 right-1/4 w-[300px] h-[300px] bg-bone/5 rounded-full blur-[120px] pointer-events-none" />
 
       <main className="relative flex flex-col items-center justify-center min-h-screen px-4 py-12">
         <div className="w-full max-w-xl">
           {/* Logo */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-ringo-teal mb-2">Ringo</h1>
+            <h1 className="text-3xl font-bold text-omri-teal mb-2">OMRI</h1>
             <p className="text-sm text-bone/40">Set up your AI phone agent in under 2 minutes</p>
           </div>
 
@@ -264,9 +264,9 @@ export default function OnboardingPage() {
                   className={cn(
                     'flex items-center justify-center h-10 w-10 rounded-xl text-xs font-bold transition-all duration-500',
                     i < step
-                      ? 'bg-ringo-teal text-bone shadow-lg shadow-ringo-teal/20'
+                      ? 'bg-omri-teal text-bone shadow-lg shadow-omri-teal/20'
                       : i === step
-                      ? 'bg-ringo-teal/10 text-ringo-teal border-2 border-ringo-teal/50'
+                      ? 'bg-omri-teal/10 text-omri-teal border-2 border-omri-teal/50'
                       : 'bg-bone/[0.04] text-bone/20 border border-bone/[0.06]'
                   )}
                 >
@@ -275,7 +275,7 @@ export default function OnboardingPage() {
                 {i < steps.length - 1 && (
                   <div className={cn(
                     'w-8 sm:w-12 h-0.5 rounded-full transition-all duration-500',
-                    i < step ? 'bg-ringo-teal' : 'bg-bone/[0.06]'
+                    i < step ? 'bg-omri-teal' : 'bg-bone/[0.06]'
                   )} />
                 )}
               </div>
@@ -289,11 +289,11 @@ export default function OnboardingPage() {
             {step === 0 && (
               <div className="space-y-5">
                 <div className="text-center mb-2">
-                  <div className="mx-auto h-14 w-14 rounded-2xl bg-ringo-teal/10 flex items-center justify-center mb-4">
-                    <UserPlus className="h-7 w-7 text-ringo-teal" />
+                  <div className="mx-auto h-14 w-14 rounded-2xl bg-omri-teal/10 flex items-center justify-center mb-4">
+                    <UserPlus className="h-7 w-7 text-omri-teal" />
                   </div>
                   <h2 className="text-xl font-bold text-bone">Create your account</h2>
-                  <p className="text-sm text-bone/40 mt-1">This will be your Ringo dashboard login</p>
+                  <p className="text-sm text-bone/40 mt-1">This will be your OMRI dashboard login</p>
                 </div>
                 <Input
                   id="fullName"
@@ -341,7 +341,7 @@ export default function OnboardingPage() {
 
                 <p className="text-center text-xs text-bone/30">
                   Already have an account?{' '}
-                  <button onClick={() => router.push('/login')} className="text-ringo-teal hover:text-ringo-teal-light transition-colors">
+                  <button onClick={() => router.push('/login')} className="text-omri-teal hover:text-omri-teal-light transition-colors">
                     Sign in
                   </button>
                 </p>
@@ -352,11 +352,11 @@ export default function OnboardingPage() {
             {step === 1 && (
               <div className="space-y-5">
                 <div className="text-center mb-2">
-                  <div className="mx-auto h-14 w-14 rounded-2xl bg-ringo-amber/10 flex items-center justify-center mb-4">
-                    <Utensils className="h-7 w-7 text-ringo-amber" />
+                  <div className="mx-auto h-14 w-14 rounded-2xl bg-omri-amber/10 flex items-center justify-center mb-4">
+                    <Utensils className="h-7 w-7 text-omri-amber" />
                   </div>
                   <h2 className="text-xl font-bold text-bone">Your restaurant</h2>
-                  <p className="text-sm text-bone/40 mt-1">Ringo will use this to answer calls accurately</p>
+                  <p className="text-sm text-bone/40 mt-1">OMRI will use this to answer calls accurately</p>
                 </div>
                 <Input
                   id="restaurantName"
@@ -417,7 +417,7 @@ export default function OnboardingPage() {
                       className={cn(
                         'rounded-xl border p-4 text-left transition-all duration-200',
                         form.posType === pos.value
-                          ? 'border-ringo-teal/50 bg-ringo-teal/[0.05] shadow-lg shadow-ringo-teal/10'
+                          ? 'border-omri-teal/50 bg-omri-teal/[0.05] shadow-lg shadow-omri-teal/10'
                           : 'border-bone/[0.06] bg-bone/[0.02] hover:border-bone/[0.12] hover:bg-bone/[0.04]'
                       )}
                     >
@@ -426,7 +426,7 @@ export default function OnboardingPage() {
                         <p className="text-[10px] text-bone/30 mt-0.5">Auto-sync orders</p>
                       )}
                       {form.posType === pos.value && (
-                        <Check className="h-3.5 w-3.5 text-ringo-teal mt-1" />
+                        <Check className="h-3.5 w-3.5 text-omri-teal mt-1" />
                       )}
                     </button>
                   ))}
@@ -450,8 +450,8 @@ export default function OnboardingPage() {
             {step === 3 && (
               <div className="space-y-5">
                 <div className="text-center mb-2">
-                  <div className="mx-auto h-14 w-14 rounded-2xl bg-ringo-teal/10 flex items-center justify-center mb-4">
-                    <Sparkles className="h-7 w-7 text-ringo-teal" />
+                  <div className="mx-auto h-14 w-14 rounded-2xl bg-omri-teal/10 flex items-center justify-center mb-4">
+                    <Sparkles className="h-7 w-7 text-omri-teal" />
                   </div>
                   <h2 className="text-xl font-bold text-bone">Choose your plan</h2>
                   <p className="text-sm text-bone/40 mt-1">14-day free trial on all plans. No credit card needed.</p>
@@ -465,12 +465,12 @@ export default function OnboardingPage() {
                       className={cn(
                         'w-full rounded-xl border p-5 text-left transition-all duration-200 relative',
                         form.planTier === plan.tier
-                          ? 'border-ringo-teal/50 bg-ringo-teal/[0.05] shadow-lg shadow-ringo-teal/10'
+                          ? 'border-omri-teal/50 bg-omri-teal/[0.05] shadow-lg shadow-omri-teal/10'
                           : 'border-bone/[0.06] bg-bone/[0.02] hover:border-bone/[0.12]'
                       )}
                     >
                       {plan.popular && (
-                        <span className="absolute -top-2.5 right-4 rounded-full bg-ringo-teal px-3 py-0.5 text-[10px] font-bold text-bone shadow-lg shadow-ringo-teal/30">
+                        <span className="absolute -top-2.5 right-4 rounded-full bg-omri-teal px-3 py-0.5 text-[10px] font-bold text-bone shadow-lg shadow-omri-teal/30">
                           RECOMMENDED
                         </span>
                       )}
@@ -516,8 +516,8 @@ export default function OnboardingPage() {
             {step === 4 && (
               <div className="text-center py-6 space-y-6">
                 <div className="relative mx-auto w-24 h-24">
-                  <div className="absolute inset-0 bg-ringo-teal/15 rounded-full blur-xl" />
-                  <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-ringo-teal to-bone flex items-center justify-center shadow-2xl shadow-ringo-teal/30">
+                  <div className="absolute inset-0 bg-omri-teal/15 rounded-full blur-xl" />
+                  <div className="relative w-24 h-24 rounded-full bg-gradient-to-br from-omri-teal to-bone flex items-center justify-center shadow-2xl shadow-omri-teal/30">
                     <Check className="h-12 w-12 text-bone" />
                   </div>
                 </div>
@@ -533,8 +533,8 @@ export default function OnboardingPage() {
 
                 <div className="grid grid-cols-3 gap-3">
                   {[
-                    { icon: Zap, label: 'Instant setup', color: 'text-ringo-teal', bg: 'bg-ringo-teal/10' },
-                    { icon: PhoneCall, label: '24/7 answering', color: 'text-ringo-amber', bg: 'bg-ringo-amber/10' },
+                    { icon: Zap, label: 'Instant setup', color: 'text-omri-teal', bg: 'bg-omri-teal/10' },
+                    { icon: PhoneCall, label: '24/7 answering', color: 'text-omri-amber', bg: 'bg-omri-amber/10' },
                     { icon: TrendingUp, label: 'Smart upsells', color: 'text-bone', bg: 'bg-bone/10' },
                   ].map((item) => (
                     <div key={item.label} className="rounded-xl bg-bone/[0.03] border border-bone/[0.06] p-3">
@@ -547,7 +547,7 @@ export default function OnboardingPage() {
                 <Button
                   size="lg"
                   onClick={() => router.push('/dashboard')}
-                  className="w-full shadow-xl shadow-ringo-teal/20"
+                  className="w-full shadow-xl shadow-omri-teal/20"
                 >
                   Go to Your Dashboard <ArrowRight className="h-4 w-4" />
                 </Button>

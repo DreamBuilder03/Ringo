@@ -1,5 +1,5 @@
 /**
- * Email templates for Ringo notifications
+ * Email templates for OMRI notifications
  * All templates use inline CSS for email client compatibility
  */
 
@@ -41,7 +41,7 @@ function emailWrapper(title: string, content: string) {
       ${content}
     </div>
     <div class="footer">
-      <p style="margin: 0;">Sent by Ringo AI • <a href="https://useringo.ai" style="color: ${BRAND_GOLD}; text-decoration: none;">useringo.ai</a></p>
+      <p style="margin: 0;">Sent by OMRI AI • <a href="https://omriapp.com" style="color: ${BRAND_GOLD}; text-decoration: none;">omriapp.com</a></p>
     </div>
   </div>
 </body>
@@ -298,7 +298,7 @@ export function welcomeEmail({
   ownerName: string;
 }): string {
   const content = `
-    <h2>Welcome to Ringo, ${ownerName}!</h2>
+    <h2>Welcome to OMRI, ${ownerName}!</h2>
     <p>We're thrilled to have <strong>${restaurantName}</strong> on board. Your AI phone agent is being set up and will be ready in just a few minutes.</p>
 
     <div style="background-color: #141414; border-left: 4px solid ${BRAND_GOLD}; padding: 16px; margin: 20px 0; border-radius: 4px;">
@@ -312,31 +312,31 @@ export function welcomeEmail({
     </div>
 
     <center>
-      <a href="https://app.useringo.ai/dashboard" class="button">Go to Dashboard</a>
+      <a href="https://app.omriapp.com/dashboard" class="button">Go to Dashboard</a>
     </center>
 
     <div style="background-color: #141414; border: 1px solid #2E2E2E; border-radius: 8px; padding: 16px; margin: 20px 0;">
       <h3 style="margin-top: 0; color: ${BRAND_DARK};">Quick Tips</h3>
       <ul style="margin: 12px 0; padding-left: 20px;">
-        <li style="margin: 8px 0; font-size: 13px;"><strong>Test Your Agent:</strong> Call the Ringo number to see it in action</li>
+        <li style="margin: 8px 0; font-size: 13px;"><strong>Test Your Agent:</strong> Call the OMRI number to see it in action</li>
         <li style="margin: 8px 0; font-size: 13px;"><strong>Set Business Hours:</strong> Control when calls are accepted</li>
         <li style="margin: 8px 0; font-size: 13px;"><strong>Monitor Analytics:</strong> Track calls, orders, and revenue in real-time</li>
       </ul>
     </div>
 
-    <p style="text-align: center; color: #9C9C9C; font-size: 12px; margin-top: 24px;">Questions? We're here to help at support@useringo.ai or (855) RINGO-AI</p>
+    <p style="text-align: center; color: #9C9C9C; font-size: 12px; margin-top: 24px;">Questions? We're here to help at support@omriapp.com or (855) OMRI-AI</p>
   `;
 
-  return emailWrapper('Welcome to Ringo', content);
+  return emailWrapper('Welcome to OMRI', content);
 }
 
 /**
  * Monthly ROI report — the retention/renewal driver.
  *
- * Goal: every 1st of the month, show the owner *in dollars* why Ringo pays for
+ * Goal: every 1st of the month, show the owner *in dollars* why OMRI pays for
  * itself. We lead with total revenue captured, then subtract the subscription
  * cost, then surface the signature pay-before-prep savings (no-shows avoided)
- * so they internalize the "Ringo saves me money Loman can't" story.
+ * so they internalize the "OMRI saves me money Loman can't" story.
  */
 export function monthlyRoiEmail({
   restaurantName,
@@ -345,8 +345,8 @@ export function monthlyRoiEmail({
   ordersPlaced,
   orderRevenue,
   upsellRevenue,
-  avoidedNoShowRevenue,  // $ of paid-before-prep tickets that would've ghosted pre-Ringo
-  monthlyCost,           // their Ringo subscription $ for the month
+  avoidedNoShowRevenue,  // $ of paid-before-prep tickets that would've ghosted pre-OMRI
+  monthlyCost,           // their OMRI subscription $ for the month
 }: {
   restaurantName: string;
   monthLabel: string;
@@ -366,7 +366,7 @@ export function monthlyRoiEmail({
 
   const content = `
     <h2>${restaurantName} — ROI for ${monthLabel}</h2>
-    <p>Here's what Ringo did for you last month.</p>
+    <p>Here's what OMRI did for you last month.</p>
 
     <div class="stat-box">
       <p class="stat-label">Total value delivered</p>
@@ -403,13 +403,13 @@ export function monthlyRoiEmail({
       <p style="margin: 0; font-size: 13px; color: #6B6B6B;">Net gain this month</p>
       <p style="margin: 4px 0 0 0; font-size: 24px; font-weight: 700; color: ${BRAND_DARK};">${fmt(netGain)}</p>
       <p style="margin: 8px 0 0 0; font-size: 12px; color: #6B6B6B;">
-        Ringo's pay-before-prep is what separates us from every other voice AI —
+        OMRI's pay-before-prep is what separates us from every other voice AI —
         no other vendor stops the kitchen from firing tickets that never get picked up.
       </p>
     </div>
 
     <center>
-      <a href="https://www.useringo.ai/dashboard/analytics" class="button">See full analytics</a>
+      <a href="https://www.omriapp.com/dashboard/analytics" class="button">See full analytics</a>
     </center>
 
     <p style="text-align: center; color: #9C9C9C; font-size: 12px; margin-top: 24px;">

@@ -112,19 +112,19 @@ function CustomerCard({ customer, isExpanded, onToggle }: CustomerCardProps) {
             {/* Stats grid */}
             <div className="grid grid-cols-2 gap-3 text-sm">
               <div>
-                <p className="text-ringo-muted text-xs">Orders</p>
+                <p className="text-omri-muted text-xs">Orders</p>
                 <p className="text-foreground font-semibold">{customer.orderCount}</p>
               </div>
               <div>
-                <p className="text-ringo-muted text-xs">Avg. Order Value</p>
+                <p className="text-omri-muted text-xs">Avg. Order Value</p>
                 <p className="text-foreground font-semibold">{formatCurrency(customer.averageOrderValue)}</p>
               </div>
               <div>
-                <p className="text-ringo-muted text-xs">First Order</p>
+                <p className="text-omri-muted text-xs">First Order</p>
                 <p className="text-foreground text-xs">{format(new Date(customer.firstOrderDate), 'MMM d, yyyy')}</p>
               </div>
               <div>
-                <p className="text-ringo-muted text-xs">Most Recent</p>
+                <p className="text-omri-muted text-xs">Most Recent</p>
                 <p className="text-foreground text-xs">{format(new Date(customer.mostRecentOrderDate), 'MMM d, yyyy')}</p>
               </div>
             </div>
@@ -133,12 +133,12 @@ function CustomerCard({ customer, isExpanded, onToggle }: CustomerCardProps) {
           {/* Right side: Total spend and expand icon */}
           <div className="flex flex-col items-end gap-2">
             <div className="text-right">
-              <p className="text-sm text-ringo-muted">Total Spend</p>
+              <p className="text-sm text-omri-muted">Total Spend</p>
               <p className="text-lg font-bold text-bone">
                 {formatCurrency(customer.totalSpend)}
               </p>
             </div>
-            <div className="text-ringo-muted">
+            <div className="text-omri-muted">
               {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
             </div>
           </div>
@@ -159,7 +159,7 @@ function CustomerCard({ customer, isExpanded, onToggle }: CustomerCardProps) {
                     className="flex items-center justify-between p-2 rounded-lg text-sm bg-graphite/30"
                   >
                     <span className="text-foreground">{item.name}</span>
-                    <span className="text-ringo-muted text-xs">Ordered {item.count}x</span>
+                    <span className="text-omri-muted text-xs">Ordered {item.count}x</span>
                   </div>
                 ))}
               </div>
@@ -183,7 +183,7 @@ function CustomerCard({ customer, isExpanded, onToggle }: CustomerCardProps) {
                           <p className="text-sm font-medium text-foreground">
                             {format(new Date(order.created_at), 'MMM d, yyyy h:mm a')}
                           </p>
-                          <p className="text-xs text-ringo-muted mt-1">
+                          <p className="text-xs text-omri-muted mt-1">
                             Order #{order.id.slice(0, 8).toUpperCase()}
                           </p>
                         </div>
@@ -198,21 +198,21 @@ function CustomerCard({ customer, isExpanded, onToggle }: CustomerCardProps) {
                       </div>
 
                       {/* Items in order */}
-                      <div className="space-y-1 text-xs text-ringo-muted">
+                      <div className="space-y-1 text-xs text-omri-muted">
                         {order.items.slice(0, 3).map((item, i) => (
                           <p key={i} className="text-foreground/80">
                             {item.quantity}x {item.name}
                           </p>
                         ))}
                         {order.items.length > 3 && (
-                          <p className="text-ringo-muted/60">+{order.items.length - 3} more items</p>
+                          <p className="text-omri-muted/60">+{order.items.length - 3} more items</p>
                         )}
                       </div>
                     </div>
                   );
                 })
               ) : (
-                <p className="text-sm text-ringo-muted">No orders found</p>
+                <p className="text-sm text-omri-muted">No orders found</p>
               )}
             </div>
           </div>
@@ -234,15 +234,15 @@ function StatsCard({ label, value, icon, description }: StatsCardProps) {
     <Card className="p-4">
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <p className="text-xs font-semibold uppercase tracking-wide text-ringo-muted mb-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-omri-muted mb-2">
             {label}
           </p>
           <p className="text-2xl font-bold text-foreground">{value}</p>
           {description && (
-            <p className="text-xs text-ringo-muted mt-1">{description}</p>
+            <p className="text-xs text-omri-muted mt-1">{description}</p>
           )}
         </div>
-        <div className="text-ringo-muted/40 flex-shrink-0">
+        <div className="text-omri-muted/40 flex-shrink-0">
           {icon}
         </div>
       </div>
@@ -388,7 +388,7 @@ export default function CustomersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="min-w-0">
           <h1 className="text-xl sm:text-2xl font-bold text-foreground">Customers</h1>
-          <p className="text-sm text-ringo-muted mt-1">
+          <p className="text-sm text-omri-muted mt-1">
             {totalCustomers > 0
               ? `${totalCustomers} unique customers`
               : 'No customers yet'}
@@ -423,7 +423,7 @@ export default function CustomersPage() {
       {/* Search */}
       {hasCustomers && (
         <div className="relative">
-          <Search className="absolute left-3 top-3 h-5 w-5 text-ringo-muted" />
+          <Search className="absolute left-3 top-3 h-5 w-5 text-omri-muted" />
           <input
             type="text"
             placeholder="Search by phone number..."
@@ -443,7 +443,7 @@ export default function CustomersPage() {
               'px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors transition-opacity whitespace-nowrap',
               sortBy === 'spend'
                 ? 'bg-bone text-obsidian'
-                : 'bg-coal border border-smoke text-ringo-muted hover:text-foreground'
+                : 'bg-coal border border-smoke text-omri-muted hover:text-foreground'
             )}
           >
             Highest Spend
@@ -454,7 +454,7 @@ export default function CustomersPage() {
               'px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors transition-opacity whitespace-nowrap',
               sortBy === 'count'
                 ? 'bg-bone text-obsidian'
-                : 'bg-coal border border-smoke text-ringo-muted hover:text-foreground'
+                : 'bg-coal border border-smoke text-omri-muted hover:text-foreground'
             )}
           >
             Most Orders
@@ -465,7 +465,7 @@ export default function CustomersPage() {
               'px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors transition-opacity whitespace-nowrap',
               sortBy === 'recent'
                 ? 'bg-bone text-obsidian'
-                : 'bg-coal border border-smoke text-ringo-muted hover:text-foreground'
+                : 'bg-coal border border-smoke text-omri-muted hover:text-foreground'
             )}
           >
             Most Recent
@@ -477,18 +477,18 @@ export default function CustomersPage() {
       {loading ? (
         <div className="rounded-2xl border border-smoke bg-coal p-12 text-center">
           <div className="h-8 w-8 mx-auto border-2 border-bone/20 border-t-bone rounded-full animate-spin mb-3" />
-          <p className="text-sm text-ringo-muted">Loading customers...</p>
+          <p className="text-sm text-omri-muted">Loading customers...</p>
         </div>
       ) : !hasCustomers ? (
         <div className="rounded-2xl border border-smoke bg-coal p-12 text-center">
-          <p className="text-sm text-ringo-muted">
+          <p className="text-sm text-omri-muted">
             No customers yet. When orders start coming in, your customer base
             will appear here.
           </p>
         </div>
       ) : filteredCustomers.length === 0 ? (
         <div className="rounded-2xl border border-smoke bg-coal p-12 text-center">
-          <p className="text-sm text-ringo-muted">
+          <p className="text-sm text-omri-muted">
             No customers match your search.
           </p>
         </div>

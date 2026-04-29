@@ -122,8 +122,8 @@ export function TranscriptViewer({ call, onClose }: TranscriptViewerProps) {
         <div className="flex-1 overflow-y-auto p-5 space-y-3">
           {lines.length > 0 ? (
             lines.map((line, i) => {
-              const isAgent = line.toLowerCase().startsWith('agent:') || line.toLowerCase().startsWith('ringo:');
-              const cleanLine = line.replace(/^(agent|ringo|customer|caller):\s*/i, '');
+              const isAgent = line.toLowerCase().startsWith('agent:') || line.toLowerCase().startsWith('omri:');
+              const cleanLine = line.replace(/^(agent|omri|customer|caller):\s*/i, '');
               return (
                 <div
                   key={i}

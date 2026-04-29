@@ -3,7 +3,7 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
 import { validateRetellBody } from '@/lib/with-retell-validation';
 import { finalizePaymentSchema } from '@/lib/schemas/tools';
 
-// Demo-only finalize-payment tool for the Ringo Website Demo agent.
+// Demo-only finalize-payment tool for the OMRI Website Demo agent.
 // The production /api/tools/finalize-payment route looks up restaurants by retell_agent_id;
 // the demo agent isn't in the restaurants table, so that route 404s before it can SMS.
 // This route bypasses Square (no real charge), looks up the demo_leads row by call metadata,
@@ -114,12 +114,12 @@ export async function POST(req: NextRequest) {
     // Polished demo SMS — clearly labeled as a demo so we don't deceive recipients.
     const greeting = callerName ? `Hey ${callerName}!` : 'Hey there!';
     const totalLine = totalStr ? ` Total: ${totalStr}.` : '';
-    const bookingUrl = process.env.DEMO_BOOKING_URL || 'https://useringo.ai/book';
-    const payUrl = `https://useringo.ai/pay/${(lead?.id || callId || 'demo').slice(0, 8)}`;
-    const message = `${greeting} This is Ringo's demo SMS — here's exactly what your customers would get after ordering at ${restaurantName}: "Your order is ready for payment! ${itemsSummary}.${totalLine} Pay here: ${payUrl} — once paid, the kitchen starts your order." Like what you just built? Book a 15-min setup call: ${bookingUrl}`;
+    const bookingUrl = process.env.DEMO_BOOKING_URL || 'https://omriapp.com/book';
+    const payUrl = `https://omriapp.com/pay/${(lead?.id || callId || 'demo').slice(0, 8)}`;
+    const message = `${greeting} This is OMRI's demo SMS — here's exactly what your customers would get after ordering at ${restaurantName}: "Your order is ready for payment! ${itemsSummary}.${totalLine} Pay here: ${payUrl} — once paid, the kitchen starts your order." Like what you just built? Book a 15-min setup call: ${bookingUrl}`;
 
     // Send via the shared /api/sms endpoint (GHL → Twilio fallback).
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://useringo.ai';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://omriapp.com';
     let smsOk = false;
     let smsErr: string | null = null;
     try {
@@ -157,7 +157,7 @@ export async function POST(req: NextRequest) {
       // 200 — speakable fallback (Retell ignores result on non-2xx).
       return NextResponse.json({
         result:
-          "Looks like our demo texting line had a hiccup. In a real Ringo install, the payment link would already be on its way. Want me to email the demo summary instead?",
+          "Looks like our demo texting line had a hiccup. In a real OMRI install, the payment link would already be on its way. Want me to email the demo summary instead?",
       });
     }
 
@@ -173,7 +173,7 @@ export async function POST(req: NextRequest) {
     // 200 — speakable fallback (Retell ignores result on non-2xx).
     return NextResponse.json({
       result:
-        "Sorry — I hit a snag sending that. In a real Ringo install we'd retry automatically. Want to try one more time?",
+        "Sorry — I hit a snag sending that. In a real OMRI install we'd retry automatically. Want to try one more time?",
     });
   }
 }

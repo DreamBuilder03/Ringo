@@ -38,27 +38,27 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-ringo-dark">
+    <div className="min-h-screen bg-omri-dark">
       {/* Grid background */}
       <div className="fixed inset-0 bg-[linear-gradient(rgba(29,158,117,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(29,158,117,0.05)_1px,transparent_1px)] bg-[size:60px_60px] pointer-events-none" />
 
       {/* Gradient blob */}
-      <div className="fixed top-1/4 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-ringo-teal/5 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed top-1/4 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-omri-teal/5 rounded-full blur-[120px] pointer-events-none" />
 
       <main className="relative flex min-h-screen items-center justify-center px-4">
         <div className="w-full max-w-sm space-y-8">
           <div className="text-center">
             <Image
-              src="/ringo-logo.svg"
-              alt="Ringo"
+              src="/omri-logo.svg"
+              alt="OMRI"
               width={160}
               height={50}
               className="h-12 w-auto mx-auto"
             />
-            <p className="text-sm text-ringo-muted mt-2">Sign in to your dashboard</p>
+            <p className="text-sm text-omri-muted mt-2">Sign in to your dashboard</p>
           </div>
 
-          <div className="rounded-2xl border border-ringo-border bg-ringo-card backdrop-blur-sm p-8 shadow-lg shadow-obsidian/5">
+          <div className="rounded-2xl border border-omri-border bg-omri-card backdrop-blur-sm p-8 shadow-lg shadow-obsidian/5">
             <form onSubmit={handleLogin} className="space-y-5">
               <Input
                 id="email"
@@ -91,14 +91,14 @@ export default function LoginPage() {
             </form>
           </div>
 
-          <p className="text-center text-sm text-ringo-muted/70">
-            New to Ringo?{' '}
-            <Link href="/onboarding" className="text-ringo-teal hover:text-ringo-teal-light transition-colors font-semibold">
+          <p className="text-center text-sm text-omri-muted/70">
+            New to OMRI?{' '}
+            <Link href="/onboarding" className="text-omri-teal hover:text-omri-teal-light transition-colors font-semibold">
               Start free trial
             </Link>
           </p>
 
-          <div className="flex items-center justify-center gap-1.5 text-[10px] text-ringo-muted/50 font-semibold">
+          <div className="flex items-center justify-center gap-1.5 text-[10px] text-omri-muted/50 font-semibold">
             <Shield className="h-3 w-3" />
             <span>Protected by 256-bit SSL encryption</span>
           </div>

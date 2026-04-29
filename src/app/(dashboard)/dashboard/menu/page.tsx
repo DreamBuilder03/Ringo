@@ -331,10 +331,10 @@ export default function MenuManagementPage() {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="h-8 w-48 bg-ringo-border/30 rounded-lg animate-pulse" />
+        <div className="h-8 w-48 bg-omri-border/30 rounded-lg animate-pulse" />
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {[...Array(6)].map((_, i) => (
-            <div key={i} className="h-48 bg-ringo-border/30 rounded-xl animate-pulse" />
+            <div key={i} className="h-48 bg-omri-border/30 rounded-xl animate-pulse" />
           ))}
         </div>
       </div>
@@ -349,7 +349,7 @@ export default function MenuManagementPage() {
             <AlertCircle className="h-8 w-8 text-bone" />
           </div>
           <h2 className="text-lg font-bold text-foreground mb-2">Error</h2>
-          <p className="text-sm text-ringo-muted max-w-sm">{error}</p>
+          <p className="text-sm text-omri-muted max-w-sm">{error}</p>
         </div>
       </div>
     );
@@ -362,11 +362,11 @@ export default function MenuManagementPage() {
         <div className="min-w-0">
           <div className="flex items-center gap-2 sm:gap-3 mb-1 flex-wrap">
             <h1 className="text-xl sm:text-2xl font-bold text-foreground tracking-tight">Menu Management</h1>
-            <span className="inline-flex items-center rounded-full bg-ringo-border/30 px-2.5 py-1 text-xs font-semibold text-ringo-muted">
+            <span className="inline-flex items-center rounded-full bg-omri-border/30 px-2.5 py-1 text-xs font-semibold text-omri-muted">
               {filteredItems.length}
             </span>
           </div>
-          <p className="text-sm text-ringo-muted">Manage your restaurant menu and item details</p>
+          <p className="text-sm text-omri-muted">Manage your restaurant menu and item details</p>
         </div>
         <div className="flex gap-2">
           <Button
@@ -397,7 +397,7 @@ export default function MenuManagementPage() {
       {/* Search and Filter */}
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ringo-muted pointer-events-none" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-omri-muted pointer-events-none" />
           <input
             type="text"
             placeholder="Search items..."
@@ -446,7 +446,7 @@ export default function MenuManagementPage() {
             <UtensilsCrossed className="h-8 w-8 text-bone" />
           </div>
           <h3 className="text-lg font-semibold text-foreground mb-2">No menu items yet</h3>
-          <p className="text-sm text-ringo-muted mb-6 max-w-sm mx-auto">
+          <p className="text-sm text-omri-muted mb-6 max-w-sm mx-auto">
             Add your first menu item to get started. Your Retell AI agent will use these items during phone calls to take orders.
           </p>
           <Button
@@ -486,14 +486,14 @@ export default function MenuManagementPage() {
 
               {/* Description */}
               {item.description && (
-                <p className="text-sm text-ringo-muted mb-3 line-clamp-2">
+                <p className="text-sm text-omri-muted mb-3 line-clamp-2">
                   {item.description}
                 </p>
               )}
 
               {/* Modifiers */}
               {item.modifiers && item.modifiers.length > 0 && (
-                <div className="mb-3 text-xs text-ringo-muted">
+                <div className="mb-3 text-xs text-omri-muted">
                   {item.modifiers.length} modifier{item.modifiers.length !== 1 ? 's' : ''}
                 </div>
               )}
@@ -502,10 +502,10 @@ export default function MenuManagementPage() {
               <div className="flex-1" />
 
               {/* Footer */}
-              <div className="space-y-3 pt-3 border-t border-ringo-border">
+              <div className="space-y-3 pt-3 border-t border-omri-border">
                 {/* Availability Toggle */}
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-ringo-muted">Available</span>
+                  <span className="text-xs font-medium text-omri-muted">Available</span>
                   <button
                     onClick={() => handleToggleAvailable(item.id, item.available)}
                     className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
@@ -550,14 +550,14 @@ export default function MenuManagementPage() {
       {/* Import Modal */}
       {showImport && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-obsidian/50 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="w-full max-w-lg bg-ringo-card border border-ringo-border rounded-2xl shadow-2xl p-6 space-y-4">
+          <div className="w-full max-w-lg bg-omri-card border border-omri-border rounded-2xl shadow-2xl p-6 space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
                 <FileText className="h-5 w-5 text-bone" />
                 Import Menu
               </h2>
-              <button onClick={() => setShowImport(false)} className="p-1 rounded-lg hover:bg-ringo-border/30 transition-colors">
-                <X className="h-5 w-5 text-ringo-muted" />
+              <button onClick={() => setShowImport(false)} className="p-1 rounded-lg hover:bg-omri-border/30 transition-colors">
+                <X className="h-5 w-5 text-omri-muted" />
               </button>
             </div>
 
@@ -591,12 +591,12 @@ export default function MenuManagementPage() {
               className="w-full rounded-lg border border-smoke bg-coal px-3 py-2.5 text-sm text-bone placeholder:text-ash/60 font-mono resize-none focus:outline-none focus:ring-2 focus:ring-bone/30 focus:border-bone/40"
             />
 
-            <label className="flex items-center gap-2 text-sm text-ringo-muted cursor-pointer">
+            <label className="flex items-center gap-2 text-sm text-omri-muted cursor-pointer">
               <input
                 type="checkbox"
                 checked={importReplace}
                 onChange={(e) => setImportReplace(e.target.checked)}
-                className="rounded border-ringo-border"
+                className="rounded border-omri-border"
               />
               Replace existing menu (delete all current items first)
             </label>
@@ -645,15 +645,15 @@ export default function MenuManagementPage() {
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-obsidian/50 backdrop-blur-sm p-4 overflow-y-auto">
           <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl my-auto">
             {/* Modal Header */}
-            <div className="sticky top-0 flex items-center justify-between mb-6 pb-4 border-b border-ringo-border bg-ringo-card">
+            <div className="sticky top-0 flex items-center justify-between mb-6 pb-4 border-b border-omri-border bg-omri-card">
               <h2 className="text-xl font-bold text-foreground">
                 {formData.id ? 'Edit Menu Item' : 'Add New Menu Item'}
               </h2>
               <button
                 onClick={handleCloseModal}
-                className="p-2 hover:bg-ringo-border/30 rounded-lg transition-colors"
+                className="p-2 hover:bg-omri-border/30 rounded-lg transition-colors"
               >
-                <X className="h-5 w-5 text-ringo-muted" />
+                <X className="h-5 w-5 text-omri-muted" />
               </button>
             </div>
 
@@ -661,7 +661,7 @@ export default function MenuManagementPage() {
             <div className="space-y-5 px-6 sm:px-6">
               {/* Item Name */}
               <div>
-                <label className="block text-sm font-medium text-ringo-muted mb-1.5">
+                <label className="block text-sm font-medium text-omri-muted mb-1.5">
                   Item Name *
                 </label>
                 <input
@@ -682,7 +682,7 @@ export default function MenuManagementPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Category */}
                 <div>
-                  <label className="block text-sm font-medium text-ringo-muted mb-1.5">
+                  <label className="block text-sm font-medium text-omri-muted mb-1.5">
                     Category
                   </label>
                   <input
@@ -704,11 +704,11 @@ export default function MenuManagementPage() {
 
                 {/* Price */}
                 <div>
-                  <label className="block text-sm font-medium text-ringo-muted mb-1.5">
+                  <label className="block text-sm font-medium text-omri-muted mb-1.5">
                     Price *
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-ringo-muted">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-medium text-omri-muted">
                       $
                     </span>
                     <input
@@ -731,7 +731,7 @@ export default function MenuManagementPage() {
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-medium text-ringo-muted mb-1.5">
+                <label className="block text-sm font-medium text-omri-muted mb-1.5">
                   Description
                 </label>
                 <textarea
@@ -745,7 +745,7 @@ export default function MenuManagementPage() {
 
               {/* Modifiers Section */}
               <div>
-                <label className="block text-sm font-medium text-ringo-muted mb-3">
+                <label className="block text-sm font-medium text-omri-muted mb-3">
                   Modifiers (e.g., Toppings, Sizes)
                 </label>
 
@@ -755,17 +755,17 @@ export default function MenuManagementPage() {
                     {formData.modifiers.map((modifier, index) => (
                       <div
                         key={index}
-                        className="flex items-center justify-between gap-3 rounded-lg bg-ringo-border/10 p-3"
+                        className="flex items-center justify-between gap-3 rounded-lg bg-omri-border/10 p-3"
                       >
                         <div className="flex-1">
                           <p className="text-sm font-medium text-foreground">{modifier.name}</p>
-                          <p className="text-xs text-ringo-muted">
+                          <p className="text-xs text-omri-muted">
                             +${Number(modifier.price).toFixed(2)}
                           </p>
                         </div>
                         <button
                           onClick={() => handleRemoveModifier(index)}
-                          className="p-1.5 hover:bg-ringo-border/50 rounded-lg transition-colors text-ringo-muted hover:text-foreground"
+                          className="p-1.5 hover:bg-omri-border/50 rounded-lg transition-colors text-omri-muted hover:text-foreground"
                         >
                           <Trash2 className="h-4 w-4" />
                         </button>
@@ -803,10 +803,10 @@ export default function MenuManagementPage() {
               </div>
 
               {/* Available Toggle */}
-              <div className="flex items-center justify-between p-4 rounded-lg bg-ringo-border/10">
+              <div className="flex items-center justify-between p-4 rounded-lg bg-omri-border/10">
                 <div>
                   <p className="text-sm font-medium text-foreground">Item Available</p>
-                  <p className="text-xs text-ringo-muted">
+                  <p className="text-xs text-omri-muted">
                     {formData.available ? 'This item is available for orders' : 'This item is not available'}
                   </p>
                 </div>
@@ -826,7 +826,7 @@ export default function MenuManagementPage() {
             </div>
 
             {/* Modal Footer */}
-            <div className="flex gap-3 mt-8 pt-6 px-6 sm:px-6 border-t border-ringo-border">
+            <div className="flex gap-3 mt-8 pt-6 px-6 sm:px-6 border-t border-omri-border">
               <Button
                 variant="secondary"
                 size="md"
@@ -858,7 +858,7 @@ export default function MenuManagementPage() {
                 <AlertCircle className="h-6 w-6 text-bone" />
               </div>
               <h2 className="text-lg font-bold text-foreground text-center mb-2">Delete Item?</h2>
-              <p className="text-sm text-ringo-muted text-center">
+              <p className="text-sm text-omri-muted text-center">
                 This action cannot be undone. The menu item will be permanently deleted.
               </p>
             </div>

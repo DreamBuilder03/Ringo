@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 
     const result = await sendEmail({
       to: ownerEmail,
-      subject: `Welcome to Ringo, ${ownerName}!`,
+      subject: `Welcome to OMRI, ${ownerName}!`,
       html,
     });
 

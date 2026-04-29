@@ -144,8 +144,8 @@ export function Sidebar({ role }: SidebarProps) {
         <div className="p-6 border-b border-smoke">
           <div className="flex items-center justify-between">
             <Image
-              src="/ringo-logo.svg"
-              alt="Ringo"
+              src="/omri-logo.svg"
+              alt="OMRI"
               width={120}
               height={40}
               className="h-10 w-auto"

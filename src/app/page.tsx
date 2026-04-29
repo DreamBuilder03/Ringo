@@ -467,7 +467,7 @@ function HeroPhone() {
                 <Phone className="w-4.5 h-4.5 text-obsidian" />
               </div>
               <div className="flex-1">
-                <p className="text-bone text-sm font-bold tracking-tight">Ringo AI</p>
+                <p className="text-bone text-sm font-bold tracking-tight">OMRI AI</p>
                 <div className="flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-bone animate-pulse-bone inline-block" />
                   <span className="text-[11px] text-bone/40 tabular-nums">Live call — Tony&apos;s Pizza</span>
@@ -519,7 +519,7 @@ function HeroPhone() {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════
-   IPAD LIVE CALL — Large landscape iPad showing a live 47-second Ringo call
+   IPAD LIVE CALL — Large landscape iPad showing a live 47-second OMRI call
    Sarah M. → Tony's Pizza, 7 bubbles, $38.47 total, +$4.99 upsell captured
    ═══════════════════════════════════════════════════════════════════════ */
 function IPadLiveCallSection() {
@@ -737,7 +737,7 @@ function IPadLiveCallSection() {
                     <span>Recording · encrypted</span>
                   </div>
                   <div className="text-bone/40 text-[10px] font-medium tracking-wider uppercase">
-                    Ringo
+                    OMRI
                   </div>
                 </div>
               </div>
@@ -747,9 +747,9 @@ function IPadLiveCallSection() {
 
         {/*
           TODO: Misael — record the 47-second reference call and drop it at
-          /public/assets/audio/ringo-demo-call.mp3
+          /public/assets/audio/omri-demo-call.mp3
         */}
-        <audio ref={audioRef} src="/assets/audio/ringo-demo-call.mp3" preload="none" />
+        <audio ref={audioRef} src="/assets/audio/omri-demo-call.mp3" preload="none" />
 
         {/* Play button + YouTube ghost link */}
         <Reveal delay={250}>
@@ -805,7 +805,7 @@ function IPadLiveCallSection() {
         <Reveal delay={350}>
           <div className="max-w-2xl mx-auto mt-20 text-center">
             <blockquote className="font-display italic text-stone text-[22px] md:text-[26px] leading-[1.4] tracking-tight">
-              &ldquo;First week, Ringo captured three upsells on my slowest Tuesday. My pizza oven never stops anymore — and I haven&apos;t missed a call since.&rdquo;
+              &ldquo;First week, OMRI captured three upsells on my slowest Tuesday. My pizza oven never stops anymore — and I haven&apos;t missed a call since.&rdquo;
             </blockquote>
             <div className="flex items-center justify-center gap-3 mt-6">
               <div className="w-10 h-10 rounded-full bg-bone/[0.08] border border-bone/[0.12] flex items-center justify-center">
@@ -863,7 +863,7 @@ function LiveDashboard() {
         <div className="flex-1 mx-6">
           <div className="bg-obsidian/80 rounded-lg px-4 py-1.5 text-bone/25 text-xs flex items-center gap-2 max-w-sm mx-auto">
             <svg viewBox="0 0 16 16" className="w-3 h-3 text-bone/20" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="12" height="12" rx="3" /><path d="M6 2v12" /></svg>
-            app.useringo.ai/dashboard
+            app.omriapp.com/dashboard
           </div>
         </div>
       </div>
@@ -873,7 +873,7 @@ function LiveDashboard() {
         <div className="hidden md:flex flex-col w-52 shrink-0 border-r border-bone/[0.04] bg-obsidian/40 p-4">
           <div className="flex items-center gap-2 mb-6 px-2">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/ringo-logo.png" alt="Ringo" className="h-5 w-auto brightness-0 invert" />
+            <img src="/omri-logo.png" alt="OMRI" className="h-5 w-auto brightness-0 invert" />
           </div>
           {[
             { name: "Dashboard", icon: <BarChart3 className="w-4 h-4" />, active: true },
@@ -1106,7 +1106,7 @@ function ROICalculator() {
             That&apos;s <span className="font-bold text-obsidian">${yearly.toLocaleString()}</span> per year
           </p>
           <div className="w-16 h-[1px] bg-obsidian/10 my-6" />
-          <p className="text-obsidian/40 text-xs">With Ringo at <span className="font-bold text-obsidian">$799/mo</span></p>
+          <p className="text-obsidian/40 text-xs">With OMRI at <span className="font-bold text-obsidian">$799/mo</span></p>
           <p className="font-display italic text-obsidian text-2xl mt-1">
             ROI payback in {Math.max(1, Math.ceil((799 / (monthlyLost || 1)) * 30))} days
           </p>
@@ -1418,7 +1418,7 @@ export default function HomePage() {
       sections: [
         {
           entries: [
-            { name: "About Ringo", href: "/about" },
+            { name: "About OMRI", href: "/about" },
             { name: "Partners", href: "/partners" },
             { name: "Careers", href: "/careers" },
             { name: "Contact", href: "/contact" },
@@ -1481,7 +1481,7 @@ export default function HomePage() {
           {/* Logo — always bone on obsidian, bigger */}
           <Link href="/" className="flex items-center group shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/ringo-logo.png" alt="Ringo" className="h-12 md:h-14 w-auto brightness-0 invert duration-300 group-hover:scale-105" style={{ transitionProperty: "transform" }} />
+            <img src="/omri-logo.png" alt="OMRI" className="h-12 md:h-14 w-auto brightness-0 invert duration-300 group-hover:scale-105" style={{ transitionProperty: "transform" }} />
           </Link>
 
           {/* Centered floating pill */}
@@ -1597,13 +1597,13 @@ export default function HomePage() {
             </span>
           </div>
 
-          {/* Spec headline — "The phone rings. Ringo handles it." */}
+          {/* Spec headline — "The phone rings. OMRI handles it." */}
           <h1 className="anim-h2 max-w-4xl mx-auto">
             <span className="block hero-display text-bone text-[3rem] sm:text-[4rem] md:text-[5rem] lg:text-[6rem] leading-[0.95]">
               The phone rings.
             </span>
             <span className="block hero-display italic text-bone text-[3.25rem] sm:text-[4.5rem] md:text-[5.5rem] lg:text-[6.5rem] leading-[0.95] mt-1">
-              Ringo handles it.
+              OMRI handles it.
             </span>
           </h1>
 
@@ -1670,11 +1670,11 @@ export default function HomePage() {
 
                   {/* Transcript — per spec */}
                   <div className="px-4 py-4 space-y-3 text-left">
-                    {/* Ringo */}
+                    {/* OMRI */}
                     <div className="flex flex-col items-start">
-                      <p className="text-obsidian/40 text-[9px] font-bold uppercase tracking-[0.1em] ml-3 mb-1">Ringo</p>
+                      <p className="text-obsidian/40 text-[9px] font-bold uppercase tracking-[0.1em] ml-3 mb-1">OMRI</p>
                       <div className="max-w-[85%] px-3.5 py-2.5 text-[12px] leading-relaxed bg-obsidian/[0.05] text-obsidian/85 rounded-2xl rounded-bl-sm">
-                        Fluffy&apos;s Pizza, this is Ringo. What can I get you?
+                        Fluffy&apos;s Pizza, this is OMRI. What can I get you?
                       </div>
                     </div>
                     {/* Caller */}
@@ -1684,9 +1684,9 @@ export default function HomePage() {
                         Large pepperoni, half mushroom please.
                       </div>
                     </div>
-                    {/* Ringo — upsell */}
+                    {/* OMRI — upsell */}
                     <div className="flex flex-col items-start">
-                      <p className="text-obsidian/40 text-[9px] font-bold uppercase tracking-[0.1em] ml-3 mb-1">Ringo</p>
+                      <p className="text-obsidian/40 text-[9px] font-bold uppercase tracking-[0.1em] ml-3 mb-1">OMRI</p>
                       <div className="max-w-[85%] px-3.5 py-2.5 text-[12px] leading-relaxed bg-obsidian/[0.05] text-obsidian/85 rounded-2xl rounded-bl-sm">
                         Got it. Make it a meal with garlic knots for $3 more?
                       </div>
@@ -1698,9 +1698,9 @@ export default function HomePage() {
                         Sure, throw &rsquo;em in.
                       </div>
                     </div>
-                    {/* Ringo — payment link */}
+                    {/* OMRI — payment link */}
                     <div className="flex flex-col items-start">
-                      <p className="text-obsidian/40 text-[9px] font-bold uppercase tracking-[0.1em] ml-3 mb-1">Ringo</p>
+                      <p className="text-obsidian/40 text-[9px] font-bold uppercase tracking-[0.1em] ml-3 mb-1">OMRI</p>
                       <div className="max-w-[85%] px-3.5 py-2.5 text-[12px] leading-relaxed bg-obsidian/[0.05] text-obsidian/85 rounded-2xl rounded-bl-sm">
                         Sending the pay-link to your phone now. Kitchen fires when it clears.
                       </div>
@@ -1743,7 +1743,7 @@ export default function HomePage() {
         <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
           <Reveal>
             <div className="max-w-2xl">
-              <p className="text-bone/40 text-[11px] font-medium uppercase tracking-[0.12em] mb-3">How Ringo works</p>
+              <p className="text-bone/40 text-[11px] font-medium uppercase tracking-[0.12em] mb-3">How OMRI works</p>
               <h2 className="font-display text-bone text-4xl md:text-5xl tracking-tight">
                 From ring to receipt in 90 seconds
               </h2>
@@ -1886,7 +1886,7 @@ export default function HomePage() {
         <GrainOverlay opacity={0.02} />
         <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
           <Reveal>
-            <p className="text-bone/40 text-[11px] font-medium uppercase tracking-[0.12em] mb-3">Why Ringo</p>
+            <p className="text-bone/40 text-[11px] font-medium uppercase tracking-[0.12em] mb-3">Why OMRI</p>
             <h2 className="font-display text-bone text-4xl md:text-5xl tracking-tight max-w-xl">
               Everything your phone staff can&apos;t do. On every call.
             </h2>
@@ -1903,7 +1903,7 @@ export default function HomePage() {
                   Pay Before Prep
                 </h3>
                 <p className="text-obsidian/60 text-base leading-relaxed mb-6">
-                  No other platform gates the kitchen on payment. Ringo sends an SMS payment link after every order.
+                  No other platform gates the kitchen on payment. OMRI sends an SMS payment link after every order.
                   The ticket only fires after payment clears. Zero wasted food. Zero no-shows.
                 </p>
                 <div className="flex items-baseline gap-3 flex-wrap">
@@ -1993,7 +1993,7 @@ export default function HomePage() {
                 <span className="text-[11px] text-bone/60 font-medium uppercase tracking-[0.1em]">Live interactive demo</span>
               </div>
               <h2 className="font-display text-bone text-5xl md:text-6xl tracking-tight leading-[1.05] mb-4">
-                Hear Ringo <em className="italic text-bone/60">handle your calls.</em>
+                Hear OMRI <em className="italic text-bone/60">handle your calls.</em>
               </h2>
               <p className="text-stone text-lg max-w-xl mx-auto">
                 Search for any restaurant. We build a live AI voice agent for it in seconds. Talk to it right here.
@@ -2022,7 +2022,7 @@ export default function HomePage() {
                 Real-time dashboard. Real money.
               </h2>
               <p className="text-stone text-base mt-3 max-w-lg mx-auto">
-                Every call, text, order, and dollar — live. Numbers update as Ringo handles your phones.
+                Every call, text, order, and dollar — live. Numbers update as OMRI handles your phones.
               </p>
             </div>
           </Reveal>
@@ -2145,7 +2145,7 @@ export default function HomePage() {
             </Reveal>
             <Reveal delay={200}>
               <div className="bg-bone p-10 md:p-14 h-full">
-                <p className="text-obsidian/40 text-xs font-semibold uppercase tracking-[0.12em] mb-8">Ringo</p>
+                <p className="text-obsidian/40 text-xs font-semibold uppercase tracking-[0.12em] mb-8">OMRI</p>
                 <p className="font-playfair font-bold text-obsidian text-3xl md:text-4xl lg:text-[2.75rem] leading-[1.15] tracking-tight">
                   Something broke?
                 </p>
@@ -2177,7 +2177,7 @@ export default function HomePage() {
         <GrainOverlay opacity={0.02} />
         <div className="relative z-10 max-w-7xl mx-auto px-5 sm:px-6 lg:px-8">
           <Reveal>
-            <p className="text-bone/40 text-[11px] font-medium uppercase tracking-[0.12em] mb-4">Why restaurants choose Ringo</p>
+            <p className="text-bone/40 text-[11px] font-medium uppercase tracking-[0.12em] mb-4">Why restaurants choose OMRI</p>
             <h2 className="font-display text-bone text-4xl md:text-5xl tracking-tight max-w-2xl mb-16">
               The features your staff can&apos;t do. Every time.
             </h2>
@@ -2194,7 +2194,7 @@ export default function HomePage() {
                   </div>
                   <h3 className="font-display text-bone text-3xl tracking-tight mb-4">Pay Before Prep</h3>
                   <p className="text-stone text-base leading-relaxed">
-                    Ringo sends an SMS payment link after order confirmation. Kitchen ticket only fires after payment clears. Zero wasted food. Zero no-shows. This one feature saves $4,000–6,000 per month.
+                    OMRI sends an SMS payment link after order confirmation. Kitchen ticket only fires after payment clears. Zero wasted food. Zero no-shows. This one feature saves $4,000–6,000 per month.
                   </p>
                 </div>
                 <div className="bg-obsidian/30 border-l border-bone/[0.06] p-10 md:p-14 flex items-center justify-center">
@@ -2330,12 +2330,12 @@ export default function HomePage() {
             <h2 className="font-display text-bone text-4xl md:text-5xl tracking-tight mb-10">Common questions</h2>
           </Reveal>
           {[
-            { q: "How long does it take to get set up?", a: "48 hours or less. We handle everything — POS connection, menu import, agent configuration. You just forward your phone number to Ringo and you're live." },
-            { q: "Will customers know they're talking to AI?", a: "Ringo sounds natural and conversational. Most callers don't realize it's AI. But we're transparent — if asked, Ringo identifies itself as an AI assistant." },
+            { q: "How long does it take to get set up?", a: "48 hours or less. We handle everything — POS connection, menu import, agent configuration. You just forward your phone number to OMRI and you're live." },
+            { q: "Will customers know they're talking to AI?", a: "OMRI sounds natural and conversational. Most callers don't realize it's AI. But we're transparent — if asked, OMRI identifies itself as an AI assistant." },
             { q: "What POS systems do you integrate with?", a: "Square, Toast, Clover, SpotOn, Aloha, and more. We're adding new integrations every month. If you don't see yours, ask us — we can likely build it." },
-            { q: "How does text ordering work?", a: "Customers can text their order to your Ringo number. The same AI handles the conversation — takes the order, upsells, sends a payment link, and fires the kitchen ticket. Same pay-before-prep flow, just over text." },
-            { q: "What happens if Ringo can't handle a call?", a: "Ringo gracefully transfers to your staff with full context of what was discussed. You're always in control." },
-            { q: "How is Ringo different from other AI phone services?", a: "Two things: Pay Before Prep — your kitchen never makes food for an order that doesn't get paid for. And we're a managed service — when something breaks at 7pm Friday, you call us directly." },
+            { q: "How does text ordering work?", a: "Customers can text their order to your OMRI number. The same AI handles the conversation — takes the order, upsells, sends a payment link, and fires the kitchen ticket. Same pay-before-prep flow, just over text." },
+            { q: "What happens if OMRI can't handle a call?", a: "OMRI gracefully transfers to your staff with full context of what was discussed. You're always in control." },
+            { q: "How is OMRI different from other AI phone services?", a: "Two things: Pay Before Prep — your kitchen never makes food for an order that doesn't get paid for. And we're a managed service — when something breaks at 7pm Friday, you call us directly." },
           ].map((item, i) => (
             <Reveal key={i} delay={i * 50}>
               <FAQItem q={item.q} a={item.a} />
@@ -2360,7 +2360,7 @@ export default function HomePage() {
               <RibbonSweep className="absolute -bottom-6 left-1/2 -translate-x-1/2 w-[60%] h-10 text-bone" opacity={0.4} strokeWidth={1.1} />
             </h2>
             <p className="text-stone text-xl md:text-2xl leading-relaxed max-w-2xl mx-auto mb-12">
-              Ringo is live in 48 hours. No setup fees. No contracts. Cancel anytime.
+              OMRI is live in 48 hours. No setup fees. No contracts. Cancel anytime.
             </p>
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
@@ -2368,7 +2368,7 @@ export default function HomePage() {
                 <span className="absolute inset-0 shimmer-btn rounded-full" />
                 <span className="relative z-10 flex items-center gap-2">See the demo <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" /></span>
               </Link>
-              <a href="mailto:hello@useringo.ai" className="group text-bone/60 hover:text-bone text-base font-medium transition-colors flex items-center gap-2">
+              <a href="mailto:hello@omriapp.com" className="group text-bone/60 hover:text-bone text-base font-medium transition-colors flex items-center gap-2">
                 Or email us <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
               </a>
             </div>
@@ -2384,7 +2384,7 @@ export default function HomePage() {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-8">
             <div>
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src="/ringo-logo.png" alt="Ringo" className="h-6 w-auto brightness-0 invert mb-3" />
+              <img src="/omri-logo.png" alt="OMRI" className="h-6 w-auto brightness-0 invert mb-3" />
               <p className="text-bone/15 text-xs">AI voice + text ordering for restaurants.</p>
               <p className="text-bone/15 text-xs">Built in Modesto, CA.</p>
             </div>
@@ -2413,8 +2413,8 @@ export default function HomePage() {
             </div>
           </div>
           <div className="mt-10 pt-6 border-t border-bone/[0.04] flex flex-col md:flex-row items-center justify-between gap-2">
-            <p className="text-bone/10 text-xs">&copy; 2026 Ringo AI, Inc. All rights reserved.</p>
-            <p className="text-bone/10 text-xs">hello@useringo.ai</p>
+            <p className="text-bone/10 text-xs">&copy; 2026 OMRI AI, Inc. All rights reserved.</p>
+            <p className="text-bone/10 text-xs">hello@omriapp.com</p>
           </div>
         </div>
       </footer>

@@ -122,7 +122,7 @@ async function sendFounderAlertInner(opts: SendFounderAlertOpts): Promise<void> 
 
   const [smsResult, emailResult] = await Promise.all([
     sendTwilioSms(messageBody).catch((err) => ({ success: false as const, error: err })),
-    sendAlertEmail({ subject: `[RINGO ALERT] ${restaurantName}`, body: messageBody }).catch(
+    sendAlertEmail({ subject: `[OMRI ALERT] ${restaurantName}`, body: messageBody }).catch(
       (err) => ({ success: false as const, error: err })
     ),
   ]);
@@ -226,13 +226,13 @@ async function maybeFireSummary(
 
   const name = opts.restaurantName ?? 'Unknown restaurant';
   const summaryBody =
-    `[RINGO ALERT] ${name}\n` +
+    `[OMRI ALERT] ${name}\n` +
     `${opts.recentCount}+ failures in the last hour — likely systemic.\n` +
     `Check /admin/health and recent alerts_log rows.`;
 
   const [smsResult, emailResult] = await Promise.all([
     sendTwilioSms(summaryBody).catch((err) => ({ success: false as const, error: err })),
-    sendAlertEmail({ subject: `[RINGO ALERT] ${name} — systemic failures`, body: summaryBody }).catch(
+    sendAlertEmail({ subject: `[OMRI ALERT] ${name} — systemic failures`, body: summaryBody }).catch(
       (err) => ({ success: false as const, error: err })
     ),
   ]);
@@ -275,7 +275,7 @@ function formatAlertBody(opts: {
     day: 'numeric',
   });
   const lines = [
-    `[RINGO ALERT] ${opts.restaurantName}`,
+    `[OMRI ALERT] ${opts.restaurantName}`,
     `${prettyFailureType(opts.failureType)}: ${opts.shortReason}`,
   ];
   if (opts.retellCallId) lines.push(`Call ID: ${opts.retellCallId}`);
@@ -375,7 +375,7 @@ async function sendAlertEmail(opts: {
 }): Promise<{ success: true } | { success: false; error: string }> {
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.FOUNDER_ALERT_EMAIL;
-  const from = process.env.RESEND_FROM_EMAIL || 'Ringo Alerts <alerts@useringo.ai>';
+  const from = process.env.RESEND_FROM_EMAIL || 'OMRI Alerts <alerts@omriapp.com>';
   if (!apiKey || !to) return { success: false, error: 'resend env vars missing' };
 
   const html = `<div style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;white-space:pre-wrap;line-height:1.5;">${escapeHtml(opts.body)}</div>`;

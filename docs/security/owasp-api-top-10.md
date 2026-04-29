@@ -1,4 +1,4 @@
-# OWASP API Security Top 10 (2023) — Ringo Review
+# OWASP API Security Top 10 (2023) — OMRI Review
 
 **Reviewed:** 2026-04-27
 **Reviewer:** Builder Agent
@@ -118,7 +118,7 @@ No route accepts a user-provided URL and fetches it. POS push routes call hardco
 **Status: PASS** with one open item.
 
 - **CORS:** Next.js default — same-origin only. No wildcard `Access-Control-Allow-Origin: *` anywhere.
-- **HSTS:** enforced by Vercel for the `useringo.ai` domain (HTTPS-only).
+- **HSTS:** enforced by Vercel for the `omriapp.com` domain (HTTPS-only).
 - **Error messages:** route handlers return generic messages (`'Validation failed.'`, `'Invalid JSON body.'`) — no stack traces leaked to clients. Sentry captures full traces server-side only.
 - **Environment scoping:** all secrets are server-only (no `NEXT_PUBLIC_*` prefix on anything sensitive — verified by `src/lib/schemas/` audit).
 - **Default passwords / sample accounts:** none exist.
@@ -159,7 +159,7 @@ When a new route is added: schema must be added under `/src/lib/schemas/`, rate 
 
 
 
-Third-party APIs called by Ringo:
+Third-party APIs called by OMRI:
 - **Retell** — responses validated by structure (event schema in `src/lib/retell.ts`)
 - **Stripe** — types from `stripe` package, validated by SDK
 - **Square / Clover / Toast / SpotOn** — responses parsed defensively, errors logged via Sentry, never trusted blindly

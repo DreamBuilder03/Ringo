@@ -1,7 +1,7 @@
 import type { Config } from "tailwindcss";
 
 /**
- * Ringo — Pure Monochrome Palette (v2, 2026-04-14)
+ * OMRI — Pure Monochrome Palette (v2, 2026-04-14)
  * No color. Every surface on the Obsidian → Bone axis.
  * Hierarchy comes from scale, weight, italics, and hairline borders — never hue.
  */
@@ -28,11 +28,11 @@ const config: Config = {
         background: "#0A0A0A",
         foreground: "#F3EEE3",
 
-        // Legacy ringo-* tokens, now re-pointed to the monochrome axis so
+        // Legacy omri-* tokens, now re-pointed to the monochrome axis so
         // existing markup flips to the new brand with zero class changes.
-        // Any remaining "ringo-teal" / "ringo-amber" reads as bone (primary),
+        // Any remaining "omri-teal" / "omri-amber" reads as bone (primary),
         // borders are hairline smoke, cards are coal, muted is ash.
-        ringo: {
+        omri: {
           dark:          "#0A0A0A", // was warm cream → obsidian
           darker:        "#0A0A0A",
           card:          "#141414", // was white → coal

@@ -105,7 +105,7 @@ export default function DemoHero() {
           <h1
             className="display text-5xl leading-[0.95] sm:text-6xl md:text-7xl"
           >
-            Hear Ringo answer
+            Hear OMRI answer
             <br />
             <span className="italic text-bone/70">your</span> restaurant.
           </h1>

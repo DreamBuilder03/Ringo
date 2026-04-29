@@ -75,7 +75,7 @@ jobs:
           # Public-by-design vars (would be in NEXT_PUBLIC_* runtime config)
           NEXT_PUBLIC_SUPABASE_URL: 'https://placeholder.supabase.co'
           NEXT_PUBLIC_SUPABASE_ANON_KEY: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.placeholder.placeholder'
-          NEXT_PUBLIC_APP_URL: 'https://placeholder.useringo.ai'
+          NEXT_PUBLIC_APP_URL: 'https://placeholder.omriapp.com'
           NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: 'pk_test_placeholder'
           NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID: 'price_placeholder_starter'
           NEXT_PUBLIC_STRIPE_GROWTH_PRICE_ID: 'price_placeholder_growth'

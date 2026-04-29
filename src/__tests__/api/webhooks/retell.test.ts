@@ -167,7 +167,7 @@ describe('Retell Webhook - Call Classification', () => {
       });
     });
 
-    it('should handle real Ringo restaurant scenarios', () => {
+    it('should handle real OMRI restaurant scenarios', () => {
       // Typical successful call
       const successfulCall = `
         Agent: Thanks for calling. Ready to order?

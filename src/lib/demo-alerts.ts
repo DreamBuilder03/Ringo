@@ -96,7 +96,7 @@ async function sendSlack(lead: DemoLead, durationSec: number | null, transcriptU
 async function sendEmail(lead: DemoLead, durationSec: number | null, transcript: string | null) {
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.DEMO_ALERT_EMAIL;
-  const from = process.env.RESEND_FROM_EMAIL || 'notifications@useringo.ai';
+  const from = process.env.RESEND_FROM_EMAIL || 'notifications@omriapp.com';
   if (!apiKey || !to) return;
 
   const html = `

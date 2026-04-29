@@ -19,7 +19,7 @@ Retell calls /api/retell/inbound  (BEFORE the prompt locks)
    sends: { agent_id, from_number, to_number }
         │
         ▼
-Ringo backend:
+OMRI backend:
    1. Look up restaurant by agent_id
    2. Aggregate orders WHERE restaurant_id + customer_phone match
    3. If 0 orders → return { is_returning: false }
@@ -52,7 +52,7 @@ In the Retell dashboard for the restaurant's agent (English agent and Spanish ag
 2. Set **Inbound Dynamic Variables Webhook URL** to:
 
    ```
-   https://www.useringo.ai/api/retell/inbound
+   https://www.omriapp.com/api/retell/inbound
    ```
 
 3. Save. No header configuration needed — the endpoint authenticates by matching agent_id back to a real restaurant in our DB.
@@ -116,6 +116,6 @@ Two notes:
 
 ## Failure modes
 
-The webhook is on the live-call critical path. If Ringo's endpoint is slow or down, Retell falls back to the agent's default greeting after a short timeout. Worst case: the caller is treated as new even if they're a regular. The call still connects. We don't strand customers on a Ringo outage.
+The webhook is on the live-call critical path. If OMRI's endpoint is slow or down, Retell falls back to the agent's default greeting after a short timeout. Worst case: the caller is treated as new even if they're a regular. The call still connects. We don't strand customers on a OMRI outage.
 
-To check the webhook is healthy: hit `https://www.useringo.ai/api/retell/inbound` with a sample payload (see implementation comments in `src/app/api/retell/inbound/route.ts` for the request shape) and confirm a 200 with a `call_inbound.dynamic_variables` envelope.
+To check the webhook is healthy: hit `https://www.omriapp.com/api/retell/inbound` with a sample payload (see implementation comments in `src/app/api/retell/inbound/route.ts` for the request shape) and confirm a 200 with a `call_inbound.dynamic_variables` envelope.

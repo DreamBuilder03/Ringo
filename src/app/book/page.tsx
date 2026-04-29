@@ -16,7 +16,7 @@ export const revalidate = 0;
 export default function BookPage() {
   const url = process.env.DEMO_BOOKING_URL;
 
-  if (url && /^https?:\/\//i.test(url) && !url.includes('useringo.ai/book')) {
+  if (url && /^https?:\/\//i.test(url) && !url.includes('omriapp.com/book')) {
     // External-facing redirect (e.g., calendly.com/...). Next.js redirect()
     // throws a special error that the framework catches and converts to a
     // 307 response.
@@ -31,7 +31,7 @@ export default function BookPage() {
       <div className="max-w-md text-center space-y-4">
         <h1 className="font-display text-4xl">Booking link not configured</h1>
         <p className="text-stone">
-          Email <a href="mailto:misael@useringo.ai" className="underline hover:text-bone">misael@useringo.ai</a> and we&apos;ll get you on the calendar within the hour.
+          Email <a href="mailto:misael@omriapp.com" className="underline hover:text-bone">misael@omriapp.com</a> and we&apos;ll get you on the calendar within the hour.
         </p>
         <p className="text-ash text-sm pt-4">
           (Heads up to ops: <code className="font-mono">DEMO_BOOKING_URL</code> env var

@@ -1,6 +1,6 @@
 /**
  * Order calculation and formatting utilities
- * Critical path for Ringo revenue — must be accurate
+ * Critical path for OMRI revenue — must be accurate
  */
 
 export interface OrderItem {

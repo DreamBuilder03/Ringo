@@ -243,7 +243,7 @@ export async function POST(request: NextRequest) {
         ],
       },
       checkout_options: {
-        redirect_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://useringo.ai'}/order-confirmed/${order.id}`,
+        redirect_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://omriapp.com'}/order-confirmed/${order.id}`,
       },
       payment_note: `ringo_order:${order.id}`,
     };
@@ -314,7 +314,7 @@ export async function POST(request: NextRequest) {
     // Track SMS outcome so the agent can recover if SMS fails but Square succeeded.
     let smsDelivered = false;
     try {
-      const smsResp = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'https://useringo.ai'}/api/sms`, {
+      const smsResp = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || 'https://omriapp.com'}/api/sms`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

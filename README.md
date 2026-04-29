@@ -1,22 +1,22 @@
-# Ringo
+# OMRI
 
-> The phone rings. Ringo handles it.
+> The phone rings. OMRI handles it.
 
-[![CI](https://github.com/DreamBuilder03/Ringo/actions/workflows/ci.yml/badge.svg)](https://github.com/DreamBuilder03/Ringo/actions/workflows/ci.yml)
-[![Vercel](https://img.shields.io/badge/deployed-vercel-black)](https://www.useringo.ai)
+[![CI](https://github.com/DreamBuilder03/OMRI/actions/workflows/ci.yml/badge.svg)](https://github.com/DreamBuilder03/OMRI/actions/workflows/ci.yml)
+[![Vercel](https://img.shields.io/badge/deployed-vercel-black)](https://www.omriapp.com)
 [![Next.js](https://img.shields.io/badge/Next.js-14.2-black)](https://nextjs.org)
 [![Supabase](https://img.shields.io/badge/Supabase-Postgres%20%2B%20Realtime-3ECF8E)](https://supabase.com)
 [![Retell](https://img.shields.io/badge/Voice-Retell%20AI-blueviolet)](https://retellai.com)
 
-Ringo is an AI voice agent that answers every inbound restaurant phone call 24/7. It takes orders, upsells add-ons, sends an SMS payment link, and **only after payment clears** pushes the order to the restaurant's POS. Every call is logged, transcribed, and tracked in a real-time dashboard.
+OMRI is an AI voice agent that answers every inbound restaurant phone call 24/7. It takes orders, upsells add-ons, sends an SMS payment link, and **only after payment clears** pushes the order to the restaurant's POS. Every call is logged, transcribed, and tracked in a real-time dashboard.
 
-Live at **[www.useringo.ai](https://www.useringo.ai)**.
+Live at **[www.omriapp.com](https://www.omriapp.com)**.
 
 ---
 
-## Why Ringo
+## Why OMRI
 
-The average independent restaurant misses **30%+ of inbound calls during dinner rush**. At an average ticket of $23, that's $1,000+ per day walking out the door for a single high-volume location. Ringo answers every call, so none of that revenue gets dropped.
+The average independent restaurant misses **30%+ of inbound calls during dinner rush**. At an average ticket of $23, that's $1,000+ per day walking out the door for a single high-volume location. OMRI answers every call, so none of that revenue gets dropped.
 
 Three things competitors don't have:
 1. **Pay-Before-Prep** — kitchen ticket only fires after Square/Stripe confirms payment. No food made for no-shows.
@@ -86,7 +86,7 @@ Three things competitors don't have:
 - **Database:** Supabase (Postgres + Row-Level Security + Realtime)
 - **Voice agent:** Retell AI (English/Spanish bilingual auto-detect)
 - **Telephony:** Twilio SIP trunk → Retell
-- **Payments:** Square Payment Links (customer payments) + Stripe (Ringo billing tiers)
+- **Payments:** Square Payment Links (customer payments) + Stripe (OMRI billing tiers)
 - **POS integrations:** Square, Toast, Clover, SpotOn (direct API push) + Handoff Mode for proprietary POSes
 - **Hosting:** Vercel (auto-deploy from `main`)
 - **Rate limiting:** Upstash Redis (`@upstash/ratelimit`)
@@ -103,8 +103,8 @@ Three things competitors don't have:
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full local-setup walkthrough.
 
 ```bash
-git clone https://github.com/DreamBuilder03/Ringo.git
-cd Ringo
+git clone https://github.com/DreamBuilder03/OMRI.git
+cd OMRI
 npm install
 cp .env.example .env.local   # then fill in real values
 npm run dev                   # http://localhost:3000
@@ -135,7 +135,7 @@ npm run dev                   # http://localhost:3000
 
 ## Status
 
-- **Production:** live at [www.useringo.ai](https://www.useringo.ai)
+- **Production:** live at [www.omriapp.com](https://www.omriapp.com)
 - **Pre-pilot security gate:** 8 of 9 items green ([audit doc](./docs/security-audit-2026-04-24.md)). Last item (Supabase Pro $25/mo + PITR) is parked until first paying client signs.
 - **Pilot #1:** prep complete. Awaiting franchisee signature.
 

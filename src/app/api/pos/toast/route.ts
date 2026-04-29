@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
     const toastOrderId = toastData.externalId || toastData.guid;
 
     console.log(
-      `[${new Date().toISOString()}] Order pushed to Toast: ${toastOrderId} (Ringo order: ${order_id})`
+      `[${new Date().toISOString()}] Order pushed to Toast: ${toastOrderId} (OMRI order: ${order_id})`
     );
 
     // Update order with Toast POS order ID
@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
 }
 
 /**
- * Build a Toast API order payload from Ringo order data
+ * Build a Toast API order payload from OMRI order data
  * Ref: https://docs.toasttab.com/doc/enterprise/orders-api.html
  */
 function buildToastOrderPayload(

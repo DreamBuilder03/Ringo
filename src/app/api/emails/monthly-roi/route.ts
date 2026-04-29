@@ -19,7 +19,7 @@ import { checkRateLimit } from '@/lib/rate-limit-upstash';
 //   - Wasted-food avoided (estimated — see AVOIDED_NOSHOW_RATE below)
 //   - ROI multiple vs subscription cost
 //
-// The "wasted food avoided" estimate is Ringo's differentiator. Industry
+// The "wasted food avoided" estimate is OMRI's differentiator. Industry
 // no-show rate on phone orders is ~8–12%; at an avg ticket around $30 with
 // food cost ~30%, every 100 orders the kitchen would've fired and tossed
 // ≈ 10 * $30 * 0.30 = $90 in ingredients. We use orderRevenue × 0.05 as
@@ -153,7 +153,7 @@ export async function GET(request: NextRequest) {
 
         const res = await sendEmail({
           to: profile.email,
-          subject: `${r.name} — Your ${label} ROI with Ringo`,
+          subject: `${r.name} — Your ${label} ROI with OMRI`,
           html,
         });
 

@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Ringo — AI Phone Ordering for Restaurants",
+  title: "OMRI — AI Phone Ordering for Restaurants",
   description:
-    "The phone rings. Ringo handles it. AI-powered voice ordering that never misses a call, upsells automatically, and integrates with your POS.",
+    "The phone rings. OMRI handles it. AI-powered voice ordering that never misses a call, upsells automatically, and integrates with your POS.",
   openGraph: {
-    title: "Ringo — AI Phone Ordering for Restaurants",
-    description: "The phone rings. Ringo handles it.",
-    url: "https://useringo.ai",
-    siteName: "Ringo",
+    title: "OMRI — AI Phone Ordering for Restaurants",
+    description: "The phone rings. OMRI handles it.",
+    url: "https://omriapp.com",
+    siteName: "OMRI",
     type: "website",
   },
 };

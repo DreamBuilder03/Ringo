@@ -118,7 +118,7 @@ export async function GET(request: NextRequest) {
 }
 
 // ──────────────────────────────────────────────────────────────────
-// POST — push a Ringo order into Clover
+// POST — push a OMRI order into Clover
 // ──────────────────────────────────────────────────────────────────
 // Body: { restaurant_id: string; order_id?: string; items: Array<{ name, quantity, price }>; total?: number }
 // Price is in dollars (e.g. 9.99). Clover wants cents.
@@ -190,11 +190,11 @@ export async function POST(request: NextRequest) {
       'Content-Type': 'application/json',
     };
 
-    // Step 1 — create an empty order in state "open" with a Ringo note so it's
+    // Step 1 — create an empty order in state "open" with a OMRI note so it's
     // obvious on the KDS where it came from.
     const ringoNote = order_id
-      ? `Ringo order ${order_id.slice(0, 8)} — voice order`
-      : 'Ringo voice order';
+      ? `OMRI order ${order_id.slice(0, 8)} — voice order`
+      : 'OMRI voice order';
 
     const createRes = await fetch(
       `${apiBase}/v3/merchants/${merchantId}/orders`,
@@ -206,7 +206,7 @@ export async function POST(request: NextRequest) {
           note: ringoNote,
           // Clover doesn't have a dedicated metadata object on orders;
           // external_reference_id is the closest thing, it's searchable.
-          externalReferenceId: order_id ? `ringo-${order_id}` : undefined,
+          externalReferenceId: order_id ? `omri-${order_id}` : undefined,
         }),
       }
     );
@@ -251,7 +251,7 @@ export async function POST(request: NextRequest) {
               body: JSON.stringify({
                 name,
                 price: priceCents,
-                note: 'via Ringo',
+                note: 'via OMRI',
               }),
             }
           );
@@ -271,7 +271,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Step 3 — stamp the Ringo orders row so we can correlate later
+    // Step 3 — stamp the OMRI orders row so we can correlate later
     if (order_id) {
       try {
         await supabase

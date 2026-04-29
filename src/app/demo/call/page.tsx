@@ -137,7 +137,7 @@ export default function CallPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to place call');
-      setPhoneResult(`Ringo is calling ${phoneNumber} now. Answer and it's live.`);
+      setPhoneResult(`OMRI is calling ${phoneNumber} now. Answer and it's live.`);
     } catch (e) {
       setPhoneResult((e as Error).message);
     } finally {
@@ -166,7 +166,7 @@ export default function CallPage() {
             <span className="italic text-bone/70">AI phone agent</span>
           </h1>
           <p className="mt-4 text-bone/60">
-            Try a live conversation with a Ringo host built for {place.cuisineType.toLowerCase()}.
+            Try a live conversation with a OMRI host built for {place.cuisineType.toLowerCase()}.
           </p>
         </div>
 
@@ -239,7 +239,7 @@ export default function CallPage() {
                 </button>
                 {phoneResult && <p className="text-sm text-bone/60">{phoneResult}</p>}
                 <p className="text-xs text-bone/40">
-                  Ringo will call from a local number. Standard carrier rates may apply.
+                  OMRI will call from a local number. Standard carrier rates may apply.
                 </p>
               </div>
             )}

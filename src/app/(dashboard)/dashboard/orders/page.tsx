@@ -75,10 +75,10 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
                 {config.label}
               </Badge>
             </div>
-            <p className="text-sm text-ringo-muted">
+            <p className="text-sm text-omri-muted">
               {maskPhoneNumber(order.customer_phone)}
             </p>
-            <p className="text-xs text-ringo-muted/60 mt-1">
+            <p className="text-xs text-omri-muted/60 mt-1">
               {format(new Date(order.created_at), 'MMM d, yyyy h:mm a')}
             </p>
           </div>
@@ -86,12 +86,12 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
           {/* Right side: Total and expand icon */}
           <div className="flex flex-col items-end gap-2">
             <div className="text-right">
-              <p className="text-sm text-ringo-muted">Total</p>
+              <p className="text-sm text-omri-muted">Total</p>
               <p className="text-lg font-bold text-foreground">
                 {formatCurrency(order.total)}
               </p>
             </div>
-            <div className="text-ringo-muted">
+            <div className="text-omri-muted">
               {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
             </div>
           </div>
@@ -120,7 +120,7 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
                         <Zap className="h-3 w-3 text-bone" />
                       )}
                     </div>
-                    <span className="text-xs text-ringo-muted">x{item.quantity}</span>
+                    <span className="text-xs text-omri-muted">x{item.quantity}</span>
                   </div>
                   <span className="text-foreground font-medium">
                     {formatCurrency(item.price * item.quantity)}
@@ -133,11 +133,11 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
           {/* Pricing breakdown */}
           <div className="bg-graphite/30 rounded-lg p-3 space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-ringo-muted">Subtotal</span>
+              <span className="text-omri-muted">Subtotal</span>
               <span className="text-foreground font-medium">{formatCurrency(order.subtotal)}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-ringo-muted">Tax</span>
+              <span className="text-omri-muted">Tax</span>
               <span className="text-foreground font-medium">{formatCurrency(order.tax)}</span>
             </div>
             <div className="border-t border-smoke pt-2 flex justify-between">
@@ -154,7 +154,7 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
                 <div className="flex items-start gap-3">
                   <Clock className="h-4 w-4 text-bone mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
-                    <p className="text-ringo-muted text-xs">Created</p>
+                    <p className="text-omri-muted text-xs">Created</p>
                     <p className="text-foreground">
                       {format(new Date(order.created_at), 'MMM d, yyyy h:mm a')}
                     </p>
@@ -166,7 +166,7 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
                 <div className="flex items-start gap-3">
                   <CreditCard className="h-4 w-4 text-bone mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
-                    <p className="text-ringo-muted text-xs">Payment Link Sent</p>
+                    <p className="text-omri-muted text-xs">Payment Link Sent</p>
                     <p className="text-foreground">
                       {format(new Date(order.payment_link_sent_at), 'MMM d, yyyy h:mm a')}
                     </p>
@@ -178,7 +178,7 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
                 <div className="flex items-start gap-3">
                   <CreditCard className="h-4 w-4 text-bone mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
-                    <p className="text-ringo-muted text-xs">Payment Received</p>
+                    <p className="text-omri-muted text-xs">Payment Received</p>
                     <p className="text-foreground">
                       {format(new Date(order.paid_at), 'MMM d, yyyy h:mm a')}
                     </p>
@@ -190,12 +190,12 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
                 <div className="flex items-start gap-3">
                   <Zap className="h-4 w-4 text-bone mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
-                    <p className="text-ringo-muted text-xs">POS Pushed</p>
+                    <p className="text-omri-muted text-xs">POS Pushed</p>
                     <p className="text-foreground">
                       {format(new Date(order.pos_pushed_at), 'MMM d, yyyy h:mm a')}
                     </p>
                     {order.pos_order_id && (
-                      <p className="text-ringo-muted text-xs mt-1">
+                      <p className="text-omri-muted text-xs mt-1">
                         POS ID: <span className="font-mono">{order.pos_order_id}</span>
                       </p>
                     )}
@@ -208,12 +208,12 @@ function OrderCard({ order, isExpanded, onToggle }: OrderCardProps) {
           {/* Additional info */}
           <div className="pt-2 space-y-2 text-xs">
             {order.call_id && (
-              <p className="text-ringo-muted">
+              <p className="text-omri-muted">
                 Call ID: <span className="font-mono text-foreground">{order.call_id.slice(0, 8)}</span>
               </p>
             )}
             {order.payment_intent_id && (
-              <p className="text-ringo-muted">
+              <p className="text-omri-muted">
                 Payment ID: <span className="font-mono text-foreground">{order.payment_intent_id.slice(0, 12)}...</span>
               </p>
             )}
@@ -374,7 +374,7 @@ export default function OrdersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="min-w-0">
           <h1 className="text-xl sm:text-2xl font-bold text-foreground">Orders</h1>
-          <p className="text-sm text-ringo-muted mt-1">
+          <p className="text-sm text-omri-muted mt-1">
             {totalCount > 0 ? `${totalCount} total orders` : 'No orders yet'}
           </p>
         </div>
@@ -382,7 +382,7 @@ export default function OrdersPage() {
 
       {/* Search */}
       <div className="relative">
-        <Search className="absolute left-3 top-3 h-5 w-5 text-ringo-muted" />
+        <Search className="absolute left-3 top-3 h-5 w-5 text-omri-muted" />
         <input
           type="text"
           placeholder="Search by phone number..."
@@ -408,7 +408,7 @@ export default function OrdersPage() {
               'px-2 sm:px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors transition-opacity whitespace-nowrap',
               statusFilter === filter.value
                 ? 'bg-bone text-obsidian'
-                : 'bg-coal border border-smoke text-ringo-muted hover:text-foreground'
+                : 'bg-coal border border-smoke text-omri-muted hover:text-foreground'
             )}
           >
             {filter.label}
@@ -420,11 +420,11 @@ export default function OrdersPage() {
       {loading ? (
         <div className="rounded-2xl border border-smoke bg-coal p-12 text-center">
           <div className="h-8 w-8 mx-auto border-2 border-bone/20 border-t-bone rounded-full animate-spin mb-3" />
-          <p className="text-sm text-ringo-muted">Loading orders...</p>
+          <p className="text-sm text-omri-muted">Loading orders...</p>
         </div>
       ) : !hasOrders ? (
         <div className="rounded-2xl border border-smoke bg-coal p-12 text-center">
-          <p className="text-sm text-ringo-muted">No orders yet</p>
+          <p className="text-sm text-omri-muted">No orders yet</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -445,17 +445,17 @@ export default function OrdersPage() {
           <button
             onClick={() => setPage(Math.max(0, page - 1))}
             disabled={page === 0}
-            className="px-3 py-2 rounded-lg text-xs font-semibold bg-coal border border-smoke text-ringo-muted disabled:opacity-30 min-h-[44px] min-w-[44px]"
+            className="px-3 py-2 rounded-lg text-xs font-semibold bg-coal border border-smoke text-omri-muted disabled:opacity-30 min-h-[44px] min-w-[44px]"
           >
             Previous
           </button>
-          <span className="text-xs text-ringo-muted">
+          <span className="text-xs text-omri-muted">
             Page {page + 1} of {totalPages}
           </span>
           <button
             onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
             disabled={page >= totalPages - 1}
-            className="px-3 py-2 rounded-lg text-xs font-semibold bg-coal border border-smoke text-ringo-muted disabled:opacity-30 min-h-[44px] min-w-[44px]"
+            className="px-3 py-2 rounded-lg text-xs font-semibold bg-coal border border-smoke text-omri-muted disabled:opacity-30 min-h-[44px] min-w-[44px]"
           >
             Next
           </button>
