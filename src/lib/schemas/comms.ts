@@ -22,10 +22,12 @@ export const menuImportSchema = z.object({
 }).strict();
 
 // ─── /api/emails/welcome ──────────────────────────────────────────────────────
+// Note: live API uses camelCase keys — match what the production caller sends.
 export const emailWelcomeSchema = z.object({
-  restaurant_id: uuid,
-  to: email.optional(),
-  owner_name: personName.optional(),
+  restaurantId: uuid,
+  restaurantName: shortText,
+  ownerName: personName,
+  ownerEmail: email,
 }).strict();
 
 // ─── Cron-triggered emails — body usually empty, secret-guarded ───────────────

@@ -1,8 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
-// Push order to SpotOn POS
-export async function POST(request: Request) {
+// Push order to SpotOn POS — called by /api/webhooks/square after payment confirms.
+export async function POST(request: NextRequest) {
+  // Rate limit at POS tier — internal call from our own webhook.
+  const blocked = await checkRateLimit(request, 'POS');
+  if (blocked) return blocked;
+
   try {
     const { restaurant_id, order_id, items, total } = await request.json();
 

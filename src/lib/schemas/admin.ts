@@ -12,15 +12,20 @@ export const adminRestaurantsListQuery = z.object({
 }).strict();
 
 // ─── /api/admin/restaurants POST — create restaurant ──────────────────────────
+// Matches the live API contract — snake_case keys, only name/address/phone
+// strictly required, the rest set later via dashboard.
 export const adminCreateRestaurantSchema = z.object({
   name: shortText,
+  address: shortText,
+  phone,
+  pos_type: z.enum(['square', 'clover', 'toast', 'spoton']).optional(),
+  pos_mode: z.enum(['direct_api', 'handoff_tablet']).optional(),
+  retell_agent_id: shortText.optional(),
   owner_name: personName.optional(),
   owner_email: email.optional(),
   owner_phone: phone.optional(),
   city: shortText.optional(),
   state: z.string().trim().length(2).optional(),
-  pos_type: z.enum(['square', 'clover', 'toast', 'spoton']).optional(),
-  pos_mode: z.enum(['direct_api', 'handoff_tablet']).optional(),
   ringo_phone_number: phone.optional(),
 }).strict();
 

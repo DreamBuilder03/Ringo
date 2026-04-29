@@ -138,6 +138,19 @@ When a new route is added: schema must be added under `/src/lib/schemas/`, rate 
 
 **Status: PASS** with one note.
 
+### Known dependency vulnerabilities (deferred — not blocking pilot)
+
+`npm audit` (2026-04-29) reports 13 vulnerabilities (4 low, 3 moderate, 6 high). **All 13 require breaking-version-bump fixes** (`npm audit fix --force` would jump to Next.js 16 from current 14.2.x — a 2-major-version migration, separate multi-day project). Risk-assessed:
+
+- **Sentry build-tooling vulns (rollup, uuid)** — affect `@sentry/webpack-plugin` only. These dependencies don't run in production; they're build-time-only for source-map upload. **No production impact.**
+- **Next.js image cache exhaustion** (GHSA-3x4c-7xq6-9pq8) — requires unbounded `next/image` disk cache. We run on Vercel which caps function disk. **Mitigated by platform.**
+- **Next.js DoS in Server Components** (GHSA-q4gf-8mx6-v5v3) — real DoS vector but limited blast radius (single function timeout). Vercel terminates runaway requests at 10s on Hobby. **Mitigated by platform.**
+- **PostCSS XSS via Stringify** (GHSA-qx2v-qp2m-jg93) — only triggers if user input flows directly into CSS strings. We don't accept user-CSS anywhere. **Not exploitable in our use case.**
+
+**Action plan:** Next.js 16 + Sentry 10 migration scheduled as a Q2 effort, blocking issue: requires App Router pattern review + retest of every dynamic route. Until then, document and watch for new advisories that change exploitability.
+
+
+
 Third-party APIs called by Ringo:
 - **Retell** — responses validated by structure (event schema in `src/lib/retell.ts`)
 - **Stripe** — types from `stripe` package, validated by SDK

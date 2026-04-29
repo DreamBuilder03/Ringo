@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient, createServiceRoleClient } from '@/lib/supabase/server';
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
 // Clover environment detection
 // Default to sandbox in development; flip CLOVER_ENVIRONMENT=production to go live.
@@ -22,7 +23,11 @@ function cloverApiBase(env: 'sandbox' | 'production'): string {
 // ──────────────────────────────────────────────────────────────────
 // GET — OAuth callback
 // ──────────────────────────────────────────────────────────────────
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  // Rate limit at AUTH tier — defends against bogus-code spam.
+  const blocked = await checkRateLimit(request, 'AUTH');
+  if (blocked) return blocked;
+
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
   const state = searchParams.get('state'); // restaurant_id

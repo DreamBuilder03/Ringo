@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { sendEmail } from '@/lib/email';
 import { monthlyRoiEmail } from '@/lib/email-templates';
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
 // ──────────────────────────────────────────────────────────────────────────────
 // /api/emails/monthly-roi  (GET, cron)
@@ -48,8 +49,12 @@ function monthBoundsUTC(now = new Date()): {
   return { start, end, label };
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   const t0 = new Date().toISOString();
+  // Rate limit at CRON tier.
+  const blocked = await checkRateLimit(request, 'CRON');
+  if (blocked) return blocked;
+
   try {
     // Cron auth
     const authHeader = request.headers.get('authorization');

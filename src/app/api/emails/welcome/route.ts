@@ -2,21 +2,33 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { sendEmail } from '@/lib/email';
 import { welcomeEmail } from '@/lib/email-templates';
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
+import { emailWelcomeSchema } from '@/lib/schemas/comms';
 
 export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { restaurantId, restaurantName, ownerName, ownerEmail } = body;
+  // Rate limit at SEND tier (20/min) — Resend charges per send.
+  const blocked = await checkRateLimit(request, 'SEND');
+  if (blocked) return blocked;
 
-    if (!restaurantId || !restaurantName || !ownerName || !ownerEmail) {
+  try {
+    let raw: unknown;
+    try {
+      raw = await request.json();
+    } catch {
+      return NextResponse.json({ success: false, error: 'Invalid JSON body.' }, { status: 400 });
+    }
+    const parsed = emailWelcomeSchema.safeParse(raw);
+    if (!parsed.success) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Missing required fields: restaurantId, restaurantName, ownerName, ownerEmail',
+          error: 'Validation failed.',
+          details: parsed.error.issues.map((i: any) => ({ path: i.path.join('.'), message: i.message })),
         },
         { status: 400 }
       );
     }
+    const { restaurantId, restaurantName, ownerName, ownerEmail } = parsed.data;
 
     const html = welcomeEmail({
       restaurantName,

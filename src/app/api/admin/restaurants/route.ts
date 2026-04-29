@@ -1,15 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
+import { adminCreateRestaurantSchema } from '@/lib/schemas/admin';
 
 // POST: Create a new restaurant (admin only)
 export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json();
-    const { name, address, phone, pos_type, retell_agent_id, owner_email } = body;
+  // Rate limit at PROVISIONING tier (5/min) — admin-only operation that
+  // touches Twilio (paid number purchase) + Retell agent creation.
+  const blocked = await checkRateLimit(req, 'PROVISIONING');
+  if (blocked) return blocked;
 
-    if (!name || !address || !phone) {
-      return NextResponse.json({ error: 'Missing required fields (name, address, phone)' }, { status: 400 });
+  try {
+    let raw: unknown;
+    try {
+      raw = await req.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body.' }, { status: 400 });
     }
+    const parsed = adminCreateRestaurantSchema.safeParse(raw);
+    if (!parsed.success) {
+      return NextResponse.json(
+        {
+          error: 'Validation failed.',
+          details: parsed.error.issues.map((i: any) => ({ path: i.path.join('.'), message: i.message })),
+        },
+        { status: 400 }
+      );
+    }
+    const { name, address, phone, pos_type, retell_agent_id, owner_email } = parsed.data;
 
     const supabase = await createServiceRoleClient();
 

@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
 /**
  * GET /api/admin/health/summary
@@ -76,7 +77,12 @@ function healthFromLastCall(lastCallIso: string | null): 'green' | 'yellow' | 'r
   return 'red';
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Rate limit at ADMIN_READ tier (120/min). Page polls every 60s so the
+  // legitimate single-tab use case is well under cap.
+  const blocked = await checkRateLimit(request, 'ADMIN_READ');
+  if (blocked) return blocked;
+
   try {
     // Auth check — must be a logged-in user. Role-gating to admin happens
     // implicitly via the /admin route group + the page itself; this endpoint

@@ -1,8 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
 // Square OAuth callback
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  // Rate limit at AUTH tier — defends against bogus-code spam.
+  const blocked = await checkRateLimit(request, 'AUTH');
+  if (blocked) return blocked;
+
   const { searchParams } = new URL(request.url);
   const code = searchParams.get('code');
   const state = searchParams.get('state'); // restaurant_id
@@ -47,8 +52,12 @@ export async function GET(request: Request) {
   }
 }
 
-// Push order to Square POS
-export async function POST(request: Request) {
+// Push order to Square POS — called by /api/webhooks/square after payment confirms.
+export async function POST(request: NextRequest) {
+  // Rate limit at POS tier — internal call from our own webhook.
+  const blocked = await checkRateLimit(request, 'POS');
+  if (blocked) return blocked;
+
   try {
     const { restaurant_id, order_id, items, total } = await request.json();
 

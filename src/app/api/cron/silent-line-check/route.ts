@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { sendFounderAlert } from '@/lib/alerts';
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
 /**
  * Silent-line check — Build 2, Task #67.
@@ -43,7 +44,12 @@ function getCurrentHourInTimezone(tz: string): number {
   return parseInt(hourPart, 10) % 24;
 }
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  // Rate limit at CRON tier (10/min). Vercel Cron only invokes once per
+  // schedule so this defends against URL spam, not legitimate cron.
+  const blocked = await checkRateLimit(request, 'CRON');
+  if (blocked) return blocked;
+
   try {
     // Auth — Vercel Cron sends CRON_SECRET as Bearer. Matches /api/emails/daily-summary.
     const authHeader = request.headers.get('authorization');

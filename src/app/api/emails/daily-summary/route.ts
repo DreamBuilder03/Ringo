@@ -1,9 +1,15 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { sendEmail } from '@/lib/email';
 import { dailySummaryEmail } from '@/lib/email-templates';
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  // Rate limit at CRON tier. Vercel Cron is once-per-schedule; this defends
+  // against URL spam.
+  const blocked = await checkRateLimit(request, 'CRON');
+  if (blocked) return blocked;
+
   try {
     // Verify cron job auth (simple key-based, should be Vercel Cron authenticated)
     const authHeader = request.headers.get('authorization');
