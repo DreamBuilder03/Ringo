@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
-import { rateLimit } from '@/lib/rate-limit';
-
-const limiter = rateLimit({ max: 5, windowMs: 60_000, message: 'Too many import requests — please wait.' });
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
 // ──────────────────────────────────────────────────────────────────────────────
 // /api/menu/import
@@ -148,7 +146,9 @@ function parseText(raw: string): Array<{
 }
 
 export async function POST(req: NextRequest) {
-  const blocked = limiter(req);
+  // Upstash rate limit at MENU_IMPORT tier (10 imports per 5 min) — admin-only
+  // operation that triggers DB bulk inserts; cap defends against runaway loops.
+  const blocked = await checkRateLimit(req, 'MENU_IMPORT');
   if (blocked) return blocked;
 
   try {

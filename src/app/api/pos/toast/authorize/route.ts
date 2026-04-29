@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
 /**
  * Toast OAuth Authorization Route
@@ -10,7 +11,12 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
  * - toast_restaurant_guid: Toast Restaurant GUID
  * - toast_api_key: Toast API Key
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // Rate limit at PROVISIONING tier — admin-only operation that mutates
+  // restaurant POS connection state.
+  const blocked = await checkRateLimit(request, 'PROVISIONING');
+  if (blocked) return blocked;
+
   try {
     const body = await request.json();
     const { restaurant_id, toast_restaurant_guid, toast_api_key } = body;

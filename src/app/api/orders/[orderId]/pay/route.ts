@@ -1,12 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { getStripe } from '@/lib/stripe';
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
 // POST: Create payment intent and process payment
 export async function POST(
   req: NextRequest,
   { params }: { params: { orderId: string } }
 ) {
+  // Rate limit at PAY tier — customer-facing pay link page.
+  const blocked = await checkRateLimit(req, 'PAY');
+  if (blocked) return blocked;
+
   try {
     const { orderId } = params;
     const supabase = await createServiceRoleClient();
@@ -65,6 +70,10 @@ export async function PUT(
   req: NextRequest,
   { params }: { params: { orderId: string } }
 ) {
+  // Rate limit at PAY tier.
+  const blocked = await checkRateLimit(req, 'PAY');
+  if (blocked) return blocked;
+
   try {
     const { orderId } = params;
     const { paymentIntentId } = await req.json();

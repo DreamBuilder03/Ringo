@@ -11,7 +11,7 @@ export async function POST(request: NextRequest) {
   const check = await validateRetellBody(request, lookupItemSchema, 'lookup-item');
   if (!check.ok) return check.response;
 
-  let callId: string | undefined = check.callId;
+  const callId: string | undefined = check.callId;
   let restaurantId: string | undefined;
   try {
     const { call, args } = check.body;

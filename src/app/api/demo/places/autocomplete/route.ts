@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { rateLimit } from '@/lib/rate-limit';
-
-const limiter = rateLimit({ max: 30, windowMs: 60_000, message: 'Too many search requests — please slow down.' });
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
 // Google Places (New) Autocomplete proxy — keeps the API key server-side.
 // Docs: https://developers.google.com/maps/documentation/places/web-service/place-autocomplete
 
 export async function POST(req: NextRequest) {
-  const blocked = limiter(req);
+  // Upstash rate limit at DEMO_PUBLIC tier (30/min/IP) — defends against
+  // free-tier Google Places budget burn from a stuck autocomplete loop.
+  const blocked = await checkRateLimit(req, 'DEMO_PUBLIC');
   if (blocked) return blocked;
 
   try {

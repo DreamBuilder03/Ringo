@@ -56,9 +56,17 @@ The few routes that use `.passthrough()` on the inner `args` object (Retell tool
 
 ## API4:2023 — Unrestricted Resource Consumption
 
-**Status: PASS** (after Build 2 wire-up).
+**Status: PASS** (full coverage after B / 2026-04-29).
 
-- **Rate limiting:** Upstash Ratelimit on every public endpoint via `src/lib/rate-limit-upstash.ts` per the per-tier `LIMITS` catalog (`AUTH`, `DEMO_PUBLIC`, `DEMO_CALL_CREATE`, `TOOL`, `WEBHOOK`, `PAY`, `ADMIN_READ`, `CRON`, `SEND`, `PROVISIONING`, `MENU_IMPORT`).
+- **Rate limiting:** Upstash Ratelimit on **every API route** via `src/lib/rate-limit-upstash.ts` per the per-tier `LIMITS` catalog (`AUTH`, `DEMO_PUBLIC`, `DEMO_CALL_CREATE`, `TOOL`, `WEBHOOK`, `PAY`, `ADMIN_READ`, `CRON`, `SEND`, `PROVISIONING`, `MENU_IMPORT`). Coverage breakdown:
+  - **Tool routes** (12: production + demo) — TOOL tier via `validateRetellBody()`. Voice-safe: returns 200 + speakable fallback on rate-hit so live calls don't break.
+  - **Webhooks** (3: Retell, Square, Stripe) — WEBHOOK tier (200/min). Providers retry on non-2xx so 429 is recoverable for them.
+  - **Cron** (4: silent-line-check, daily-summary, monthly-roi, welcome) — CRON tier + `CRON_SECRET` Bearer guard.
+  - **Admin** (2: restaurants, health/summary) — PROVISIONING and ADMIN_READ tiers + auth.
+  - **POS** (7: 4 push routes + 3 OAuth callbacks/authorize) — POS / AUTH / PROVISIONING tiers depending on flow.
+  - **Demo public** (8: lead capture, places autocomplete/details/photo, create-session, create-phone-call, demo-call, leads) — DEMO_PUBLIC and DEMO_CALL_CREATE tiers.
+  - **Customer-facing** (orders POST, orders/[id]/pay POST+PUT, twilio voice-fallback, /book) — TOOL / PAY / WEBHOOK tiers.
+  - **Auth** (auth/callback, checkout, billing/portal) — AUTH tier.
 - **Body size:** Next.js default 1MB body limit at the platform layer (Vercel). Per-route Zod string caps further constrain (`shortText` 120ch, `mediumText` 500ch, `longText` 5000ch, `quantity` 1-100, `cents` ≤ $1M).
 - **Compute cost:** expensive operations (Retell calls, SMS sends, email sends) gated by per-IP rate limits + per-restaurant limits where appropriate.
 - **Database:** Supabase queries use `LIMIT` clauses on user-facing list routes (`adminRestaurantsListQuery`, `demoLeadsListQuery` enforce `limit ≤ 500`).

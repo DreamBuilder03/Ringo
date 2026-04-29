@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
 // POST: Create a new pending order (called from Retell webhook)
 export async function POST(req: NextRequest) {
+  // Rate limit at TOOL tier — called by our own Retell webhook flow.
+  const blocked = await checkRateLimit(req, 'TOOL');
+  if (blocked) return blocked;
+
   try {
     const body = await req.json();
     const { restaurant_id, call_id, customer_phone, items, subtotal, tax, total } = body;

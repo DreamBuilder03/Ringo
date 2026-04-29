@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
 // Proxies a Google Places photo so we never expose the API key in the browser.
 export async function GET(req: NextRequest) {
+  // Rate limit at DEMO_PUBLIC tier — proxies paid Google Places API.
+  const blocked = await checkRateLimit(req, 'DEMO_PUBLIC');
+  if (blocked) return blocked;
+
   const { searchParams } = new URL(req.url);
   const name = searchParams.get('name');
   const maxWidth = searchParams.get('maxWidth') || '800';

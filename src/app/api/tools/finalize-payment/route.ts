@@ -18,28 +18,6 @@ interface OrderItem {
   modifiers?: OrderItemModifier[];
 }
 
-interface RetellRequest {
-  call: {
-    call_id: string;
-    agent_id: string;
-    from_number: string;
-    [key: string]: any;
-  };
-  args: {
-    // All three alias names accepted — see phone-resolution block below.
-    // Retell tool schema is source of truth at runtime; prompt is guidance only.
-    // We accept every alias we've ever shipped so prompt/schema drift is non-fatal.
-    customer_phone?: string;
-    phone?: string;
-    phone_number?: string;
-    items?: OrderItem[];
-    total_amount?: number;
-    // Some Retell schema versions include order_id; we read from DB by call_id,
-    // so this is accepted-and-ignored to prevent the "extra args → tool fails" mode.
-    order_id?: string;
-  };
-}
-
 interface PaymentLinkResponse {
   payment_link?: {
     id: string;
@@ -60,7 +38,7 @@ export async function POST(request: NextRequest) {
   const check = await validateRetellBody(request, finalizePaymentSchema, 'finalize-payment');
   if (!check.ok) return check.response;
 
-  let callId: string | undefined = check.callId;
+  const callId: string | undefined = check.callId;
   let agentId: string | undefined;
   let restaurantId: string | undefined;
   let orderId: string | undefined;

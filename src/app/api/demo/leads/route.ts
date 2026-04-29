@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
 // POST /api/demo/leads — upsert a demo lead row.
 // Accepts a partial payload + optional leadId. If leadId is present we UPDATE, otherwise we INSERT.
@@ -17,6 +18,10 @@ const ALLOWED = [
 type Allowed = (typeof ALLOWED)[number];
 
 export async function POST(req: NextRequest) {
+  // Rate limit at DEMO_PUBLIC tier — public lead capture.
+  const blocked = await checkRateLimit(req, 'DEMO_PUBLIC');
+  if (blocked) return blocked;
+
   try {
     const body = await req.json();
     const { leadId, ...fields } = body || {};

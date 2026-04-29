@@ -1,8 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getStripe } from '@/lib/stripe';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // Rate limit at AUTH tier — defends against unauthenticated abuse.
+  const blocked = await checkRateLimit(request, 'AUTH');
+  if (blocked) return blocked;
+
   try {
     const { restaurantId, priceId, planTier } = await request.json();
 

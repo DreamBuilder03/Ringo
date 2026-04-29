@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
 // Google Places (New) Details proxy.
 // Fetch name, address, hours, phone, cuisine, photo for a given placeId.
@@ -22,6 +23,10 @@ const FIELDS = [
 ].join(',');
 
 export async function GET(req: NextRequest) {
+  // Rate limit at DEMO_PUBLIC tier — proxies a paid Google Places API.
+  const blocked = await checkRateLimit(req, 'DEMO_PUBLIC');
+  if (blocked) return blocked;
+
   const { searchParams } = new URL(req.url);
   const placeId = searchParams.get('placeId');
   if (!placeId) {

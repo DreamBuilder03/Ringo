@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
 // ──────────────────────────────────────────────────────────────────────────────
 // /api/provisioning/create
@@ -247,6 +248,11 @@ async function retellRegisterPhoneNumber(params: {
 
 export async function POST(req: NextRequest) {
   const t0 = new Date().toISOString();
+  // Rate limit at PROVISIONING tier (5/min) — admin-only operation, touches
+  // Twilio (paid number purchase) + Retell agent creation.
+  const blocked = await checkRateLimit(req, 'PROVISIONING');
+  if (blocked) return blocked;
+
   try {
     const body = (await req.json().catch(() => ({}))) as { restaurant_id?: string };
     const restaurantId = body.restaurant_id;

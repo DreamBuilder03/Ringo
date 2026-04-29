@@ -5,22 +5,6 @@ import { reportToolFailure } from '@/lib/alerts';
 import { validateRetellBody } from '@/lib/with-retell-validation';
 import { addToOrderSchema } from '@/lib/schemas/tools';
 
-interface RetellRequest {
-  call: {
-    call_id: string;
-    agent_id: string;
-    from_number: string;
-    [key: string]: any;
-  };
-  args: {
-    item_name: string;
-    quantity: number;
-    modifiers?: string[];
-    customer_phone?: string;
-    is_upsell?: boolean;
-  };
-}
-
 interface MenuItem {
   id: string;
   name: string;
@@ -61,7 +45,7 @@ export async function POST(request: NextRequest) {
   const check = await validateRetellBody(request, addToOrderSchema, 'add-to-order');
   if (!check.ok) return check.response;
 
-  let callId: string | undefined = check.callId;
+  const callId: string | undefined = check.callId;
   let restaurantId: string | undefined;
   try {
     const { call, args } = check.body;

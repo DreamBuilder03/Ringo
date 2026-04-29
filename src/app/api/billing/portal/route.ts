@@ -1,6 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -11,7 +12,12 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
  * Body:
  * - restaurant_id: ID of the restaurant
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // Rate limit at AUTH tier — auth-gated below; AUTH protects against
+  // unauthenticated abuse before the auth check runs.
+  const blocked = await checkRateLimit(request, 'AUTH');
+  if (blocked) return blocked;
+
   try {
     const body = await request.json();
     const { restaurant_id } = body;

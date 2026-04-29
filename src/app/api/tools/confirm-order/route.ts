@@ -4,22 +4,6 @@ import { reportToolFailure } from '@/lib/alerts';
 import { validateRetellBody } from '@/lib/with-retell-validation';
 import { confirmOrderSchema } from '@/lib/schemas/tools';
 
-interface RetellRequest {
-  call: {
-    call_id: string;
-    agent_id: string;
-    from_number: string;
-    [key: string]: any;
-  };
-  args: {
-    // Accept every phone-arg alias we've ever shipped — see phone resolution
-    // block below. Prompt/schema drift must not strand a live call.
-    customer_phone?: string;
-    phone?: string;
-    phone_number?: string;
-  };
-}
-
 interface OrderItem {
   name: string;
   quantity: number;
@@ -32,7 +16,7 @@ export async function POST(request: NextRequest) {
   const check = await validateRetellBody(request, confirmOrderSchema, 'confirm-order');
   if (!check.ok) return check.response;
 
-  let callId: string | undefined = check.callId;
+  const callId: string | undefined = check.callId;
   let restaurantId: string | undefined;
   try {
     const { call, args } = check.body as any;

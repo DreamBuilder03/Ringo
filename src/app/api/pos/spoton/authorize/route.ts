@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { createServerSupabaseClient } from '@/lib/supabase/server';
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
 /**
  * SpotOn API Authorization Route
@@ -10,7 +11,12 @@ import { createServerSupabaseClient } from '@/lib/supabase/server';
  * - spoton_api_key: SpotOn API Key
  * - spoton_location_id: SpotOn Location ID
  */
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  // Rate limit at PROVISIONING tier — admin-only operation that mutates
+  // restaurant POS connection state.
+  const blocked = await checkRateLimit(request, 'PROVISIONING');
+  if (blocked) return blocked;
+
   try {
     const body = await request.json();
     const { restaurant_id, spoton_api_key, spoton_location_id } = body;

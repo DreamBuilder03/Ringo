@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { rateLimit } from '@/lib/rate-limit';
-
-const limiter = rateLimit({ max: 5, windowMs: 60_000, message: 'Too many demo calls — please wait a moment.' });
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
 interface CreateWebCallRequest {
   restaurantName: string;
@@ -21,7 +19,9 @@ interface DemoCallResponse {
 }
 
 export async function POST(req: NextRequest) {
-  const blocked = limiter(req);
+  // Upstash rate limit at DEMO_CALL_CREATE tier (5/min/IP) — Retell calls
+  // cost money; tight cap on demo creation prevents budget burn.
+  const blocked = await checkRateLimit(req, 'DEMO_CALL_CREATE');
   if (blocked) return blocked;
 
   try {

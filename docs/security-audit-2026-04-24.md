@@ -21,8 +21,8 @@ This audit blocks pilot #1 go-live. Re-run before each new pilot onboarding.
 | 4 | Point-in-Time Recovery enabled (Pro plan) | **PENDING** | Misael action — Supabase dashboard upgrade |
 | 5 | MFA on Misael's Supabase login | **PENDING** | Misael action — Supabase account settings |
 | 6 | Incident-response runbook in repo | **PASS** | `docs/incident-response.md` committed |
-| 7 | Rate limiting on every public endpoint | **PASS** | Upstash Ratelimit via `src/lib/rate-limit-upstash.ts`. Per-tier `LIMITS` catalog. Wired into all 12 tool routes + key public + webhooks. Returns 429 with Retry-After. Voice tool routes return 200+speakable on rate hit (Retell goes silent on non-2xx). |
-| 8 | Strict input validation on every API route | **PASS** | Zod schemas in `src/lib/schemas/{tools,demo,orders,admin,pos,comms,common}.ts`. `with-validation.ts` + `with-retell-validation.ts` wrappers. `.strict()` mode rejects unexpected fields. Length caps on all text fields. |
+| 7 | Rate limiting on every public endpoint | **PASS** (full coverage) | Upstash Ratelimit via `src/lib/rate-limit-upstash.ts`. Per-tier `LIMITS` catalog. Wired into **all** 36+ public + admin + cron + webhook + tool + POS + demo + customer-facing routes (B work, 2026-04-29). Returns 429 with Retry-After. Voice tool routes return 200+speakable on rate hit (Retell goes silent on non-2xx). |
+| 8 | Strict input validation on every API route | **PASS** (Zod where applicable) | Zod schemas in `src/lib/schemas/{tools,demo,orders,admin,pos,comms,common}.ts`. `with-validation.ts` + `with-retell-validation.ts` wrappers. `.strict()` mode rejects unexpected fields. Length caps on all text fields. Routes that don't take a JSON body (cron, OAuth callbacks, Twilio webhooks) defended via secret/signature/auth instead. |
 | 9 | Hardcoded-key audit + key-rotation runbook + OWASP review | **PASS** | Repo-wide grep clean (no hardcoded keys). `docs/security/key-rotation.md` runbook. `docs/security/owasp-api-top-10.md` review — 8 PASS / 0 FAIL / 2 PASS-with-followup. |
 
 ---

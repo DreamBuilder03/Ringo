@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { discoverMenuFor } from '@/lib/demo-menu';
-import { rateLimit } from '@/lib/rate-limit';
-
-const limiter = rateLimit({ max: 3, windowMs: 60_000, message: 'Too many phone call requests — please wait.' });
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
 // Outbound phone-call variant: Ringo dials the visitor's cell (Loman + edge).
 // Uses Retell's create-phone-call endpoint with dynamic variables so the agent adapts
@@ -18,7 +16,9 @@ function toE164(raw: string): string | null {
 }
 
 export async function POST(req: NextRequest) {
-  const blocked = limiter(req);
+  // Upstash rate limit at DEMO_CALL_CREATE tier (5/min/IP) — outbound Retell
+  // dial costs money; tight cap defends against budget burn.
+  const blocked = await checkRateLimit(req, 'DEMO_CALL_CREATE');
   if (blocked) return blocked;
 
   try {

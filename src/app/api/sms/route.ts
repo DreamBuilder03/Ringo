@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { rateLimit } from '@/lib/rate-limit';
-
-const smsLimiter = rateLimit({ max: 10, windowMs: 60_000, message: 'Too many SMS requests — please wait.' });
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
 const GHL_API_BASE = 'https://services.leadconnectorhq.com';
 const TWILIO_API_BASE = 'https://api.twilio.com/2010-04-01/Accounts';
@@ -144,7 +142,8 @@ async function sendViaTwilio(
 
 // POST: Send SMS with fallback chain (GHL → Twilio)
 export async function POST(req: NextRequest) {
-  const blocked = smsLimiter(req);
+  // Upstash rate limit at SEND tier — Twilio + GHL both charge per send.
+  const blocked = await checkRateLimit(req, 'SEND');
   if (blocked) return blocked;
 
   try {

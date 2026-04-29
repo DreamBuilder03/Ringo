@@ -122,8 +122,12 @@ export async function GET(request: NextRequest) {
 // ──────────────────────────────────────────────────────────────────
 // Body: { restaurant_id: string; order_id?: string; items: Array<{ name, quantity, price }>; total?: number }
 // Price is in dollars (e.g. 9.99). Clover wants cents.
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   const t0 = new Date().toISOString();
+  // Rate limit at POS tier — internal call from our own webhook.
+  const blocked = await checkRateLimit(request, 'POS');
+  if (blocked) return blocked;
+
   try {
     const body = await request.json();
     const {

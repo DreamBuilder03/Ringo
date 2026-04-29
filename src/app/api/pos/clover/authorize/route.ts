@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
 /**
  * Clover OAuth Authorization Route
@@ -7,7 +8,12 @@ import { NextResponse } from 'next/server';
  * Query params:
  * - restaurant_id: ID of the restaurant to connect
  */
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
+  // Rate limit at AUTH tier — defends against bogus restaurant_id spam
+  // that would otherwise generate Clover OAuth URLs in a loop.
+  const blocked = await checkRateLimit(request, 'AUTH');
+  if (blocked) return blocked;
+
   const { searchParams } = new URL(request.url);
   const restaurantId = searchParams.get('restaurant_id');
 
