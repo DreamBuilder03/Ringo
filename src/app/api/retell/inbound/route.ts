@@ -36,6 +36,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { checkRateLimit } from '@/lib/rate-limit-upstash';
+import {
+  getActiveExperimentsForRestaurant,
+  pickVariant,
+  mergeVariantOverridesInto,
+} from '@/lib/experiments';
 
 interface InboundPayload {
   event?: string;
@@ -165,28 +170,58 @@ export async function POST(request: NextRequest) {
       kept++;
     }
 
-    // ─── Step 2: aggregate order history for this caller ────────────────────
-    // Match on normalized phone — orders table has been written with various
-    // formats over time. Use both raw and normalized to be safe.
+    // ─── Step 2: aggregate order history + active experiments (parallel) ────
+    // Both queries depend only on restaurantId, so we run them in parallel to
+    // keep the live-call critical path tight. Failure of either is non-fatal:
+    // the orders fallback yields a first-time-caller branch; experiments
+    // failure yields no variant assignments and the agent runs as if no
+    // experiments were active.
     const phone = normalizePhone(fromNumber) || fromNumber;
 
-    const { data: orders } = await supabase
-      .from('orders')
-      .select('total, customer_name, items, paid_at, created_at')
-      .eq('restaurant_id', restaurantId)
-      .or(`customer_phone.eq.${phone},customer_phone.eq.${fromNumber}`)
-      .in('status', ['paid', 'preparing', 'ready', 'completed', 'awaiting_handoff'])
-      .order('created_at', { ascending: false })
-      .limit(50);
+    const [ordersResult, activeExperiments] = await Promise.all([
+      supabase
+        .from('orders')
+        .select('total, customer_name, items, paid_at, created_at')
+        .eq('restaurant_id', restaurantId)
+        .or(`customer_phone.eq.${phone},customer_phone.eq.${fromNumber}`)
+        .in('status', ['paid', 'preparing', 'ready', 'completed', 'awaiting_handoff'])
+        .order('created_at', { ascending: false })
+        .limit(50),
+      getActiveExperimentsForRestaurant(supabase, restaurantId),
+    ]);
 
-    const completedOrders = (orders || []) as OrderSnapshot[];
+    const completedOrders = (ordersResult.data || []) as OrderSnapshot[];
+
+    // ─── Step 2b: pick variants for each active experiment ──────────────────
+    // For each running experiment, deterministic-hash (fromNumber, exp.id) →
+    // variant. Merge that variant's overrides_patch into the same sanitized
+    // dictionary used by per-restaurant prompt_overrides (same defenses, same
+    // 20-key budget). Then inject exp_<slug>=<variant_slug> as its own dynamic
+    // variable so prompts can branch by name.
+    //
+    // Stats note (intentional Phase 2 gap): we don't write to
+    // experiment_assignments here because the inbound webhook fires BEFORE
+    // Retell has assigned a call_id. The dynamic_variables we return are
+    // visible on the resulting call object, so for now stats are computed by
+    // joining Retell's call records with our orders table. A follow-up will
+    // wire experiment_assignments writes from the call_started handler.
+    const expVars: Record<string, string> = {};
+    for (const exp of activeExperiments) {
+      const variant = pickVariant(fromNumber, exp.id, exp.variants);
+      if (!variant) continue;
+      expVars[`exp_${exp.slug}`] = variant.slug;
+      const remaining = 20 - Object.keys(sanitizedOverrides).length;
+      if (remaining > 0) {
+        mergeVariantOverridesInto(sanitizedOverrides, variant.overrides_patch, remaining);
+      }
+    }
 
     if (completedOrders.length === 0) {
       // First-time caller (or first paid order). Agent will use default greeting,
-      // but per-restaurant prompt_overrides still apply.
+      // but per-restaurant prompt_overrides + experiment variants still apply.
       return NextResponse.json({
         call_inbound: {
-          dynamic_variables: { is_returning: false, ...sanitizedOverrides },
+          dynamic_variables: { is_returning: false, ...sanitizedOverrides, ...expVars },
         },
       });
     }
@@ -214,6 +249,11 @@ export async function POST(request: NextRequest) {
           // (RESERVED_KEYS filter above prevents that, but we order this
           // way as a defense-in-depth belt-and-suspenders.)
           ...sanitizedOverrides,
+          // Experiment variant assignments — exp_<slug>=<variant_slug>. The
+          // overrides_patch from the chosen variant is already merged into
+          // sanitizedOverrides above; these keys are the audit trail / branch
+          // hooks for prompts that want to switch on variant by name.
+          ...expVars,
           is_returning: true,
           customer_name: customerName,
           total_orders: totalOrders,
