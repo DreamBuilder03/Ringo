@@ -35,7 +35,8 @@ export type AlertFailureType =
   | 'payment_link_failure'
   | 'silent_line'
   | 'silent_line_summary'
-  | 'tool_failure_summary';
+  | 'tool_failure_summary'
+  | 'handoff_requested';
 
 export interface SendFounderAlertOpts {
   restaurantId?: string | null;
@@ -300,6 +301,8 @@ function prettyFailureType(t: AlertFailureType): string {
       return 'Silent line (summary)';
     case 'tool_failure_summary':
       return 'Systemic failures';
+    case 'handoff_requested':
+      return 'Handoff requested';
   }
 }
 
@@ -315,6 +318,8 @@ function defaultActionHint(t: AlertFailureType): string {
       return 'Check Sentry for the tool route stack trace.';
     case 'silent_line':
       return 'Confirm Twilio number still forwards to Retell SIP.';
+    case 'handoff_requested':
+      return 'Call the customer back ASAP. Pull the transcript at /admin/health.';
     default:
       return '';
   }

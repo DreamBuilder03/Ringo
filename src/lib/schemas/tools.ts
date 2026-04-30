@@ -68,3 +68,28 @@ export const finalizePaymentSchema = z.object({
   }).passthrough(),
   call: retellCall,
 }).strict();
+
+// ─── request-handoff (C-4) ────────────────────────────────────────────────────
+// Agent escalation. Reasons are an enum drawn from the migration.
+// summary is a short agent-written description that goes into the SMS pager.
+export const requestHandoffSchema = z.object({
+  args: z.object({
+    reason: z.enum([
+      'menu_confusion',
+      'allergy_request',
+      'complaint',
+      'refund_request',
+      'caller_request',
+      'large_order',
+      'agent_uncertainty',
+      'other',
+    ]),
+    summary: z.string().min(1).max(500),
+    // Optional: agent self-rated confidence 0..1. NULL → store NULL.
+    uncertainty_score: z.number().min(0).max(1).optional(),
+    // Caller's number — agent may know it from the call object, but accept
+    // an explicit override in case the agent has a corrected version.
+    callback_phone: phone.optional(),
+  }).passthrough(),
+  call: retellCall,
+}).strict();
