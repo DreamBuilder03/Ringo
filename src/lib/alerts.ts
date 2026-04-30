@@ -375,7 +375,7 @@ async function sendAlertEmail(opts: {
 }): Promise<{ success: true } | { success: false; error: string }> {
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.FOUNDER_ALERT_EMAIL;
-  const from = process.env.RESEND_FROM_EMAIL || 'OMRI Alerts <alerts@omriapp.com>';
+  const from = process.env.RESEND_FROM_EMAIL || 'OMRI Alerts <alerts@joinomri.com>';
   if (!apiKey || !to) return { success: false, error: 'resend env vars missing' };
 
   const html = `<div style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:14px;white-space:pre-wrap;line-height:1.5;">${escapeHtml(opts.body)}</div>`;

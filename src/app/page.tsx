@@ -863,7 +863,7 @@ function LiveDashboard() {
         <div className="flex-1 mx-6">
           <div className="bg-obsidian/80 rounded-lg px-4 py-1.5 text-bone/25 text-xs flex items-center gap-2 max-w-sm mx-auto">
             <svg viewBox="0 0 16 16" className="w-3 h-3 text-bone/20" fill="none" stroke="currentColor" strokeWidth="2"><rect x="2" y="2" width="12" height="12" rx="3" /><path d="M6 2v12" /></svg>
-            app.omriapp.com/dashboard
+            app.joinomri.com/dashboard
           </div>
         </div>
       </div>
@@ -2368,7 +2368,7 @@ export default function HomePage() {
                 <span className="absolute inset-0 shimmer-btn rounded-full" />
                 <span className="relative z-10 flex items-center gap-2">See the demo <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" /></span>
               </Link>
-              <a href="mailto:hello@omriapp.com" className="group text-bone/60 hover:text-bone text-base font-medium transition-colors flex items-center gap-2">
+              <a href="mailto:hello@joinomri.com" className="group text-bone/60 hover:text-bone text-base font-medium transition-colors flex items-center gap-2">
                 Or email us <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5" />
               </a>
             </div>
@@ -2414,7 +2414,7 @@ export default function HomePage() {
           </div>
           <div className="mt-10 pt-6 border-t border-bone/[0.04] flex flex-col md:flex-row items-center justify-between gap-2">
             <p className="text-bone/10 text-xs">&copy; 2026 OMRI AI, Inc. All rights reserved.</p>
-            <p className="text-bone/10 text-xs">hello@omriapp.com</p>
+            <p className="text-bone/10 text-xs">hello@joinomri.com</p>
           </div>
         </div>
       </footer>

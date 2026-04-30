@@ -3,14 +3,14 @@
 > The phone rings. OMRI handles it.
 
 [![CI](https://github.com/DreamBuilder03/OMRI/actions/workflows/ci.yml/badge.svg)](https://github.com/DreamBuilder03/OMRI/actions/workflows/ci.yml)
-[![Vercel](https://img.shields.io/badge/deployed-vercel-black)](https://www.omriapp.com)
+[![Vercel](https://img.shields.io/badge/deployed-vercel-black)](https://www.joinomri.com)
 [![Next.js](https://img.shields.io/badge/Next.js-14.2-black)](https://nextjs.org)
 [![Supabase](https://img.shields.io/badge/Supabase-Postgres%20%2B%20Realtime-3ECF8E)](https://supabase.com)
 [![Retell](https://img.shields.io/badge/Voice-Retell%20AI-blueviolet)](https://retellai.com)
 
 OMRI is an AI voice agent that answers every inbound restaurant phone call 24/7. It takes orders, upsells add-ons, sends an SMS payment link, and **only after payment clears** pushes the order to the restaurant's POS. Every call is logged, transcribed, and tracked in a real-time dashboard.
 
-Live at **[www.omriapp.com](https://www.omriapp.com)**.
+Live at **[www.joinomri.com](https://www.joinomri.com)**.
 
 ---
 
@@ -135,7 +135,7 @@ npm run dev                   # http://localhost:3000
 
 ## Status
 
-- **Production:** live at [www.omriapp.com](https://www.omriapp.com)
+- **Production:** live at [www.joinomri.com](https://www.joinomri.com)
 - **Pre-pilot security gate:** 8 of 9 items green ([audit doc](./docs/security-audit-2026-04-24.md)). Last item (Supabase Pro $25/mo + PITR) is parked until first paying client signs.
 - **Pilot #1:** prep complete. Awaiting franchisee signature.
 

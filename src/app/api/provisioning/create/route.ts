@@ -58,7 +58,7 @@ async function twilioBuyLocalNumber(areaCode: string): Promise<{
 }> {
   const accountSid = process.env.TWILIO_ACCOUNT_SID;
   const authToken = process.env.TWILIO_AUTH_TOKEN;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://omriapp.com';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://joinomri.com';
   if (!accountSid || !authToken) {
     throw new Error('Missing TWILIO_ACCOUNT_SID or TWILIO_AUTH_TOKEN');
   }

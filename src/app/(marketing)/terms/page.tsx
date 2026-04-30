@@ -16,7 +16,7 @@ export default function TermsPage() {
         &ldquo;we,&rdquo; &ldquo;us&rdquo;) and the person or entity agreeing
         to them (&ldquo;you&rdquo; or &ldquo;Customer&rdquo;). By signing up
         for, accessing, or using the OMRI platform at{" "}
-        <a href="https://omriapp.com">omriapp.com</a> (the
+        <a href="https://joinomri.com">joinomri.com</a> (the
         &ldquo;Service&rdquo;), you agree to these Terms.
       </p>
 
@@ -123,7 +123,7 @@ export default function TermsPage() {
       <h2>11. Termination</h2>
       <p>
         You may cancel your subscription at any time from your dashboard or by
-        emailing <a href="mailto:hello@omriapp.com">hello@omriapp.com</a>.
+        emailing <a href="mailto:hello@joinomri.com">hello@joinomri.com</a>.
         Cancellation takes effect at the end of the current billing period. We
         may suspend or terminate your access for material breach, non-payment,
         or illegal activity, with notice where practical.
@@ -191,7 +191,7 @@ export default function TermsPage() {
       <h2>18. Contact</h2>
       <p>
         OMRI AI, Inc. &middot; Modesto, California, USA <br />
-        Email: <a href="mailto:hello@omriapp.com">hello@omriapp.com</a>
+        Email: <a href="mailto:hello@joinomri.com">hello@joinomri.com</a>
       </p>
     </LegalLayout>
   );

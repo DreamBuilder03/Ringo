@@ -19,7 +19,7 @@
 //
 // Configuration:
 //   In Retell agent settings → "Inbound Dynamic Variables Webhook URL"
-//   point at https://www.omriapp.com/api/retell/inbound
+//   point at https://www.joinomri.com/api/retell/inbound
 //
 // Performance:
 //   This is on the live-call critical path. Retell waits for our response

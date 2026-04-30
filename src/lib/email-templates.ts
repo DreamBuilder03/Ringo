@@ -41,7 +41,7 @@ function emailWrapper(title: string, content: string) {
       ${content}
     </div>
     <div class="footer">
-      <p style="margin: 0;">Sent by OMRI AI • <a href="https://omriapp.com" style="color: ${BRAND_GOLD}; text-decoration: none;">omriapp.com</a></p>
+      <p style="margin: 0;">Sent by OMRI AI • <a href="https://joinomri.com" style="color: ${BRAND_GOLD}; text-decoration: none;">joinomri.com</a></p>
     </div>
   </div>
 </body>
@@ -312,7 +312,7 @@ export function welcomeEmail({
     </div>
 
     <center>
-      <a href="https://app.omriapp.com/dashboard" class="button">Go to Dashboard</a>
+      <a href="https://app.joinomri.com/dashboard" class="button">Go to Dashboard</a>
     </center>
 
     <div style="background-color: #141414; border: 1px solid #2E2E2E; border-radius: 8px; padding: 16px; margin: 20px 0;">
@@ -324,7 +324,7 @@ export function welcomeEmail({
       </ul>
     </div>
 
-    <p style="text-align: center; color: #9C9C9C; font-size: 12px; margin-top: 24px;">Questions? We're here to help at support@omriapp.com or (855) OMRI-AI</p>
+    <p style="text-align: center; color: #9C9C9C; font-size: 12px; margin-top: 24px;">Questions? We're here to help at support@joinomri.com or (855) OMRI-AI</p>
   `;
 
   return emailWrapper('Welcome to OMRI', content);
@@ -409,7 +409,7 @@ export function monthlyRoiEmail({
     </div>
 
     <center>
-      <a href="https://www.omriapp.com/dashboard/analytics" class="button">See full analytics</a>
+      <a href="https://www.joinomri.com/dashboard/analytics" class="button">See full analytics</a>
     </center>
 
     <p style="text-align: center; color: #9C9C9C; font-size: 12px; margin-top: 24px;">

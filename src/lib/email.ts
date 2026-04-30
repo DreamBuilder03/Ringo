@@ -20,7 +20,7 @@ export async function sendEmail({
     return { success: true, warning: 'Email not configured' };
   }
 
-  const from = process.env.RESEND_FROM_EMAIL || 'OMRI <noreply@omriapp.com>';
+  const from = process.env.RESEND_FROM_EMAIL || 'OMRI <noreply@joinomri.com>';
 
   try {
     const res = await fetch('https://api.resend.com/emails', {

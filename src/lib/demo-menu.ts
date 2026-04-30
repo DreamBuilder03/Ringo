@@ -94,7 +94,7 @@ async function fetchWithTimeout(url: string, ms: number): Promise<Response | nul
       signal: ctrl.signal,
       headers: {
         'User-Agent':
-          'Mozilla/5.0 (compatible; OMRIBot/1.0; +https://omriapp.com)',
+          'Mozilla/5.0 (compatible; OMRIBot/1.0; +https://joinomri.com)',
         Accept: 'text/html,application/xhtml+xml',
       },
       redirect: 'follow',

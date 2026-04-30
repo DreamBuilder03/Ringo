@@ -15,7 +15,7 @@ export default function PrivacyPage() {
         (&ldquo;OMRI,&rdquo; &ldquo;we,&rdquo; &ldquo;us,&rdquo; or
         &ldquo;our&rdquo;) collects, uses, shares, and protects information in
         connection with our AI voice ordering platform, websites at{" "}
-        <a href="https://omriapp.com">omriapp.com</a>, and related services
+        <a href="https://joinomri.com">joinomri.com</a>, and related services
         (collectively, the &ldquo;Service&rdquo;). By using the Service, you
         agree to the practices described here.
       </p>
@@ -149,7 +149,7 @@ export default function PrivacyPage() {
       </p>
       <p>
         To exercise any right, email{" "}
-        <a href="mailto:privacy@omriapp.com">privacy@omriapp.com</a>. We will
+        <a href="mailto:privacy@joinomri.com">privacy@joinomri.com</a>. We will
         verify your request before responding. We will not discriminate against
         you for exercising a privacy right.
       </p>
@@ -167,7 +167,7 @@ export default function PrivacyPage() {
         The Service is not directed to children under 13 and we do not
         knowingly collect personal information from them. If you believe a
         child has provided us information, contact{" "}
-        <a href="mailto:privacy@omriapp.com">privacy@omriapp.com</a>.
+        <a href="mailto:privacy@joinomri.com">privacy@joinomri.com</a>.
       </p>
 
       <h2>11. International users</h2>
@@ -188,7 +188,7 @@ export default function PrivacyPage() {
       <h2>13. Contact</h2>
       <p>
         OMRI AI, Inc. &middot; Modesto, California, USA <br />
-        Email: <a href="mailto:privacy@omriapp.com">privacy@omriapp.com</a>
+        Email: <a href="mailto:privacy@joinomri.com">privacy@joinomri.com</a>
       </p>
     </LegalLayout>
   );

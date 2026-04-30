@@ -114,7 +114,7 @@ export async function PUT(
     // Push to POS if connected
     if (fullOrder?.restaurants?.pos_connected && fullOrder?.restaurants?.pos_type === 'square') {
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://omriapp.com';
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://joinomri.com';
         await fetch(`${baseUrl}/api/pos/square`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -141,7 +141,7 @@ export async function PUT(
     if (fullOrder?.customer_phone) {
       try {
         const restaurantName = fullOrder.restaurants?.name || 'the restaurant';
-        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://omriapp.com';
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://joinomri.com';
         await fetch(`${baseUrl}/api/sms`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

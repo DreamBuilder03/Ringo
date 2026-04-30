@@ -43,7 +43,7 @@ If the dev server boots and `http://localhost:3000` renders the landing page, yo
 
 We use a single long-lived branch (`main`) and short-lived feature branches.
 
-- **`main`** is what's live in production on `www.omriapp.com`. Every commit on main auto-deploys to Vercel within ~2 minutes. **Never push directly to main.** Branch protection enforces this.
+- **`main`** is what's live in production on `www.joinomri.com`. Every commit on main auto-deploys to Vercel within ~2 minutes. **Never push directly to main.** Branch protection enforces this.
 - **Feature branches** branch from `main`, get one or more commits, then open a PR back to `main`. Naming: `<type>/<short-description>`. Examples:
   - `feat/handoff-tablet-printer`
   - `fix/lookup-item-stopwords`

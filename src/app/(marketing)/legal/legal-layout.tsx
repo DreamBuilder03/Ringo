@@ -51,10 +51,10 @@ export function LegalLayout({
         <div className="mt-16 pt-8 border-t border-bone/[0.06] text-sm text-bone/40">
           Questions? Email{" "}
           <a
-            href="mailto:hello@omriapp.com"
+            href="mailto:hello@joinomri.com"
             className="text-bone/70 hover:text-bone underline underline-offset-2"
           >
-            hello@omriapp.com
+            hello@joinomri.com
           </a>
           .
         </div>

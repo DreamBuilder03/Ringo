@@ -3,7 +3,7 @@ import type { PricingTier } from '@/types/database';
 export const BRAND = {
   name: 'OMRI',
   tagline: 'The phone rings. OMRI handles it.',
-  domain: 'omriapp.com',
+  domain: 'joinomri.com',
   colors: {
     dark: '#0A0A0A',
     teal: '#F3EEE3',

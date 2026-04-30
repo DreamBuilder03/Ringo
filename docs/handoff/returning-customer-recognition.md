@@ -52,7 +52,7 @@ In the Retell dashboard for the restaurant's agent (English agent and Spanish ag
 2. Set **Inbound Dynamic Variables Webhook URL** to:
 
    ```
-   https://www.omriapp.com/api/retell/inbound
+   https://www.joinomri.com/api/retell/inbound
    ```
 
 3. Save. No header configuration needed — the endpoint authenticates by matching agent_id back to a real restaurant in our DB.
@@ -118,4 +118,4 @@ Two notes:
 
 The webhook is on the live-call critical path. If OMRI's endpoint is slow or down, Retell falls back to the agent's default greeting after a short timeout. Worst case: the caller is treated as new even if they're a regular. The call still connects. We don't strand customers on a OMRI outage.
 
-To check the webhook is healthy: hit `https://www.omriapp.com/api/retell/inbound` with a sample payload (see implementation comments in `src/app/api/retell/inbound/route.ts` for the request shape) and confirm a 200 with a `call_inbound.dynamic_variables` envelope.
+To check the webhook is healthy: hit `https://www.joinomri.com/api/retell/inbound` with a sample payload (see implementation comments in `src/app/api/retell/inbound/route.ts` for the request shape) and confirm a 200 with a `call_inbound.dynamic_variables` envelope.

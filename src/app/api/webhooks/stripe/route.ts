@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
           // Kick off auto-provisioning (Twilio number + Retell agent) fire-and-forget.
           // We don't block the webhook on it — if it fails, the row is marked
           // provisioning_status='failed' and the admin can retry.
-          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://omriapp.com';
+          const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://joinomri.com';
           fetch(`${baseUrl}/api/provisioning/create`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },

@@ -34,7 +34,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ ok: true });
       }
 
-      const notificationUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://omriapp.com'}/api/webhooks/square`;
+      const notificationUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://joinomri.com'}/api/webhooks/square`;
       const computedSignature = crypto
         .createHmac('sha256', webhookKey)
         .update(notificationUrl + body)
@@ -173,7 +173,7 @@ export async function POST(request: NextRequest) {
     //   - direct_api      → push order ticket to the connected POS (existing behavior)
     //   - handoff_tablet  → write to handoff_orders for the /handoff tablet view to
     //                       pick up via Supabase Realtime; staff transcribes manually.
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://omriapp.com';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://joinomri.com';
     const { data: posLookup } = await supabase
       .from('restaurants')
       .select('pos_type, pos_mode')
