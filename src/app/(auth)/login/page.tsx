@@ -49,10 +49,10 @@ export default function LoginPage() {
         <div className="w-full max-w-sm space-y-8">
           <div className="text-center">
             <Image
-              src="/omri-logo.svg"
+              src="/omri-logo.png"
               alt="OMRI"
-              width={160}
-              height={50}
+              width={800}
+              height={340}
               className="h-12 w-auto mx-auto"
             />
             <p className="text-sm text-omri-muted mt-2">Sign in to your dashboard</p>

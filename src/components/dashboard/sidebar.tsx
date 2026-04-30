@@ -144,10 +144,10 @@ export function Sidebar({ role }: SidebarProps) {
         <div className="p-6 border-b border-smoke">
           <div className="flex items-center justify-between">
             <Image
-              src="/omri-logo.svg"
+              src="/omri-logo.png"
               alt="OMRI"
-              width={120}
-              height={40}
+              width={800}
+              height={340}
               className="h-10 w-auto"
             />
             {role === 'admin' && (
