@@ -120,32 +120,40 @@ export async function POST(request: NextRequest) {
     // here is a byte the caller waits on the line.
     let restaurantId: string | null = null;
     let promptOverrides: Record<string, unknown> = {};
+    let staffPhoneNumber: string | null = null;
     {
       const { data } = await supabase
         .from('restaurants')
-        .select('id, prompt_overrides')
+        .select('id, prompt_overrides, staff_phone_number')
         .eq('retell_agent_id', agentId)
         .single();
       if (data) {
         restaurantId = data.id;
         promptOverrides = (data.prompt_overrides as Record<string, unknown>) || {};
+        staffPhoneNumber = (data as { staff_phone_number?: string | null }).staff_phone_number ?? null;
       }
     }
     if (!restaurantId) {
       const { data } = await supabase
         .from('restaurants')
-        .select('id, prompt_overrides')
+        .select('id, prompt_overrides, staff_phone_number')
         .eq('retell_agent_id_es', agentId)
         .single();
       if (data) {
         restaurantId = data.id;
         promptOverrides = (data.prompt_overrides as Record<string, unknown>) || {};
+        staffPhoneNumber = (data as { staff_phone_number?: string | null }).staff_phone_number ?? null;
       }
     }
     if (!restaurantId) {
       // Demo agent or unknown agent — no recognition possible.
       return emptyResponse();
     }
+
+    // Normalize the staff phone to E.164 so the agent can pass it directly
+    // to transfer_call. Empty string when not configured — the prompt branches
+    // on this to decide whether transfer is even possible.
+    const normalizedStaffPhone = staffPhoneNumber ? (normalizePhone(staffPhoneNumber) || '') : '';
 
     // Sanitize prompt_overrides before serving to Retell.
     // Defends against (a) a 1MB JSONB blob smuggled past the dashboard, (b)
@@ -221,7 +229,12 @@ export async function POST(request: NextRequest) {
       // but per-restaurant prompt_overrides + experiment variants still apply.
       return NextResponse.json({
         call_inbound: {
-          dynamic_variables: { is_returning: false, ...sanitizedOverrides, ...expVars },
+          dynamic_variables: {
+            is_returning: false,
+            ...sanitizedOverrides,
+            ...expVars,
+            staff_phone_number: normalizedStaffPhone,
+          },
         },
       });
     }
@@ -259,6 +272,9 @@ export async function POST(request: NextRequest) {
           total_orders: totalOrders,
           total_spent: totalSpentDollars.toFixed(2),
           last_order_summary: lastOrderSummary,
+          // Hard-handoff destination (E.164). Empty string when not configured;
+          // the prompt branches on this to decide transfer_call vs request_handoff.
+          staff_phone_number: normalizedStaffPhone,
         },
       },
     });
