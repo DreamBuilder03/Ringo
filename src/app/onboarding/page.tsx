@@ -54,10 +54,22 @@ export default function OnboardingPage() {
     phone: '',
     posType: 'none',
     planTier: 'growth',
+    brand: 'independent',          // B2 brand picker (LC sprint)
+    bilingual: false,               // B3 bilingual toggle (closes audit scenario 29)
   });
 
-  function updateField(field: string, value: string) {
-    setForm((prev) => ({ ...prev, [field]: value }));
+  function updateField(field: string, value: string | boolean) {
+    setForm((prev) => {
+      const next = { ...prev, [field]: value };
+      // When franchise brand picked, auto-suggest sensible defaults:
+      //   LC + Domino's + Pizza Hut + Papa John's + Jet's all run proprietary POS
+      //   (handoff_tablet mode). Owner can still change manually before submit.
+      if (field === 'brand' && value !== prev.brand && value !== 'independent') {
+        // Don't override an explicit POS pick — only suggest if still default
+        if (prev.posType === 'none') next.posType = 'none'; // proprietary handled at insert time below
+      }
+      return next;
+    });
     setError('');
   }
 
@@ -109,6 +121,12 @@ export default function OnboardingPage() {
         return;
       }
 
+      // Franchise brands run proprietary POS (Caesar Vision Cloud, Domino Pulse,
+      // Brink, etc) — branch to handoff_tablet mode automatically so the
+      // /handoff Realtime view picks up paid orders without us needing to drive
+      // the proprietary POS API.
+      const isFranchiseBrand = form.brand !== 'independent';
+
       // Create restaurant in Supabase
       const { data: restaurant, error: restaurantError } = await supabase
         .from('restaurants')
@@ -117,7 +135,10 @@ export default function OnboardingPage() {
           address: form.address,
           phone: form.phone,
           pos_type: form.posType,
+          pos_mode: isFranchiseBrand ? 'handoff_tablet' : 'direct_api',
           plan_tier: form.planTier,
+          brand: form.brand,
+          preferred_language: form.bilingual ? 'bilingual' : 'en',
           owner_user_id: user.id,
         })
         .select()
@@ -128,6 +149,23 @@ export default function OnboardingPage() {
         setError('Failed to create restaurant. Please try again.');
         setLoading(false);
         return;
+      }
+
+      // B2 of LC sprint: pre-seed the LC master menu when brand is little_caesars.
+      // The clone_lc_master_menu_to() Postgres function checks the brand and
+      // raises if it doesn't match — defensive belt + suspenders.
+      if (form.brand === 'little_caesars') {
+        try {
+          const { data: copied, error: cloneError } = await supabase
+            .rpc('clone_lc_master_menu_to', { p_restaurant_id: restaurant.id });
+          if (cloneError) {
+            console.warn('LC menu seed failed (non-fatal):', cloneError.message);
+          } else {
+            console.log(`LC master menu seeded: ${copied} items copied to ${restaurant.id}`);
+          }
+        } catch (cloneErr) {
+          console.warn('LC menu seed threw (non-fatal):', cloneErr);
+        }
       }
 
       // Update profile name
@@ -383,6 +421,81 @@ export default function OnboardingPage() {
                   onChange={(e) => updateField('phone', e.target.value)}
                   required
                 />
+
+                {/* Brand picker — pre-seeds the menu when a franchise is picked */}
+                <div className="pt-2">
+                  <label className="block text-xs font-semibold text-bone/60 mb-2">
+                    Brand
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { v: 'independent',   label: 'Independent',     desc: 'Custom menu' },
+                      { v: 'little_caesars',label: 'Little Caesars',  desc: 'Menu pre-loaded' },
+                      { v: 'dominos',       label: 'Domino’s',   desc: 'Menu pre-loaded soon' },
+                      { v: 'pizza_hut',     label: 'Pizza Hut',       desc: 'Menu pre-loaded soon' },
+                      { v: 'papa_johns',    label: 'Papa John’s',desc: 'Menu pre-loaded soon' },
+                      { v: 'wingstop',      label: 'Wingstop',        desc: 'Menu pre-loaded soon' },
+                    ].map((b) => (
+                      <button
+                        key={b.v}
+                        type="button"
+                        onClick={() => updateField('brand', b.v)}
+                        className={cn(
+                          'rounded-xl border p-3 text-left transition-all duration-200',
+                          form.brand === b.v
+                            ? 'border-omri-teal/50 bg-omri-teal/[0.05] shadow-lg shadow-omri-teal/10'
+                            : 'border-bone/[0.06] bg-bone/[0.02] hover:border-bone/[0.12] hover:bg-bone/[0.04]'
+                        )}
+                      >
+                        <p className="text-sm font-bold text-bone">{b.label}</p>
+                        <p className="text-[10px] text-bone/30 mt-0.5">{b.desc}</p>
+                        {form.brand === b.v && (
+                          <Check className="h-3.5 w-3.5 text-omri-teal mt-1" />
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                  {form.brand === 'little_caesars' && (
+                    <p className="text-[10px] text-omri-teal mt-2">
+                      ✓ Hot-N-Ready, Stuffed Crust, Crazy Bread, Wings, drinks &amp; combos pre-seeded automatically.
+                    </p>
+                  )}
+                  {form.brand !== 'independent' && form.brand !== 'little_caesars' && (
+                    <p className="text-[10px] text-bone/40 mt-2">
+                      You’ll start with a blank menu — paste yours into Settings later. Master menu coming soon.
+                    </p>
+                  )}
+                </div>
+
+                {/* Bilingual toggle — closes audit scenario 29 */}
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={() => updateField('bilingual', !form.bilingual)}
+                    className={cn(
+                      'w-full rounded-xl border p-4 text-left transition-all duration-200 flex items-start gap-3',
+                      form.bilingual
+                        ? 'border-omri-teal/50 bg-omri-teal/[0.05] shadow-lg shadow-omri-teal/10'
+                        : 'border-bone/[0.06] bg-bone/[0.02] hover:border-bone/[0.12]'
+                    )}
+                  >
+                    <div className={cn(
+                      'flex-shrink-0 mt-0.5 h-5 w-9 rounded-full border transition-colors flex items-center',
+                      form.bilingual ? 'bg-omri-teal border-omri-teal' : 'bg-bone/10 border-bone/20'
+                    )}>
+                      <div className={cn(
+                        'h-4 w-4 rounded-full bg-bone transition-transform',
+                        form.bilingual ? 'translate-x-4' : 'translate-x-0.5'
+                      )} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-bold text-bone">Bilingual (English + Spanish)</p>
+                      <p className="text-[11px] text-bone/40 mt-0.5">
+                        Agent auto-detects caller language and switches mid-call. Recommended for areas with Spanish-speaking customers.
+                      </p>
+                    </div>
+                  </button>
+                </div>
 
                 <div className="flex gap-3 pt-2">
                   <Button variant="ghost" onClick={() => setStep(0)} className="flex-1 border border-bone/[0.08]">
