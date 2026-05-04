@@ -51,6 +51,7 @@ const restaurantLinks = [
 
 const adminLinks = [
   { href: '/admin', label: 'Admin Panel', icon: Shield, description: 'System overview' },
+  { href: '/admin/fleet', label: 'Fleet', icon: BarChart3, description: 'All locations · today\'s numbers' },
   { href: '/admin/health', label: 'Ops', icon: Activity, description: 'Live fleet health + alerts' },
   { href: '/admin/restaurants', label: 'Restaurants', icon: Users, description: 'Manage clients' },
 ];
