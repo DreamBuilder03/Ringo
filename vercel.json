@@ -11,6 +11,10 @@
     {
       "path": "/api/cron/silent-line-check",
       "schedule": "0 12 * * *"
+    },
+    {
+      "path": "/api/cron/retell-health-check",
+      "schedule": "*/5 * * * *"
     }
   ]
 }

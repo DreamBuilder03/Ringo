@@ -36,7 +36,9 @@ export type AlertFailureType =
   | 'silent_line'
   | 'silent_line_summary'
   | 'tool_failure_summary'
-  | 'handoff_requested';
+  | 'handoff_requested'
+  | 'voice_fallback_triggered'
+  | 'retell_health_down';
 
 export interface SendFounderAlertOpts {
   restaurantId?: string | null;
@@ -303,6 +305,10 @@ function prettyFailureType(t: AlertFailureType): string {
       return 'Systemic failures';
     case 'handoff_requested':
       return 'Handoff requested';
+    case 'voice_fallback_triggered':
+      return 'Voice fallback fired';
+    case 'retell_health_down':
+      return 'Retell upstream down';
   }
 }
 
