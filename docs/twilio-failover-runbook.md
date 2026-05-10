@@ -5,16 +5,20 @@ Closes Multi-Test scenario #21. Two layers of defense if Retell goes down:
 1. **Reactive** — `/api/twilio/voice-fallback` returns TwiML so customers don't hear silence and get forwarded to staff (or voicemail).
 2. **Proactive** — `/api/cron/retell-health-check` runs every 5 min, pages founder within ~10 min of any Retell outage.
 
-## One-time setup per Twilio number
+## One-time setup at the SIP trunk
 
-For every OMRI-provisioned Twilio number, in Twilio Console → Phone Numbers → click the number → Voice & Fax tab:
+OMRI numbers are routed via the `RIngo` SIP Trunk (TK08534d9f50514dd1b932af8b2ac94b4e), not via per-number webhooks. When "Configure with: SIP Trunk" is selected on a number, Twilio does NOT expose a per-number "Primary handler fails" field — the fallback for SIP-routed inbound is configured at the **trunk level** under "Disaster Recovery." Setting it there covers every number attached to the trunk in one shot.
 
-| Field                           | Value                                                                |
-|---------------------------------|----------------------------------------------------------------------|
-| **A CALL COMES IN** (primary)   | SIP Trunk → `OMRI` (TK08534…) — the existing config, do not change   |
-| **PRIMARY HANDLER FAILS**       | Webhook → `https://joinomri.com/api/twilio/voice-fallback` (HTTP POST)|
+In Twilio Console → Elastic SIP Trunking → Manage → Trunks → `RIngo` → **Origination** tab → scroll to **Disaster Recovery**:
 
-Click **Save**. That's it. Twilio invokes the fallback URL whenever the primary SIP route returns 5xx, times out, or otherwise fails.
+| Field                  | Value                                                  |
+|------------------------|--------------------------------------------------------|
+| Disaster Recovery URL  | `https://joinomri.com/api/twilio/voice-fallback`       |
+| Fallback Method        | `POST`                                                 |
+
+Click **Save**. Confirmation: green "Trunk updated." toast.
+
+This covers both 209-739-3549 (Primary, Modesto) and 209-427-1157 (Turlock) and any future numbers added to the trunk. Twilio invokes the fallback whenever the Origination SIP URI (Retell's LiveKit endpoint) returns errors, is unreachable, or times out.
 
 ## Verify the fallback handler is reachable
 
