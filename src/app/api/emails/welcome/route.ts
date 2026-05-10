@@ -53,7 +53,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`[${new Date().toISOString()}] Welcome email sent to ${ownerEmail} for ${restaurantName}`);
+    // Mask owner email before logging (Privacy Day 1 — Appendix B item #2).
+    const maskedEmail = ownerEmail
+      ? ownerEmail.replace(/^(.{1,2}).+(@.+)$/, '$1***$2')
+      : 'unknown';
+    console.log(`[${new Date().toISOString()}] Welcome email sent to ${maskedEmail} for ${restaurantName}`);
     return NextResponse.json({
       success: true,
       message: 'Welcome email sent successfully',

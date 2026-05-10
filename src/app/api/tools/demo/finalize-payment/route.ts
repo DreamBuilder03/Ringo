@@ -161,7 +161,9 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    console.log(`[${t0}] [demo/finalize-payment] SMS sent to ${phoneE} for lead ${lead?.id || 'unknown'}`);
+    // Mask caller phone before logging (Privacy Day 1 — Appendix B item #2).
+    const maskedPhone = phoneE ? phoneE.slice(0, -4) + 'XXXX' : 'unknown';
+    console.log(`[${t0}] [demo/finalize-payment] SMS sent to ${maskedPhone} for lead ${lead?.id || 'unknown'}`);
 
     // Friendly success message — the agent will read this back to the caller.
     return NextResponse.json({

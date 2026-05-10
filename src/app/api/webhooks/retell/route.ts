@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import crypto from 'crypto';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import {
   parseCallDuration,
@@ -12,15 +13,45 @@ import { alertDemoLead } from '@/lib/demo-alerts';
 import { sendFounderAlert } from '@/lib/alerts';
 import { checkRateLimit } from '@/lib/rate-limit-upstash';
 
+// Retell webhook signature verification (Privacy Day 1, Appendix B item #5).
+// Retell signs each webhook with HMAC-SHA256(secret, payload). Without this
+// check, an attacker who learns our webhook URL can POST fake call_ended
+// events to corrupt our analytics, fire false alerts, or spam founder pager.
+function verifyRetellSignature(rawBody: string, signature: string | null): boolean {
+  const secret = process.env.RETELL_WEBHOOK_SECRET;
+  // Soft-fail when secret isn't configured (dev / first-pilot environments).
+  // Once RETELL_WEBHOOK_SECRET is set in Vercel, verification becomes strict.
+  if (!secret) return true;
+  if (!signature) return false;
+  const computed = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
+  // Constant-time comparison to defend against timing attacks
+  if (computed.length !== signature.length) return false;
+  try {
+    return crypto.timingSafeEqual(Buffer.from(computed), Buffer.from(signature));
+  } catch {
+    return false;
+  }
+}
+
 export async function POST(request: NextRequest) {
   // Rate limit at WEBHOOK tier (200/min). Retell retries on non-2xx so a 429
   // is recoverable for them; defends against a hostile actor spamming the
-  // webhook URL. Body is signature-verified separately by Retell SDK semantics.
+  // webhook URL.
   const blocked = await checkRateLimit(request, 'WEBHOOK');
   if (blocked) return blocked;
 
   try {
     const body = await request.text();
+
+    // Verify Retell HMAC signature. Soft-fails when RETELL_WEBHOOK_SECRET
+    // env var isn't configured (dev / first pilot). Becomes strict once set.
+    const signature = request.headers.get('x-retell-signature');
+    if (!verifyRetellSignature(body, signature)) {
+      console.warn('[retell webhook] Invalid signature — rejecting request.');
+      // 401, but Retell's retries respect this — they'll back off rather than
+      // hammer us once the secret rotates.
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+    }
 
     // Parse the webhook payload
     let event: RetellCallEvent;
