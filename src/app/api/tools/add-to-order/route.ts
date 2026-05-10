@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { getRestaurantByAgentId, getMenuForRestaurant } from '@/lib/restaurant-cache';
 import { rankMenuMatches } from '@/lib/menu-search';
 import { reportToolFailure } from '@/lib/alerts';
 import { validateRetellBody } from '@/lib/with-retell-validation';
@@ -73,19 +74,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Initialize Supabase client
-    const supabase = await createServiceRoleClient();
-
-    // Look up restaurant by agent_id (check both English and Spanish agents)
-    const { data: restaurant, error: restaurantError } = await supabase
-      .from('restaurants')
-      .select('id, name, tax_rate')
-      .or(`retell_agent_id.eq.${call.agent_id},retell_agent_id_es.eq.${call.agent_id}`)
-      .single();
-
-    if (restaurantError || !restaurant) {
-      console.error(`[${new Date().toISOString()}] Restaurant lookup failed:`, restaurantError);
-      // 200 — speakable fallback, see note at top of handler.
+    // Restaurant + menu now come from Upstash cache (5min TTL) — fixes
+    // scenarios 1+22. Falls through to Supabase on miss / Redis unavailable.
+    const restaurant = await getRestaurantByAgentId(call.agent_id);
+    if (!restaurant) {
+      console.error(`[${new Date().toISOString()}] Restaurant lookup failed for agent_id=${call.agent_id}`);
       return NextResponse.json(
         { result: "Give me just a second — I'm having trouble pulling up the menu. I'll try again." },
         { status: 200 }
@@ -94,7 +87,9 @@ export async function POST(request: NextRequest) {
 
     restaurantId = restaurant.id;
 
-    // Look up internal call ID from Retell call ID
+    // Writes still go direct to Supabase. Look up internal call_id for the
+    // order linkage (write-side, not cached).
+    const supabase = await createServiceRoleClient();
     const { data: callRecord } = await supabase
       .from('calls')
       .select('id')
@@ -103,24 +98,9 @@ export async function POST(request: NextRequest) {
 
     const internalCallId = callRecord?.id || null;
 
-    // Token-matched menu lookup (see src/lib/menu-search.ts — handles
-    // word-order swaps like "18-inch Nonna's Pepperoni" vs
-    // "Nonna's Pepperoni 18-inch").
-    const { data: allMenu, error: itemError } = await supabase
-      .from('menu_items')
-      .select('id, name, price')
-      .eq('restaurant_id', restaurant.id);
-
-    if (itemError) {
-      console.error(`[${new Date().toISOString()}] Menu item lookup failed:`, itemError);
-      // 200 — speakable fallback, see note at top of handler.
-      return NextResponse.json(
-        { result: "Hmm, give me just a second — I'm pulling up the menu." },
-        { status: 200 }
-      );
-    }
-
-    const matches = rankMenuMatches(allMenu || [], item_name);
+    // Cached menu — token-match still happens in memory.
+    const allMenu = await getMenuForRestaurant(restaurant.id);
+    const matches = rankMenuMatches(allMenu, item_name);
     if (matches.length === 0) {
       return NextResponse.json(
         { result: `I don't see "${item_name}" on our menu. Want me to read off what we do have, or did you mean something else?` },

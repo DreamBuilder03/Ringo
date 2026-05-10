@@ -69,6 +69,16 @@ export const finalizePaymentSchema = z.object({
   call: retellCall,
 }).strict();
 
+// ─── cancel-order (closes Multi-Test scenario 8) ─────────────────────────────
+// Caller says "actually never mind" / "cancel that" / "forget it" before
+// payment. Marks the in-progress order cancelled, never fires the kitchen.
+export const cancelOrderSchema = z.object({
+  args: z.object({
+    reason: z.string().min(1).max(200).optional(),
+  }).passthrough(),
+  call: retellCall,
+}).strict();
+
 // ─── request-handoff (C-4) ────────────────────────────────────────────────────
 // Agent escalation. Reasons are an enum drawn from the migration.
 // summary is a short agent-written description that goes into the SMS pager.

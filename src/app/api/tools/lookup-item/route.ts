@@ -1,9 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServiceRoleClient } from '@/lib/supabase/server';
 import { rankMenuMatches } from '@/lib/menu-search';
 import { reportToolFailure } from '@/lib/alerts';
 import { validateRetellBody } from '@/lib/with-retell-validation';
 import { lookupItemSchema } from '@/lib/schemas/tools';
+import { getRestaurantByAgentId, getMenuForRestaurant } from '@/lib/restaurant-cache';
+import { createServiceRoleClient } from '@/lib/supabase/server';
+
+// 1-hour staleness window. If store_status hasn't been updated in 60+ min, we
+// treat the flag as unknown and default to "available" — prevents a stale
+// "off" flag from killing orders all day if staff forgets to flip it back.
+const STORE_STATUS_STALE_MS = 60 * 60 * 1000;
+
+function looksLikeHotNReady(name: string): boolean {
+  const n = name.toLowerCase();
+  return n.includes('hot-n-ready') || n.includes('hot n ready') || n.includes('hot and ready');
+}
 
 export async function POST(request: NextRequest) {
   // Rate limit + Zod validation. On failure returns 200 + speakable fallback
@@ -40,19 +51,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Initialize Supabase client
-    const supabase = await createServiceRoleClient();
-
-    // Look up restaurant by agent_id (check both English and Spanish agents)
-    const { data: restaurant, error: restaurantError } = await supabase
-      .from('restaurants')
-      .select('id, name')
-      .or(`retell_agent_id.eq.${call.agent_id},retell_agent_id_es.eq.${call.agent_id}`)
-      .single();
-
-    if (restaurantError || !restaurant) {
-      console.error(`[${new Date().toISOString()}] Restaurant lookup failed:`, restaurantError);
-      // 200 — speakable fallback, see note at top of handler.
+    // Restaurant + menu come from Upstash cache (5min TTL) — fixes scenarios
+    // 1 + 22. Falls through to Supabase on cache miss / Redis unavailable.
+    const restaurant = await getRestaurantByAgentId(call.agent_id);
+    if (!restaurant) {
+      console.error(`[${new Date().toISOString()}] Restaurant lookup failed for agent_id=${call.agent_id}`);
       return NextResponse.json(
         { result: "Give me just a second — I'm having trouble pulling up the menu." },
         { status: 200 }
@@ -61,36 +64,17 @@ export async function POST(request: NextRequest) {
 
     restaurantId = restaurant.id;
 
-    // Pull the whole menu and filter in memory with token-based matching.
-    // ilike `%query%` fails on word-order swaps like "18-inch Nonna's Pepperoni"
-    // vs "Nonna's Pepperoni 18-inch". Token matching is robust to it.
-    // Menu is small (<200 rows per restaurant), so this is cheap.
-    const { data: allMenu, error: itemError } = await supabase
-      .from('menu_items')
-      .select('id, name, price, modifiers, available')
-      .eq('restaurant_id', restaurant.id);
-
-    if (itemError) {
-      console.error(`[${new Date().toISOString()}] Menu item search failed:`, itemError);
-      // 200 — speakable fallback, see note at top of handler.
-      return NextResponse.json(
-        { result: "Hmm, the menu search just hiccuped. Let me try once more." },
-        { status: 200 }
-      );
-    }
-
-    const menuItems = rankMenuMatches(allMenu || [], item_name);
+    // Cached menu — full token-match still happens in memory (cheap; menu <200 rows).
+    const allMenu = await getMenuForRestaurant(restaurant.id);
+    const menuItems = rankMenuMatches(allMenu, item_name);
 
     if (!menuItems || menuItems.length === 0) {
-      // Suggestion fallback — pull 5 available items.
-      const { data: allItems } = await supabase
-        .from('menu_items')
-        .select('name')
-        .eq('restaurant_id', restaurant.id)
-        .eq('available', true)
-        .limit(5);
-
-      const suggestions = allItems?.map((item) => item.name).join(', ') || 'Please check the menu';
+      // Suggestion fallback — pull 5 available items from the cached menu.
+      const suggestions = allMenu
+        .filter((m) => m.available !== false)
+        .slice(0, 5)
+        .map((m) => m.name)
+        .join(', ') || 'Please check the menu';
       return NextResponse.json({
         result: `Sorry, we don't have "${item_name}" on our menu. We do have: ${suggestions}`,
       });
@@ -123,6 +107,61 @@ export async function POST(request: NextRequest) {
 
     // Single match — return it with price + modifiers.
     const item = menuItems[0];
+
+    // ─── Real-time availability check (closes Multi-Test scenario 28) ──────
+    // store_status is read on every match — NOT cached. Cost: one extra DB
+    // read per lookup. Worth it: prevents the agent confidently confirming
+    // sold-out items (LC's flagship Hot-N-Ready false-promise was the
+    // smoking-gun customer-facing failure).
+    try {
+      const ssClient = await createServiceRoleClient();
+      const { data: status } = await ssClient
+        .from('store_status')
+        .select('hnr_available, hnr_updated_at, items_unavailable_today, items_updated_at')
+        .eq('restaurant_id', restaurant.id)
+        .maybeSingle();
+
+      if (status) {
+        const itemNameLower = item.name.toLowerCase();
+
+        // Check explicit-unavailable list (case-insensitive) — only if recently updated
+        if (status.items_unavailable_today && status.items_unavailable_today.length > 0) {
+          const itemsUpdatedAge = Date.now() - new Date(status.items_updated_at).getTime();
+          if (itemsUpdatedAge < STORE_STATUS_STALE_MS) {
+            const unavailableSet = new Set(
+              status.items_unavailable_today.map((s: string) => s.toLowerCase())
+            );
+            if (unavailableSet.has(itemNameLower)) {
+              const altSuggestions = allMenu
+                .filter((m) => m.id !== item.id && m.available !== false)
+                .filter((m) => !unavailableSet.has(m.name.toLowerCase()))
+                .slice(0, 3)
+                .map((m) => m.name)
+                .join(', ');
+              return NextResponse.json({
+                result: `Sorry, we just sold out of ${item.name} for today. ${altSuggestions ? `Could I interest you in ${altSuggestions}?` : 'What else can I get you?'}`,
+              });
+            }
+          }
+        }
+
+        // LC HnR special-case — only if HnR flag is recent + the item is HnR-shaped
+        if (looksLikeHotNReady(item.name)) {
+          const hnrUpdatedAge = Date.now() - new Date(status.hnr_updated_at).getTime();
+          if (status.hnr_available === false && hnrUpdatedAge < STORE_STATUS_STALE_MS) {
+            return NextResponse.json({
+              result: `We're actually out of Hot-N-Ready right now — they go fast at peak. I can take your order for a fresh pizza, about 12 to 15 minutes. Would that work?`,
+            });
+          }
+        }
+      }
+    } catch (statusErr) {
+      // store_status read failure is non-fatal — proceed with the item as
+      // if status were "available" (better to risk a small wait than freeze
+      // the agent over a missing row).
+      console.warn('[lookup-item] store_status read failed (non-fatal):', statusErr);
+    }
+
     let modifiersText = '';
 
     if (item.modifiers && Array.isArray(item.modifiers) && item.modifiers.length > 0) {

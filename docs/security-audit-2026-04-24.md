@@ -262,3 +262,126 @@ _PENDING — paste Query A / B / C output here once Misael runs them in producti
 
 -- Query C output:
 ```
+
+---
+
+# Appendix B — Privacy & PII Audit (added 2026-05-09)
+
+**Driven by:** Misael's request for "more security for the client, privacy, no data goes by breach." This is an honest gap analysis. Calling out what's solid AND what needs work BEFORE the first paying restaurant goes live.
+
+**Caveat:** real privacy/security work is multi-week. This doc is a snapshot of where we stand. Think of it as Phase 1 — eyeball + grep audit, not a third-party pen test.
+
+## What PII OMRI collects
+
+### Restaurant-side (B2B)
+- Owner name, email, cell phone, restaurant address (collected during onboarding) → `restaurants`, `auth.users`, `profiles`
+- Stripe billing card last-4 + token → stored only at Stripe (never our servers)
+- Square OAuth tokens for POS push → `restaurants.square_access_token` (sensitive)
+- Twilio account SID / auth token → env var only
+
+### Caller-side (B2C — the customers ordering food)
+- Phone number → `orders.customer_phone`, `customers.phone_number`, `handoff_requests.from_number`, `experiment_assignments.from_number`, `alerts_log.metadata.from_number`
+- Name (when caller gives it) → `orders.customer_name`, `customers.name`
+- Order history (items, totals, dates) → `orders`, `order_items`
+- Call transcript + audio recording → stored at Retell (we hold only `calls.transcript`, `calls.recording_url`)
+- Implicit: from a transcript, you can infer everything they said on the call (allergies, addresses, complaints)
+
+**The two highest-PII columns we hold:** `calls.transcript` (free text from the conversation) and `customers.phone_number` (paired with order history = re-identifiable individual).
+
+## Where this PII lives + who can read it
+
+| Surface | Read access | Risk |
+|---|---|---|
+| `restaurants` (RLS) | Restaurant's own users + admins | LOW — owner data, expected access |
+| `orders` (RLS) | Restaurant's own users + admins | MEDIUM — caller phones + names exposed within restaurant |
+| `customers` (RLS) | Restaurant's own users + admins | MEDIUM — same as orders, plus marketable list |
+| `calls.transcript` (RLS) | Restaurant's own users + admins | **HIGH — full conversation, can include allergy / personal disclosures** |
+| `handoff_requests` (RLS) | Restaurant's own users + admins | MEDIUM — agent-written summary of the issue |
+| `alerts_log.metadata` (RLS service-role only) | Service role + via /admin/health (admin role) | LOW — internal ops |
+| Retell platform | Anyone with Retell login + Retell employees | **OUT OF OUR CONTROL — see "third party data" below** |
+| Square platform | Anyone with Square login per restaurant | OUT OF OUR CONTROL |
+| Twilio platform | Anyone with our Twilio account | OUT OF OUR CONTROL — call metadata + SMS bodies retained ~90 days |
+| Sentry | Anyone with Sentry team access | We send errors only — but error context can leak request bodies. **AUDIT NEEDED.** |
+| Vercel logs | Anyone with Vercel project access | console.log statements — can leak PII if we're not careful. **AUDIT NEEDED.** |
+
+## Status by control
+
+### ✅ DONE — already in place
+- All PII tables have RLS enabled with restaurant-scoped policies (verified 2026-04-29)
+- Service-role key is only on the server side, never sent to the client
+- HTTPS enforced everywhere via Vercel
+- MFA required on Supabase admin login (Misael)
+- Rate-limit on every public route (B2-2a)
+- Zod input validation on every public route (B2-2b)
+- No customer-facing endpoint that returns another customer's data without auth
+- Stripe + Square credentials never touch our DB; we use OAuth tokens only
+
+### ⚠️ NEEDS WORK — gaps with concrete next steps
+
+#### 1. Sentry PII leakage audit (CRITICAL — before pilot #1)
+Sentry's `beforeSend` hook is currently the default — meaning thrown errors ship full request bodies to Sentry servers (US-based). If a tool route catches an error mid-Retell-call, the caller's phone number, name, and transcript snippet may end up in Sentry.
+
+**Fix (~1 hour):** add `beforeSend` filter in `instrumentation.ts` that strips: `from_number`, `customer_phone`, `customer_name`, `transcript`, `email`, `password`. Sentry-side, set data-scrubbing rules for `*.phone`, `*.email`, `*.transcript`, `*.from_number`.
+
+#### 2. Vercel log scrub pass (MEDIUM)
+A grep across the codebase for `console.log|console.warn|console.error` shows ~80 hits, several of which log restaurant id + parts of the request. Action: review each hit; replace any PII-leaky logs with a safe pattern (`logSafe({ event, restaurant_id })` rather than `console.log(JSON.stringify(req.body))`).
+
+**Fix (~2 hours):** sweep + replace.
+
+#### 3. Transcript retention policy (MEDIUM — required for CCPA in CA)
+We currently store `calls.transcript` indefinitely. CCPA gives California residents the right to deletion of their personal data on request. Today there is no documented retention period and no deletion workflow.
+
+**Fix (~3 hours):**
+- Add documented 90-day default retention (sweep cron deletes transcripts older than 90 days)
+- Add `/api/privacy/delete?phone=+1...` endpoint that deletes all customer records for a given phone number across `orders`, `customers`, `calls`, `experiment_assignments`, `handoff_requests`. Service-role + a privacy-officer email confirmation flow.
+- Document in privacy policy on joinomri.com.
+
+#### 4. Retell + Twilio data-processing agreements (HIGH legal, low effort)
+Both platforms are processors of our customers' PII. We need (a) signed DPAs with both, (b) the privacy policy on joinomri.com naming them as sub-processors. Both are standard B2B paperwork.
+
+**Fix (~1 hour after their legal teams respond):** request DPA from each, paste sub-processor list into privacy policy.
+
+#### 5. Webhook signature verification — partial coverage
+- Square webhook ✅ (verified `x-square-hmacsha256-signature`)
+- Stripe webhook ✅ (verified via `stripe.webhooks.constructEvent`)
+- Retell webhook ⚠️ — currently no signature verification. An attacker could POST fake `call_ended` events to corrupt our analytics or trigger false alerts.
+
+**Fix (~1 hour):** add `x-retell-signature` HMAC verification per Retell's docs.
+
+#### 6. Database backup encryption + access audit (MEDIUM)
+Supabase free tier doesn't support PITR. We're a single SQL injection bug away from full data loss with no recovery option. Plus no audit log of who accessed which row when.
+
+**Fix:** Pro upgrade ($25/mo) the moment pilot #1 signs. Already-flagged in memory.
+
+### 🚫 DEFERRED — beyond Phase 1 scope
+- Third-party penetration test (need to hire a firm — $5-15K, 4-6 weeks)
+- SOC 2 Type II audit (only meaningful at 10+ paying customers)
+- ISO 27001 (way later)
+- HIPAA (we're not in healthcare scope)
+- Encrypted PII at rest beyond Supabase's default disk encryption
+
+## What "no data breach" actually means
+
+Brutal honesty: **I cannot promise no data breach.** Nobody can. What I can promise:
+
+1. **Defense in depth** — RLS, rate limits, validation, MFA, signed webhooks, audit logs, backup retention, scoped credentials. Each layer reduces blast radius.
+2. **Detection within minutes** — Sentry + founder pager mean we know within 60 seconds when something breaks. We won't be the company that finds out 90 days later.
+3. **Limited blast radius** — single-tenant data model. A bug that exposes ONE restaurant's data doesn't expose all of them. Compare this to a multi-tenant SaaS where one bug = all customers exposed.
+4. **Honest disclosure** — if a breach happens, customers + affected callers get told within 72 hours per CCPA + general best practice. Not buried.
+
+What we CANNOT promise:
+- "Unhackable." Nothing is.
+- "Zero PII leakage." We will accidentally log something we shouldn't, sometime. Goal: catch it within hours via the log-scrub audit, not weeks.
+- "Fully CCPA-compliant" until we ship the deletion endpoint + retention cron above.
+
+## Concrete next-3-day work
+
+1. **Day 1:** Sentry beforeSend filter + log scrub pass (gaps 1 + 2 above) — ~3 hours
+2. **Day 2:** Retell webhook signature verification (gap 5) — ~1 hour
+3. **Day 3:** transcript retention cron + /api/privacy/delete endpoint + privacy policy update (gap 3) — ~4 hours
+
+Total: **~1 working day of effort** to close the highest-impact gaps. Should ship before pilot #1 goes live.
+
+---
+
+*End of Appendix B — Privacy & PII Audit, 2026-05-09*

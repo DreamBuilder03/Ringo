@@ -209,6 +209,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to insert items', details: insertErr.message }, { status: 500 });
     }
 
+    // Invalidate the cached menu so the next tool call sees the import.
+    // Best-effort; cache lib is no-op when Upstash isn't configured.
+    try {
+      const { invalidateMenu } = await import('@/lib/restaurant-cache');
+      await invalidateMenu(restaurant_id);
+    } catch (cacheErr) {
+      console.warn('[menu/import] cache invalidation failed (non-fatal):', cacheErr);
+    }
+
     return NextResponse.json({
       success: true,
       imported: inserted?.length || 0,

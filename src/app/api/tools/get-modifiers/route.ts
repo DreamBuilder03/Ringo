@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createServiceRoleClient } from '@/lib/supabase/server';
+import { getRestaurantByAgentId, getMenuForRestaurant } from '@/lib/restaurant-cache';
 import { rankMenuMatches } from '@/lib/menu-search';
 import { reportToolFailure } from '@/lib/alerts';
 import { validateRetellBody } from '@/lib/with-retell-validation';
@@ -38,19 +38,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Initialize Supabase client
-    const supabase = await createServiceRoleClient();
-
-    // Look up restaurant by agent_id (check both English and Spanish agents)
-    const { data: restaurant, error: restaurantError } = await supabase
-      .from('restaurants')
-      .select('id, name')
-      .or(`retell_agent_id.eq.${call.agent_id},retell_agent_id_es.eq.${call.agent_id}`)
-      .single();
-
-    if (restaurantError || !restaurant) {
-      console.error(`[${new Date().toISOString()}] Restaurant lookup failed:`, restaurantError);
-      // 200 — speakable fallback, see note at top of handler.
+    // Restaurant + menu via Upstash cache — fixes scenarios 1+22.
+    const restaurant = await getRestaurantByAgentId(call.agent_id);
+    if (!restaurant) {
+      console.error(`[${new Date().toISOString()}] Restaurant lookup failed for agent_id=${call.agent_id}`);
       return NextResponse.json(
         { result: "Give me one second — I'm having trouble pulling up the menu." },
         { status: 200 }
@@ -59,21 +50,9 @@ export async function POST(request: NextRequest) {
 
     restaurantId = restaurant.id;
 
-    // Token-matched search (see src/lib/menu-search.ts).
-    const { data: allMenu, error: itemError } = await supabase
-      .from('menu_items')
-      .select('name, modifiers')
-      .eq('restaurant_id', restaurant.id);
-    const menuItems = allMenu ? rankMenuMatches(allMenu, item_name) : [];
-
-    if (itemError) {
-      console.error(`[${new Date().toISOString()}] Menu item search failed:`, itemError);
-      // 200 — speakable fallback, see note at top of handler.
-      return NextResponse.json(
-        { result: "Hmm, the menu search just hiccuped. Let me try once more." },
-        { status: 200 }
-      );
-    }
+    // Cached menu — token-match still happens in memory.
+    const allMenu = await getMenuForRestaurant(restaurant.id);
+    const menuItems = rankMenuMatches(allMenu, item_name);
 
     if (!menuItems || menuItems.length === 0) {
       return NextResponse.json({
