@@ -34,10 +34,25 @@
 //     them. Risk of gating on a flaky probe (false positive → all calls
 //     fail over → bad customer experience) outweighs the marginal benefit.
 //
-// Vercel cron schedule (add to vercel.json):
-//   { "path": "/api/cron/retell-health-check", "schedule": "0/2 14-6 * * *" }
-//   = every 2 min between 6am-10pm Pacific (14:00 UTC = 6am PT in winter,
-//   14:00 UTC = 7am PT in DST — close enough for a coarse business window).
+// Vercel cron schedule:
+//   NOT scheduled on Hobby tier. Vercel Hobby rejects sub-daily cron
+//   schedules and silently fails the deploy when one is in vercel.json
+//   (this is what cost us a deploy when '*/5 * * * *' was first committed —
+//   see Misael's memory note "Vercel silent deploy failure recipe").
+//
+//   When the project moves to Pro tier, add to vercel.json:
+//     { "path": "/api/cron/retell-health-check", "schedule": "*/5 * * * *" }
+//
+//   Until then, this route is still reachable manually with the CRON_SECRET
+//   bearer (useful for ad-hoc spot checks during a suspected outage):
+//     curl -H "Authorization: Bearer $CRON_SECRET" \
+//       https://joinomri.com/api/cron/retell-health-check
+//
+//   Without the proactive cron, scenario #21 relies on the REACTIVE Twilio
+//   Disaster Recovery URL only — detection lag is "until next inbound call"
+//   rather than ~10 minutes. The reactive layer is still the customer-facing
+//   safety net, so this tier limitation doesn't compromise the user
+//   experience; it just delays founder paging.
 // ──────────────────────────────────────────────────────────────────────────────
 
 import { NextRequest, NextResponse } from 'next/server';

@@ -71,7 +71,15 @@ Restore the SIP trunk config when done.
 
 ## Tier requirements
 
-The `*/5 * * * *` (every-5-min) cron schedule requires Vercel **Pro** tier. On Hobby tier the deploy will fail with `cron-too-frequent` — see also the silent-deploy-failure recipe in MEMORY.md. We're already on Pro since `silent-line-check` exists.
+The proactive `/api/cron/retell-health-check` cron requires Vercel **Pro** tier. The project is currently on **Hobby** — adding a sub-daily schedule to `vercel.json` silently fails the entire deploy. The route file is committed and the manual-trigger curl works (with `CRON_SECRET`), but Vercel cron is not wired up.
+
+When the project moves to Pro, add this to `vercel.json`:
+
+```json
+{ "path": "/api/cron/retell-health-check", "schedule": "*/5 * * * *" }
+```
+
+Until then, scenario #21 relies on the reactive Twilio Disaster Recovery URL alone. That's fine for customer experience (every call still gets handed to staff or voicemail), but founder paging is delayed from "~10 min after outage starts" to "until the next inbound call after the outage starts."
 
 ## Why we don't gate calls on the proactive probe
 
