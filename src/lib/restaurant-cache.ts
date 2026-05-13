@@ -34,6 +34,7 @@
 
 import { Redis } from '@upstash/redis';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { getMenu as toastGetMenu, type ToastMenuSnapshot } from '@/lib/toast/toast-client';
 
 const TTL_SECONDS = 300; // 5 minutes — long enough to absorb a dinner-rush spike,
                           // short enough that menu edits surface within ~5 min.
@@ -182,5 +183,61 @@ export async function invalidateAll(restaurantId: string, agentIds: (string | nu
   await invalidateMenu(restaurantId);
   for (const agentId of agentIds) {
     if (agentId) await invalidateRestaurantByAgentId(agentId);
+  }
+}
+
+// ─── Toast menu snapshot cache (B1 — Ryno demo sprint) ─────────────────────────
+//
+// Toast menus are kept in a separate cache namespace from Supabase-backed
+// menus because the shape is different — Toast carries modifier groups +
+// business hours that the existing CachedMenuItem doesn't model.
+//
+// Tool routes (lookup-item, add-to-order, get-modifiers, etc.) check the
+// restaurant's pos_type and call this function when pos_type='toast' instead
+// of getMenuForRestaurant().
+//
+// While Toast is in MOCK mode, this function still hits Upstash (the cache
+// is upstream of mode detection) so we can verify the cache layer works
+// before real credentials arrive. The mock returns are cheap so this is
+// purely about exercising the code path.
+
+const TOAST_MENU_KEY = (toastRestaurantGuid: string) => `omri:toast-menu:${toastRestaurantGuid}`;
+
+export async function getToastMenuSnapshot(toastRestaurantGuid: string): Promise<ToastMenuSnapshot> {
+  const redis = getRedis();
+
+  if (redis) {
+    try {
+      const cached = await redis.get<ToastMenuSnapshot>(TOAST_MENU_KEY(toastRestaurantGuid));
+      if (cached) return cached;
+    } catch (err) {
+      console.warn('[restaurant-cache] Toast menu Redis read failed, falling back to source:', err);
+    }
+  }
+
+  // Cache miss — fall through to toast-client.getMenu() (which itself returns
+  // MOCK or LIVE based on env). This is what gets cached for 5 min.
+  const snapshot = await toastGetMenu(toastRestaurantGuid);
+
+  if (redis) {
+    try {
+      await redis.set(TOAST_MENU_KEY(toastRestaurantGuid), snapshot, { ex: TTL_SECONDS });
+    } catch (err) {
+      console.warn('[restaurant-cache] Toast menu Redis write failed (non-fatal):', err);
+    }
+  }
+
+  return snapshot;
+}
+
+/** Invalidate a cached Toast menu — call from Toast webhook handlers when
+ *  Toast notifies us that the menu changed for a restaurant. */
+export async function invalidateToastMenu(toastRestaurantGuid: string): Promise<void> {
+  const redis = getRedis();
+  if (!redis) return;
+  try {
+    await redis.del(TOAST_MENU_KEY(toastRestaurantGuid));
+  } catch (err) {
+    console.warn('[restaurant-cache] invalidateToastMenu failed (non-fatal):', err);
   }
 }
