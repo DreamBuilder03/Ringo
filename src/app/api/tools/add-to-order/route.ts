@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
-import { getRestaurantByAgentId, getMenuForRestaurant } from '@/lib/restaurant-cache';
+import { getRestaurantByAgentId, getMenuForRestaurant, getToastMenuSnapshot } from '@/lib/restaurant-cache';
 import { rankMenuMatches } from '@/lib/menu-search';
 import { reportToolFailure } from '@/lib/alerts';
 import { validateRetellBody } from '@/lib/with-retell-validation';
 import { addToOrderSchema } from '@/lib/schemas/tools';
+import { isOpenNow, findItem } from '@/lib/toast/toast-availability';
 
 interface MenuItem {
   id: string;
@@ -86,6 +87,24 @@ export async function POST(request: NextRequest) {
     }
 
     restaurantId = restaurant.id;
+
+    // ─── Toast availability guard (B3) ───────────────────────────────────
+    // For Toast-connected restaurants, refuse to add items we know are
+    // 86'd or out-of-hours. Toast carries availability flags + business
+    // hours in the cached menu snapshot, so this is a read against the
+    // same 5-min cache as lookup-item.
+    //
+    // Why guard at add-to-order (not just lookup): callers don't always
+    // re-look-up. Common pattern: lookup_item("pepperoni"), then 5 seconds
+    // later "add a large pepperoni" — if the item flipped to 86'd in
+    // between, lookup is stale and add would create an unfulfillable order.
+    if (restaurant.pos_type === 'toast' && restaurant.toast_restaurant_guid) {
+      const toastDecline = await checkToastAvailabilityForAdd(
+        restaurant.toast_restaurant_guid,
+        item_name as string
+      );
+      if (toastDecline) return toastDecline;
+    }
 
     // Writes still go direct to Supabase. Look up internal call_id for the
     // order linkage (write-side, not cached).
@@ -204,4 +223,58 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   }
+}
+
+// ─── Toast availability guard (B3) ─────────────────────────────────────────────
+//
+// Returns a 200 JSON response if the add should be declined (closed, 86'd),
+// or null if the add can proceed. Same decline phrasings as lookup-item for
+// consistency.
+//
+// Performance: hits the Upstash-backed Toast menu snapshot (5-min cache).
+// Adds one cache read per add_to_order — well under our latency budget.
+
+async function checkToastAvailabilityForAdd(
+  toastRestaurantGuid: string,
+  itemName: string
+): Promise<Response | null> {
+  let snapshot;
+  try {
+    snapshot = await getToastMenuSnapshot(toastRestaurantGuid);
+  } catch (err) {
+    console.error(`[add-to-order][toast] Snapshot fetch failed:`, err);
+    // Be permissive on cache failure — let the legacy menu_items path try.
+    return null;
+  }
+
+  const hours = isOpenNow(snapshot);
+  if (!hours.isOpen) {
+    const opener = hours.nextOpenSpoken
+      ? `we open ${hours.nextOpenSpoken}`
+      : "we're closed right now";
+    return NextResponse.json({
+      result: `Sorry, ${opener} — I can't add anything to the order until we're open. Want me to take this for then?`,
+    });
+  }
+
+  const found = findItem(snapshot, itemName);
+
+  // No match on Toast menu — fall through to legacy path. The legacy path
+  // may have a Supabase menu_items row that matches (during migration).
+  if (!found.matched) return null;
+
+  if (!found.available) {
+    const alts = found.alternatives
+      .slice(0, 3)
+      .map((i) => i.name)
+      .join(', ');
+    return NextResponse.json({
+      result: alts
+        ? `We're actually out of ${found.matched.name} for today. Could I swap it for ${alts} instead?`
+        : `We're out of ${found.matched.name} for today — what else can I get you?`,
+    });
+  }
+
+  // Available — let the legacy path actually insert the order row.
+  return null;
 }

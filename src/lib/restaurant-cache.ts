@@ -66,6 +66,9 @@ export interface CachedRestaurant {
   preferred_language?: string | null;
   prompt_overrides?: Record<string, unknown>;
   tax_rate?: number | null;
+  // B3: Toast routing fields. Null when the restaurant isn't on Toast.
+  toast_restaurant_guid?: string | null;
+  toast_management_group_guid?: string | null;
 }
 
 export interface CachedMenuItem {
@@ -98,7 +101,7 @@ export async function getRestaurantByAgentId(agentId: string): Promise<CachedRes
   const supabase = await createServiceRoleClient();
   const { data } = await supabase
     .from('restaurants')
-    .select('id, name, brand, pos_type, pos_mode, retell_agent_id, retell_agent_id_es, staff_phone_number, preferred_language, prompt_overrides, tax_rate')
+    .select('id, name, brand, pos_type, pos_mode, retell_agent_id, retell_agent_id_es, staff_phone_number, preferred_language, prompt_overrides, tax_rate, toast_restaurant_guid, toast_management_group_guid')
     .or(`retell_agent_id.eq.${agentId},retell_agent_id_es.eq.${agentId}`)
     .single();
 

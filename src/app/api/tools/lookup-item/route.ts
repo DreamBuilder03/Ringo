@@ -3,8 +3,9 @@ import { rankMenuMatches } from '@/lib/menu-search';
 import { reportToolFailure } from '@/lib/alerts';
 import { validateRetellBody } from '@/lib/with-retell-validation';
 import { lookupItemSchema } from '@/lib/schemas/tools';
-import { getRestaurantByAgentId, getMenuForRestaurant } from '@/lib/restaurant-cache';
+import { getRestaurantByAgentId, getMenuForRestaurant, getToastMenuSnapshot } from '@/lib/restaurant-cache';
 import { createServiceRoleClient } from '@/lib/supabase/server';
+import { isOpenNow, findItem } from '@/lib/toast/toast-availability';
 
 // 1-hour staleness window. If store_status hasn't been updated in 60+ min, we
 // treat the flag as unknown and default to "available" — prevents a stale
@@ -63,6 +64,25 @@ export async function POST(request: NextRequest) {
     }
 
     restaurantId = restaurant.id;
+
+    // ─── Toast branch (B3) ────────────────────────────────────────────────
+    // If this restaurant runs on Toast, route through the Toast cached
+    // snapshot + availability guards instead of the Supabase menu_items
+    // path. The Supabase path stays the default for Square/Clover/etc.
+    //
+    // Why the branch lives here, not in a wrapper: the decline phrasings
+    // for "closed", "86'd", and "ambiguous match" are different enough
+    // between Toast (carries business hours + availability flags from the
+    // POS itself) and Square (manual store_status + menu_items.available)
+    // that flattening them costs more code than it saves. Each path stays
+    // readable on its own.
+    if (restaurant.pos_type === 'toast') {
+      const toastResult = await lookupItemToast(restaurant, item_name);
+      if (toastResult) return toastResult;
+      // Fall through if Toast branch couldn't decide (e.g., no
+      // toast_restaurant_guid configured yet) — try the legacy Supabase
+      // path. This is the migration safety net during pilot onboarding.
+    }
 
     // Cached menu — full token-match still happens in memory (cheap; menu <200 rows).
     const allMenu = await getMenuForRestaurant(restaurant.id);
@@ -190,4 +210,105 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   }
+}
+
+// ─── Toast branch (B3) ─────────────────────────────────────────────────────────
+//
+// Handles lookup-item for restaurants on Toast. Returns a 200 JSON response
+// with a spoken `result` string the Retell agent reads verbatim — or null
+// if this path can't decide (e.g., toast_restaurant_guid missing), letting
+// the caller fall through to the legacy Supabase path.
+//
+// Three decline scenarios covered (per sprint brief acceptance criteria):
+//   1. Outside hours → polite "we're closed" + nextOpenSpoken
+//   2. 86'd item    → polite "we're out of X" + 3 in-category alternatives
+//   3. Ambiguous    → "we have a few options" + first 5 candidates
+
+async function lookupItemToast(
+  restaurant: { id: string; name: string; toast_restaurant_guid?: string | null },
+  itemName: string
+): Promise<Response | null> {
+  // Bail if not yet configured — let the legacy path try.
+  if (!restaurant.toast_restaurant_guid) {
+    console.warn(
+      `[lookup-item][toast] Restaurant ${restaurant.id} has pos_type='toast' but no toast_restaurant_guid; falling through.`
+    );
+    return null;
+  }
+
+  let snapshot;
+  try {
+    snapshot = await getToastMenuSnapshot(restaurant.toast_restaurant_guid);
+  } catch (err) {
+    console.error(`[lookup-item][toast] Snapshot fetch failed:`, err);
+    return NextResponse.json(
+      { result: "Give me one second — I'm pulling up the menu." },
+      { status: 200 }
+    );
+  }
+
+  // Hours check first — if we're closed, no point looking up the item.
+  const hours = isOpenNow(snapshot);
+  if (!hours.isOpen) {
+    const opener = hours.nextOpenSpoken
+      ? `we open ${hours.nextOpenSpoken}`
+      : "we're closed right now";
+    return NextResponse.json({
+      result: `Sorry, ${opener}. Want me to take your order for then, or is there anything else I can help with?`,
+    });
+  }
+
+  // Item match.
+  const found = findItem(snapshot, itemName);
+
+  if (!found.matched) {
+    // No menu match at all — read a few available items.
+    const suggestions = snapshot.items
+      .filter((i) => i.available)
+      .slice(0, 5)
+      .map((i) => i.name)
+      .join(', ');
+    return NextResponse.json({
+      result: `Sorry, we don't have "${itemName}" on the menu. We do have: ${suggestions}. What sounds good?`,
+    });
+  }
+
+  // Ambiguous — let the agent ask which one.
+  if (found.ambiguousMatches.length > 1) {
+    const options = found.ambiguousMatches
+      .slice(0, 5)
+      .map((i) => `${i.name} for $${(i.priceCents / 100).toFixed(2)}`)
+      .join(', ');
+    return NextResponse.json({
+      result: `We have a few options: ${options}. Which one would you like?`,
+    });
+  }
+
+  // 86'd / unavailable.
+  if (!found.available) {
+    const alts = found.alternatives
+      .slice(0, 3)
+      .map((i) => i.name)
+      .join(', ');
+    return NextResponse.json({
+      result: alts
+        ? `We're actually out of ${found.matched.name} for today. Could I interest you in ${alts}?`
+        : `We're out of ${found.matched.name} for today — what else can I get you?`,
+    });
+  }
+
+  // Available — return name + price + modifier hint.
+  const item = found.matched;
+  const modGroups = snapshot.modifierGroups.filter((g) =>
+    item.modifierGroupGuids.includes(g.guid)
+  );
+  const modText =
+    modGroups.length > 0
+      ? `. Modifiers available: ${modGroups
+          .map((g) => g.name)
+          .join(', ')}`
+      : '';
+  return NextResponse.json({
+    result: `${item.name}: $${(item.priceCents / 100).toFixed(2)}${modText}`,
+  });
 }
