@@ -58,6 +58,22 @@ export function maskPhone(phone: string): string {
 }
 
 /**
+ * Mask email for logs (first 2 chars + *** + @domain).
+ * Used by Privacy Day 2 log-scrub work so info-level logs never carry full
+ * email addresses. Falls back to a generic mask when the input isn't
+ * email-shaped — never returns the original.
+ */
+export function maskEmail(email: string): string {
+  if (!email || typeof email !== 'string') return '***';
+  const at = email.indexOf('@');
+  if (at < 1) return '***';
+  const local = email.slice(0, at);
+  const domain = email.slice(at);
+  const lead = local.slice(0, Math.min(2, local.length));
+  return `${lead}***${domain}`;
+}
+
+/**
  * Format order summary for voice response
  * Used in Retell voice agent responses to customer
  */

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { checkRateLimit } from '@/lib/rate-limit-upstash';
+import { maskPhone } from '@/lib/order-utils';
 
 const GHL_API_BASE = 'https://services.leadconnectorhq.com';
 const TWILIO_API_BASE = 'https://api.twilio.com/2010-04-01/Accounts';
@@ -154,6 +155,11 @@ export async function POST(req: NextRequest) {
     }
 
     const timestamp = new Date().toISOString();
+    // Privacy Day 2 (Appendix B item #2): mask the recipient phone in all
+    // info-level logs. The real number is in the SMS provider's logs (GHL /
+    // Twilio) where it has to be; OMRI's own logs only need enough to
+    // correlate (last 4 digits).
+    const maskedTo = maskPhone(to);
 
     // GHL Configuration
     const ghlApiKey = process.env.GHL_API_KEY;
@@ -166,11 +172,11 @@ export async function POST(req: NextRequest) {
 
     // Attempt 1: Try GoHighLevel
     if (ghlApiKey && ghlLocationId) {
-      console.log(`[${timestamp}] Attempting SMS to ${to} via GoHighLevel...`);
+      console.log(`[${timestamp}] Attempting SMS to ${maskedTo} via GoHighLevel...`);
       const ghlResult = await sendViaGHL(to, message, ghlApiKey, ghlLocationId);
 
       if (ghlResult.success) {
-        console.log(`[${timestamp}] SMS sent via GHL to ${to}: ${ghlResult.messageId} (type: ${type || 'general'})`);
+        console.log(`[${timestamp}] SMS sent via GHL to ${maskedTo}: ${ghlResult.messageId} (type: ${type || 'general'})`);
         return NextResponse.json({
           success: true,
           provider: 'ghl',
@@ -185,11 +191,11 @@ export async function POST(req: NextRequest) {
 
     // Attempt 2: Fall back to Twilio
     if (twilioAccountSid && twilioAuthToken && twilioPhoneNumber) {
-      console.log(`[${timestamp}] Attempting SMS to ${to} via Twilio...`);
+      console.log(`[${timestamp}] Attempting SMS to ${maskedTo} via Twilio...`);
       const twilioResult = await sendViaTwilio(to, message, twilioAccountSid, twilioAuthToken, twilioPhoneNumber);
 
       if (twilioResult.success) {
-        console.log(`[${timestamp}] SMS sent via Twilio to ${to}: ${twilioResult.messageId} (type: ${type || 'general'})`);
+        console.log(`[${timestamp}] SMS sent via Twilio to ${maskedTo}: ${twilioResult.messageId} (type: ${type || 'general'})`);
         return NextResponse.json({
           success: true,
           provider: 'twilio',

@@ -3,6 +3,8 @@
  * Env vars: RESEND_API_KEY, RESEND_FROM_EMAIL (optional)
  */
 
+import { maskEmail } from '@/lib/order-utils';
+
 export async function sendEmail({
   to,
   subject,
@@ -39,7 +41,9 @@ export async function sendEmail({
     }
 
     const data = await res.json();
-    console.log(`[${new Date().toISOString()}] Email sent to ${to}: ${subject}`);
+    // Privacy Day 2 (Appendix B item #2): mask the recipient. The real
+    // address lives in Resend; OMRI logs only need enough to correlate.
+    console.log(`[${new Date().toISOString()}] Email sent to ${maskEmail(to)}: ${subject}`);
     return { success: true, id: data.id };
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Email send error:`, error);

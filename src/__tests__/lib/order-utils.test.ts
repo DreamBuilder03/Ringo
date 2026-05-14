@@ -2,6 +2,7 @@ import {
   calculateOrderTotals,
   normalizePhone,
   maskPhone,
+  maskEmail,
   formatOrderSummary,
   calculateUpsellTotal,
   type OrderItem,
@@ -298,6 +299,28 @@ describe('Order Utilities', () => {
       const total = calculateUpsellTotal(items);
 
       expect(total).toBe(5.0); // Only Item1
+    });
+  });
+
+  describe('maskEmail (Privacy Day 2)', () => {
+    it('masks a typical email with the first 2 chars + domain', () => {
+      expect(maskEmail('misael@joinomri.com')).toBe('mi***@joinomri.com');
+    });
+
+    it('handles short local-parts gracefully', () => {
+      expect(maskEmail('a@b.com')).toBe('a***@b.com');
+    });
+
+    it('returns generic mask for invalid inputs', () => {
+      expect(maskEmail('')).toBe('***');
+      expect(maskEmail('@nolocal.com')).toBe('***');
+      expect(maskEmail('notanemail')).toBe('***');
+    });
+
+    it('preserves the domain so logs can still group by recipient host', () => {
+      const masked = maskEmail('rodriguezriverm@gmail.com');
+      expect(masked).toMatch(/@gmail\.com$/);
+      expect(masked.startsWith('ro')).toBe(true);
     });
   });
 });
