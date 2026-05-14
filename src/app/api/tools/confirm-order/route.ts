@@ -3,6 +3,8 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
 import { reportToolFailure } from '@/lib/alerts';
 import { validateRetellBody } from '@/lib/with-retell-validation';
 import { confirmOrderSchema } from '@/lib/schemas/tools';
+import { getToastMenuSnapshot } from '@/lib/restaurant-cache';
+import { isOpenNow, findItem } from '@/lib/toast/toast-availability';
 
 interface OrderItem {
   name: string;
@@ -52,10 +54,12 @@ export async function POST(request: NextRequest) {
     // Initialize Supabase client
     const supabase = await createServiceRoleClient();
 
-    // Look up restaurant by agent_id (check both English and Spanish agents)
+    // Look up restaurant by agent_id (check both English and Spanish agents).
+    // pos_type + toast_restaurant_guid are needed so the Toast availability
+    // re-check below can verify the order is still fulfillable.
     const { data: restaurant, error: restaurantError } = await supabase
       .from('restaurants')
-      .select('id, name')
+      .select('id, name, pos_type, toast_restaurant_guid')
       .or(`retell_agent_id.eq.${call.agent_id},retell_agent_id_es.eq.${call.agent_id}`)
       .single();
 
@@ -109,6 +113,29 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // ─── Toast availability re-check at confirm time (gap close) ─────────
+    // B3 guards lookup_item + add_to_order so a caller can't add a 86'd
+    // item or order outside hours. But items can flip availability between
+    // the add and the confirm (someone walks in and orders the last
+    // cannoli during the call). Re-check the whole order here so we never
+    // confirm an unfulfillable basket.
+    //
+    // Three failure modes covered:
+    //   1. Restaurant just closed → tell the caller, suggest next open
+    //   2. One+ items in the order are now 86'd → name them, ask to remove
+    //   3. (Edge case) Toast cache fetch fails → fall through and let the
+    //      confirm proceed (better a borderline confirm than a hard freeze)
+    if (
+      restaurant.pos_type === 'toast' &&
+      restaurant.toast_restaurant_guid
+    ) {
+      const decline = await reCheckToastAvailability(
+        restaurant.toast_restaurant_guid,
+        items
+      );
+      if (decline) return decline;
+    }
+
     // Update order status to pending and store customer phone
     const { error: updateError } = await supabase
       .from('orders')
@@ -144,4 +171,73 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   }
+}
+
+// ─── Toast availability re-check at confirm time ──────────────────────────────
+//
+// Walks every item in the basket against the current Toast snapshot.
+// Returns a 200 NextResponse with a speakable decline if the order is no
+// longer fulfillable, or null if everything still checks out.
+//
+// Why a re-check here is worth the extra cache read:
+//   - Items can flip 86'd between add_to_order and confirm_order (the call
+//     can take 3-5 minutes; in the dinner rush a hot item runs out fast)
+//   - The hours guard at lookup/add doesn't catch the edge case where the
+//     caller dawdles past closing time
+//   - Confirming an unfulfillable order is worse than declining at this
+//     step — the kitchen ticket would fire, food wouldn't get made, the
+//     customer would show up to an empty pickup window
+//
+// Cache-fetch failure path: we return null (let the confirm proceed). Better
+// to accept a slightly-stale order than freeze the agent on a transient cache
+// hiccup. Worst case the Toast Orders API push later catches the issue.
+
+async function reCheckToastAvailability(
+  toastRestaurantGuid: string,
+  items: OrderItem[]
+): Promise<Response | null> {
+  let snapshot;
+  try {
+    snapshot = await getToastMenuSnapshot(toastRestaurantGuid);
+  } catch (err) {
+    console.warn(`[confirm-order][toast] Snapshot fetch failed, allowing confirm:`, err);
+    return null;
+  }
+
+  // Hours check first — if the restaurant just closed, decline outright.
+  const hours = isOpenNow(snapshot);
+  if (!hours.isOpen) {
+    const opener = hours.nextOpenSpoken
+      ? `we open ${hours.nextOpenSpoken}`
+      : "we're closed right now";
+    return NextResponse.json({
+      result: `Sorry, ${opener} — I can't lock this order in. Want me to take it for then?`,
+    });
+  }
+
+  // Per-item availability check. Build a list of items that are now 86'd so
+  // we can name them specifically in the decline phrasing.
+  const unavailable: string[] = [];
+  for (const it of items) {
+    const found = findItem(snapshot, it.name);
+    if (found.matched && !found.available) {
+      unavailable.push(found.matched.name);
+    }
+  }
+
+  if (unavailable.length === 0) {
+    return null; // everything still fulfillable
+  }
+
+  // One-item decline: offer to swap.
+  if (unavailable.length === 1) {
+    return NextResponse.json({
+      result: `Quick check — we actually just ran out of ${unavailable[0]}. Want me to swap it for something else, or take it off the order?`,
+    });
+  }
+
+  // Multi-item decline: list them.
+  return NextResponse.json({
+    result: `Quick heads-up — we just ran out of ${unavailable.join(' and ')}. Want me to take them off the order, or swap them for something else?`,
+  });
 }
