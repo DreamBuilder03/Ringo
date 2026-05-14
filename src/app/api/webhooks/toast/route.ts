@@ -192,9 +192,12 @@ async function handlePaymentCleared(
   }
 
   // Find the order by its ID (we use the internal UUID as externalOrderId).
+  // Pull customer_name + customer_phone so the guest-sync downstream (B4) has
+  // them — the /api/pos/toast route writes guests to Toast Guest Manager
+  // after the order push.
   const { data: order } = await supabase
     .from('orders')
-    .select('id, restaurant_id, status, items, total')
+    .select('id, restaurant_id, status, items, total, customer_name, customer_phone')
     .eq('id', externalOrderId)
     .single();
 
@@ -222,6 +225,12 @@ async function handlePaymentCleared(
 
   // Internal POST to /api/pos/toast. Same pattern as Square webhook calling
   // /api/pos/square. The route handles the toast-client call + alerts.
+  // Pass guest_name + guest_phone so the guest-sync (B4) inside /api/pos/toast
+  // doesn't have to round-trip back to Supabase for the same fields.
+  const orderRow = order as typeof order & {
+    customer_name?: string | null;
+    customer_phone?: string | null;
+  };
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://joinomri.com';
   try {
     const pushRes = await fetch(`${baseUrl}/api/pos/toast`, {
@@ -231,6 +240,8 @@ async function handlePaymentCleared(
         restaurant_id: order.restaurant_id,
         order_id: order.id,
         items: order.items,
+        guest_name: orderRow.customer_name || undefined,
+        guest_phone: orderRow.customer_phone || undefined,
       }),
     });
     const pushJson = await pushRes.json().catch(() => ({}));

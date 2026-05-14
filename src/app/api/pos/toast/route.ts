@@ -37,7 +37,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { checkRateLimit } from '@/lib/rate-limit-upstash';
 import { sendFounderAlert } from '@/lib/alerts';
-import { createOrder as toastCreateOrder, getToastMode } from '@/lib/toast/toast-client';
+import {
+  createOrder as toastCreateOrder,
+  upsertGuest as toastUpsertGuest,
+  getToastMode,
+} from '@/lib/toast/toast-client';
 import type { ToastOrderCreateRequest } from '@/lib/toast/toast-client';
 
 interface InternalOrderItem {
@@ -226,6 +230,32 @@ export async function POST(request: NextRequest) {
       }).catch(() => {});
     }
 
+    // ─── B4: Toast Guest Manager sync (fire-and-forget) ──────────────────
+    // After the order is in Toast, sync the caller into Guest Manager so
+    // the operator builds up a marketable customer database over time.
+    // Match-on-phone behavior is the value here: the same caller's third
+    // order automatically gets linked to the prior two.
+    //
+    // Why fire-and-forget: guest sync is non-critical to the customer
+    // experience. The food is already going to fire; if we fail to sync
+    // the guest record the customer still gets their pizza. We log the
+    // outcome to alerts_log (sent_via='none') so /admin/health can surface
+    // sync health, but we do NOT page the founder on sync failure.
+    //
+    // Best-effort name resolution: orders.customer_phone is reliable;
+    // customer_name is set on the order row when the agent's
+    // confirm_order tool captured it. If name is missing, we sync
+    // phone-only — Toast's Guest Manager accepts that.
+    void syncToastGuest({
+      restaurantId: restaurant.id,
+      restaurantName: restaurant.name,
+      toastRestaurantGuid: restaurant.toast_restaurant_guid,
+      orderId: order_id,
+      guestName: guest_name,
+      guestPhone: guest_phone,
+      mode,
+    });
+
     return NextResponse.json({
       success: true,
       mode,
@@ -247,5 +277,151 @@ export async function POST(request: NextRequest) {
       { error: 'Internal error pushing order to Toast' },
       { status: 500 }
     );
+  }
+}
+
+// ─── B4: Toast Guest Manager sync (fire-and-forget) ────────────────────────────
+//
+// Called from POST() above after a successful Toast order push. Detached on
+// purpose — runs in the background, must never throw back into the calling
+// request. The HTTP response has already been sent by the time this resolves.
+//
+// What it does:
+//   1. Resolve guest_name + guest_phone from explicit args first, falling
+//      back to a fresh read of the orders row (which carries customer_name
+//      + customer_phone captured during the voice call's confirm_order step).
+//   2. If we have at least a phone, call toast-client.upsertGuest. Match-on-
+//      phone is the value — Toast will link this order to any prior guest
+//      record with the same phone.
+//   3. Write the outcome to alerts_log with sent_via='none' for /admin/health
+//      visibility. dedupe_key namespaces the row so it doesn't collide with
+//      real alerts.
+//
+// What it does NOT do:
+//   - Page the founder on failure. Guest sync is non-critical — the order
+//     already fired and the customer is getting their food. Surfacing in
+//     /admin/health is enough for ops follow-up.
+//   - Retry. Toast Guest Manager is idempotent on phone; if the first
+//     sync failed we'll try again on the next order from the same caller.
+
+interface GuestSyncContext {
+  restaurantId: string;
+  restaurantName: string;
+  toastRestaurantGuid: string;
+  orderId: string;
+  guestName?: string;
+  guestPhone?: string;
+  mode: 'live' | 'mock';
+}
+
+async function syncToastGuest(ctx: GuestSyncContext): Promise<void> {
+  const t0 = new Date().toISOString();
+  try {
+    // Resolve name + phone. Prefer explicit args; fall back to the order
+    // row's customer_name / customer_phone if either is missing.
+    let phone = ctx.guestPhone;
+    let name = ctx.guestName;
+    if (!phone || !name) {
+      try {
+        const supabase = await createServiceRoleClient();
+        const { data: order } = await supabase
+          .from('orders')
+          .select('customer_name, customer_phone')
+          .eq('id', ctx.orderId)
+          .single();
+        const orderRow = order as
+          | { customer_name?: string | null; customer_phone?: string | null }
+          | null;
+        if (!phone) phone = orderRow?.customer_phone || undefined;
+        if (!name) name = orderRow?.customer_name || undefined;
+      } catch (err) {
+        // Order lookup failure is non-fatal — proceed with whatever we have.
+        console.warn(`[${t0}] [pos/toast][guest-sync] orders read failed:`, err);
+      }
+    }
+
+    if (!phone) {
+      console.log(
+        `[${t0}] [pos/toast][guest-sync] No phone for order ${ctx.orderId}, skipping`
+      );
+      await logGuestSync({
+        restaurantId: ctx.restaurantId,
+        orderId: ctx.orderId,
+        status: 'skipped_no_phone',
+      });
+      return;
+    }
+
+    // Split a "First Last" name into first/last for Toast's Guest Manager
+    // schema. Best-effort — Toast accepts either field as optional.
+    const nameParts = (name || '').trim().split(/\s+/);
+    const firstName = nameParts[0] || undefined;
+    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : undefined;
+
+    const startedAt = Date.now();
+    const result = await toastUpsertGuest({
+      restaurantGuid: ctx.toastRestaurantGuid,
+      phone,
+      firstName,
+      lastName,
+    });
+
+    console.log(
+      `[${t0}] [pos/toast][guest-sync] mode=${ctx.mode} order=${ctx.orderId} ` +
+        `guest=${result.guestGuid} matched=${result.matched} latency_ms=${Date.now() - startedAt}`
+    );
+
+    await logGuestSync({
+      restaurantId: ctx.restaurantId,
+      orderId: ctx.orderId,
+      status: result.matched ? 'matched' : 'created',
+      guestGuid: result.guestGuid,
+      mode: ctx.mode,
+    });
+  } catch (err) {
+    // Non-critical. Log + surface in alerts_log; do not page founder.
+    console.error(`[${t0}] [pos/toast][guest-sync] failed:`, err);
+    await logGuestSync({
+      restaurantId: ctx.restaurantId,
+      orderId: ctx.orderId,
+      status: 'error',
+      error: err instanceof Error ? err.message.slice(0, 200) : String(err).slice(0, 200),
+    });
+  }
+}
+
+// Write a guest-sync outcome row to alerts_log. We reuse alerts_log
+// (sent_via='none', dedupe_key namespaced) instead of building a new table
+// for sync events — keeps /admin/health able to surface sync health
+// alongside everything else it monitors.
+async function logGuestSync(opts: {
+  restaurantId: string;
+  orderId: string;
+  status: 'matched' | 'created' | 'skipped_no_phone' | 'error';
+  guestGuid?: string;
+  mode?: string;
+  error?: string;
+}): Promise<void> {
+  try {
+    const supabase = await createServiceRoleClient();
+    await supabase.from('alerts_log').insert({
+      restaurant_id: opts.restaurantId,
+      failure_type: 'tool_call_failure', // existing enum value; ok for "sync event"
+      short_reason: `Toast guest sync: ${opts.status}`,
+      dedupe_key: `toast-guest-sync:${opts.orderId}`,
+      sent_via: 'none',
+      metadata: {
+        kind: 'toast_guest_sync',
+        order_id: opts.orderId,
+        status: opts.status,
+        guest_guid: opts.guestGuid ?? null,
+        mode: opts.mode ?? null,
+        error: opts.error ?? null,
+      },
+    });
+  } catch (err) {
+    // Logging failure is the worst kind of failure — fall through silently
+    // so the guest sync caller doesn't get blocked on observability.
+    console.warn('[pos/toast][guest-sync] alerts_log insert failed:', err);
   }
 }
