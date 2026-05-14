@@ -5,6 +5,7 @@ import { createServiceRoleClient } from '@/lib/supabase/server';
 import { sendFounderAlert, reportToolFailure } from '@/lib/alerts';
 import { validateRetellBody } from '@/lib/with-retell-validation';
 import { finalizePaymentSchema } from '@/lib/schemas/tools';
+import { createOrder as toastCreateOrder, getToastMode } from '@/lib/toast/toast-client';
 
 interface OrderItemModifier {
   name: string;
@@ -88,10 +89,12 @@ export async function POST(request: NextRequest) {
     // Initialize Supabase client
     const supabase = await createServiceRoleClient();
 
-    // Look up restaurant by agent_id (check both English and Spanish agents)
+    // Look up restaurant by agent_id (check both English and Spanish agents).
+    // toast_restaurant_guid is pulled so the Toast branch below can use it
+    // without a second round-trip when pos_type='toast'.
     const { data: restaurant, error: restaurantError } = await supabase
       .from('restaurants')
-      .select('id, name, pos_type, pos_connected, square_access_token, square_location_id, tax_rate, preferred_language')
+      .select('id, name, pos_type, pos_connected, square_access_token, square_location_id, tax_rate, preferred_language, toast_restaurant_guid')
       .or(`retell_agent_id.eq.${call.agent_id},retell_agent_id_es.eq.${call.agent_id}`)
       .single();
 
@@ -197,6 +200,29 @@ export async function POST(request: NextRequest) {
 
     orderId = order.id;
     orderTotal = order.total;
+
+    // ─── Toast branch (B2/B4 sprint completion) ─────────────────────────────
+    // For restaurants on Toast, route through the Toast adapter (mock-first;
+    // swaps to live when TOAST_MODE='live' + credentials are set in Vercel).
+    // This makes the B1-B4 work reachable end-to-end from the voice flow.
+    //
+    // If pos_type='toast' but toast_restaurant_guid is missing, we fall
+    // through to the legacy Square path (which will then fail loudly on
+    // missing Square creds and trigger the existing fallback) — that's the
+    // safety net during partial-onboarding when an operator is mid-migration.
+    if (restaurant.pos_type === 'toast' && restaurant.toast_restaurant_guid) {
+      return finalizePaymentToast({
+        restaurant: {
+          id: restaurant.id,
+          name: restaurant.name,
+          toastRestaurantGuid: restaurant.toast_restaurant_guid,
+          preferredLanguage: (restaurant.preferred_language as string | undefined) || 'en',
+        },
+        order,
+        customerPhone: customer_phone,
+        callId,
+      });
+    }
 
     // Get Square credentials — prefer restaurant-level, fall back to env vars
     const squareAccessToken = restaurant.square_access_token || process.env.SQUARE_ACCESS_TOKEN;
@@ -449,4 +475,174 @@ export async function POST(request: NextRequest) {
       { status: 200 }
     );
   }
+}
+
+// ─── Toast finalize-payment branch (sprint completion) ─────────────────────────
+//
+// Closes the loop on the Ryno demo sprint by making the entire B1-B4 chain
+// reachable from the voice flow. When a Toast-connected restaurant's caller
+// reaches the finalize_payment step, this helper:
+//
+//   1. Pushes the order to Toast in pending/not-fired state. We use
+//      toast-client.createOrder which is idempotent on externalOrderId, so
+//      if Toast's webhook later triggers a duplicate push it coalesces to
+//      the same Toast order GUID.
+//   2. Generates a customer payment URL. In MOCK mode this is a stub URL
+//      pointing at our own /pay/[orderId] page (which already exists for
+//      the Square Payment Links demo) so the SMS link clicks through to
+//      something visible. In LIVE mode (post-partner-approval) this will
+//      call Toast's customer-payment-link mechanism — see the TODO in the
+//      URL-generation block.
+//   3. Sends the URL via SMS using the same /api/sms route the Square flow
+//      uses. Bilingual message body.
+//   4. Updates the orders row: status='payment_sent', payment_link_sent_at,
+//      payment_intent_id = the Toast order GUID. The Toast webhook handler
+//      (/api/webhooks/toast) later matches on externalOrderId to fire the
+//      kitchen ticket.
+//   5. Returns the speakable confirmation the Retell agent reads back.
+//
+// Why a separate helper (not inlined): the Square path in POST() is ~250
+// lines of intertwined logic. Bolting Toast handling inline would make both
+// paths harder to read. Each path stays self-contained.
+//
+// What this does NOT do:
+//   - Real Toast customer payment-link generation. Toast's payment-link API
+//     surface unlocks on partner-approval delivery (and likely requires a
+//     separate Toast Online Ordering / TWO partner agreement on top of the
+//     integration partner agreement we already submitted). The mock URL is
+//     intentional placeholder until we see the real API responses.
+//   - Tax computation. Toast computes tax server-side based on the order's
+//     items + restaurant tax config; our local `order.total` is best-effort
+//     but the Toast-reported total is authoritative. We carry our total
+//     forward and trust Toast to correct it at fire-time if needed.
+
+interface FinalizePaymentToastArgs {
+  restaurant: {
+    id: string;
+    name: string;
+    toastRestaurantGuid: string;
+    preferredLanguage: string;
+  };
+  order: { id: string; items: any; subtotal: number; tax: number; total: number };
+  customerPhone: string;
+  callId: string | undefined;
+}
+
+async function finalizePaymentToast(args: FinalizePaymentToastArgs): Promise<Response> {
+  const { restaurant, order, customerPhone, callId } = args;
+  const t0 = new Date().toISOString();
+  const supabase = await createServiceRoleClient();
+  const mode = getToastMode();
+
+  // Step 1: push order to Toast in pending/not-fired state.
+  // toast-client maps our order.items shape to Toast's request schema.
+  // In MOCK mode this returns a deterministic mock-order-{order.id} GUID.
+  let toastResult;
+  try {
+    toastResult = await toastCreateOrder({
+      restaurantGuid: restaurant.toastRestaurantGuid,
+      externalOrderId: order.id,
+      scheduledPickupAt: null,
+      items: (order.items as Array<{ name: string; quantity: number; price: number }>).map(
+        (it) => ({
+          // Pass the item name as the menu item identifier. In MOCK mode the
+          // client doesn't actually look up by name; in LIVE mode we'll need
+          // to plumb the Toast menu_item_guid through earlier in the flow
+          // (B1 caches the snapshot — we can map name → guid at add_to_order
+          // time before this point).
+          menuItemGuid: it.name,
+          quantity: it.quantity,
+        })
+      ),
+    });
+  } catch (err) {
+    console.error(`[${t0}] [finalize-payment][toast] createOrder threw:`, err);
+    Sentry.captureException(err, {
+      tags: {
+        route: 'finalize-payment',
+        branch: 'toast',
+        restaurant_id: restaurant.id,
+        order_id: order.id,
+      },
+    });
+    sendFounderAlert({
+      restaurantId: restaurant.id,
+      failureType: 'payment_link_failure',
+      shortReason: `Toast createOrder failed during finalize-payment: ${err instanceof Error ? err.message.slice(0, 120) : 'unknown'}`,
+      retellCallId: callId ?? null,
+      actionHint: `Caller is on the line. Push order manually in Toast and call them back.`,
+      metadata: { order_id: order.id, mode },
+    }).catch(() => {});
+    return NextResponse.json(
+      { result: "Our system just hiccuped on the payment link. Give me one more second and I'll try again." },
+      { status: 200 }
+    );
+  }
+
+  // Step 2: generate a customer payment URL.
+  // MOCK mode: stub URL that loops back through our existing /pay/[orderId]
+  // page so the demo SMS link clicks through to something visible.
+  // LIVE mode (TODO post-partner-approval): call Toast's customer-payment-
+  // link API and pass the returned URL.
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://joinomri.com';
+  const paymentUrl =
+    mode === 'live'
+      ? // Placeholder until we wire the real Toast payment-link API. The
+        // build-out happens once we have sandbox creds — see toast-client.
+        `${appUrl}/pay/${order.id}?source=toast` /* TODO: real Toast URL */
+      : `${appUrl}/pay/${order.id}?source=toast-mock`;
+  const paymentIntentId = toastResult.toastOrderGuid;
+
+  // Step 3: SMS the payment link.
+  const smsMessageEn = `Your ${restaurant.name} order is ready for payment! Total: $${order.total.toFixed(2)}. Pay here: ${paymentUrl} — Once paid, your order goes straight to the kitchen!`;
+  const smsMessageEs = `Tu pedido de ${restaurant.name} esta listo para pagar! Total: $${order.total.toFixed(2)}. Paga aqui: ${paymentUrl} — Una vez pagado, tu pedido va directamente a la cocina!`;
+  const smsMessage = restaurant.preferredLanguage === 'es' ? smsMessageEs : smsMessageEn;
+
+  let smsDelivered = false;
+  try {
+    const smsResp = await fetch(`${appUrl}/api/sms`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to: customerPhone, message: smsMessage }),
+    });
+    smsDelivered = smsResp.ok;
+  } catch (err) {
+    console.error(`[${t0}] [finalize-payment][toast] SMS send failed:`, err);
+  }
+
+  // Step 4: update the order row. Toast GUID lands in payment_intent_id so
+  // the webhook can correlate. status='payment_sent' tells the dashboard
+  // "awaiting customer payment" rather than "still building."
+  const { error: updateError } = await supabase
+    .from('orders')
+    .update({
+      status: 'payment_sent',
+      payment_link_sent_at: new Date().toISOString(),
+      payment_intent_id: paymentIntentId,
+    })
+    .eq('id', order.id);
+
+  if (updateError) {
+    console.error(`[${t0}] [finalize-payment][toast] Order update failed:`, updateError);
+    Sentry.captureMessage('finalize-payment[toast]: order update failed', {
+      level: 'error',
+      tags: { route: 'finalize-payment', branch: 'toast', order_id: order.id },
+    });
+  }
+
+  console.log(
+    `[${t0}] [finalize-payment][toast] mode=${mode} restaurant=${restaurant.id} ` +
+      `order=${order.id} → toast_order=${paymentIntentId} sms=${smsDelivered ? 'sent' : 'failed'}`
+  );
+
+  // Step 5: speakable result for the Retell agent.
+  if (!smsDelivered) {
+    return NextResponse.json({
+      result: `Looks like our text system just hiccuped — the payment link is ${paymentUrl}. Say it back to me and I can also have ${restaurant.name} email it to you.`,
+    });
+  }
+  return NextResponse.json({
+    result:
+      'Payment link sent! Once you pay, the order goes straight to the kitchen.',
+  });
 }
