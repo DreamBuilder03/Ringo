@@ -136,6 +136,21 @@ export async function POST(request: NextRequest) {
       if (decline) return decline;
     }
 
+    // ─── store_status re-check (Square / Clover / SpotOn restaurants) ────
+    // Toast carries availability flags in its menu snapshot (above branch
+    // handles it). For all other POS systems, OMRI's store_status table is
+    // the universal source of truth for "what's 86'd today." Staff flips
+    // items off via the dashboard or admin SQL; the voice agent sees the
+    // change within seconds at the next confirm_order.
+    //
+    // Same architectural pattern as the Toast branch — re-check the whole
+    // basket at confirm time so we never lock in an order that includes
+    // an item that flipped 86'd after add_to_order ran.
+    if (restaurant.pos_type !== 'toast') {
+      const decline = await reCheckStoreStatusAvailability(supabase, restaurant.id, items);
+      if (decline) return decline;
+    }
+
     // Update order status to pending and store customer phone
     const { error: updateError } = await supabase
       .from('orders')
@@ -240,4 +255,73 @@ async function reCheckToastAvailability(
   return NextResponse.json({
     result: `Quick heads-up — we just ran out of ${unavailable.join(' and ')}. Want me to take them off the order, or swap them for something else?`,
   });
+}
+
+// ─── store_status re-check (Square / Clover / SpotOn) ─────────────────────────
+//
+// Universal availability guard for non-Toast restaurants. Reads the
+// restaurant's store_status row (1 row per restaurant, keyed by restaurant_id)
+// and walks every item in the basket against the items_unavailable_today array.
+//
+// Stale-data guard: if store_status hasn't been updated in 60+ minutes, we
+// treat the flag as unknown and let the confirm proceed. Prevents a forgotten
+// "off" flag from killing orders all day.
+//
+// Cache-fetch / DB failure → return null (let confirm proceed). Better to
+// accept a borderline order than freeze the agent on a transient hiccup.
+
+const STORE_STATUS_STALE_MS = 60 * 60 * 1000; // 1 hour
+
+async function reCheckStoreStatusAvailability(
+  supabase: Awaited<ReturnType<typeof createServiceRoleClient>>,
+  restaurantId: string,
+  items: OrderItem[]
+): Promise<Response | null> {
+  try {
+    const { data: status } = await supabase
+      .from('store_status')
+      .select('items_unavailable_today, items_updated_at')
+      .eq('restaurant_id', restaurantId)
+      .maybeSingle();
+
+    if (!status) return null;
+    if (!status.items_unavailable_today || status.items_unavailable_today.length === 0) {
+      return null;
+    }
+
+    // Honor the 1-hour staleness window — same as lookup-item.
+    const updatedAt = status.items_updated_at
+      ? new Date(status.items_updated_at).getTime()
+      : 0;
+    if (Date.now() - updatedAt >= STORE_STATUS_STALE_MS) {
+      return null;
+    }
+
+    const unavailableSet = new Set(
+      (status.items_unavailable_today as string[]).map((s) => s.toLowerCase())
+    );
+
+    const unavailable: string[] = [];
+    for (const it of items) {
+      if (unavailableSet.has(it.name.toLowerCase())) {
+        unavailable.push(it.name);
+      }
+    }
+
+    if (unavailable.length === 0) return null;
+
+    if (unavailable.length === 1) {
+      return NextResponse.json({
+        result: `Quick check — we actually just ran out of ${unavailable[0]} for today. Want me to swap it for something else, or take it off the order?`,
+      });
+    }
+
+    return NextResponse.json({
+      result: `Quick heads-up — we just sold out of ${unavailable.join(' and ')} for today. Want me to take them off the order, or swap them for something else?`,
+    });
+  } catch (err) {
+    // Be permissive on lookup failure — let the confirm proceed.
+    console.warn('[confirm-order][store_status] read failed (non-fatal):', err);
+    return null;
+  }
 }
