@@ -47,14 +47,16 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createServerSupabaseClient();
 
-    // Update restaurant with SpotOn credentials and mark as connected
+    // Update restaurant with SpotOn credentials and mark as connected.
+    // Per-restaurant columns added in migration 2026_05_14_spoton_columns.sql
+    // so the integration scales beyond a single-tenant env-var setup.
     const { error: updateError } = await supabase
       .from('restaurants')
       .update({
         pos_type: 'spoton',
         pos_connected: true,
-        // Note: API key and location ID should be stored in a secure location
-        // For now, these are validated but you should add proper schema support
+        spoton_api_key: spoton_api_key,
+        spoton_location_id: spoton_location_id,
       })
       .eq('id', restaurant_id);
 
