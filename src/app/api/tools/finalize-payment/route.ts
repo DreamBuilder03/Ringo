@@ -7,6 +7,12 @@ import { validateRetellBody } from '@/lib/with-retell-validation';
 import { finalizePaymentSchema } from '@/lib/schemas/tools';
 import { createOrder as toastCreateOrder, getToastMode } from '@/lib/toast/toast-client';
 import { toCloverLineItems, cloverApiBase } from '@/lib/clover/payment-utils';
+import {
+  toSpotOnLineItems,
+  extractSpotOnOrderId,
+  extractSpotOnCheckoutUrl,
+  spotOnApiBase,
+} from '@/lib/spoton/payment-utils';
 
 interface OrderItemModifier {
   name: string;
@@ -911,8 +917,8 @@ async function finalizePaymentSpotOn(args: FinalizePaymentSpotOnArgs): Promise<R
   const t0 = new Date().toISOString();
   const supabase = await createServiceRoleClient();
 
-  // SpotOn API base URL.
-  const apiBase = 'https://api.spoton.com';
+  // SpotOn API base URL (env-overridable for partner-sandbox testing).
+  const apiBase = spotOnApiBase();
 
   // Step 1: create a SpotOn order in pending/unpaid state.
   // TODO(spoton-sandbox): verify the exact endpoint + payload shape against
@@ -931,12 +937,10 @@ async function finalizePaymentSpotOn(args: FinalizePaymentSpotOnArgs): Promise<R
       body: JSON.stringify({
         externalId: order.id,
         type: 'TAKEOUT',
-        items: (order.items as Array<{ name: string; quantity: number; price: number }>).map(
-          (it) => ({
-            name: it.name,
-            quantity: it.quantity,
-            price: Math.round((it.price || 0) * 100), // cents
-          })
+        // Line items via the shared helper — gives us tested dollars→cents
+        // rounding, defensive defaults, and name truncation for free.
+        items: toSpotOnLineItems(
+          order.items as Array<{ name: string; quantity: number; price: number }>
         ),
         total: Math.round((order.total || 0) * 100),
         customer: {
@@ -966,11 +970,10 @@ async function finalizePaymentSpotOn(args: FinalizePaymentSpotOnArgs): Promise<R
       checkoutUrl?: string;
       paymentUrl?: string;
     };
-    spotonOrderId = orderData.id || orderData.externalId || null;
-    // TODO(spoton-sandbox): confirm the actual field name SpotOn returns
-    // for the customer-payment-link URL — could be checkoutUrl, paymentUrl,
-    // or something else. Until verified, accept either.
-    checkoutUrl = orderData.checkoutUrl || orderData.paymentUrl || null;
+    // Field-name tolerance lives in helpers so the route is the same
+    // whether SpotOn returns id/externalId or checkoutUrl/paymentUrl.
+    spotonOrderId = extractSpotOnOrderId(orderData);
+    checkoutUrl = extractSpotOnCheckoutUrl(orderData);
   } catch (err) {
     console.error(`[${t0}] [finalize-payment][spoton] order create threw:`, err);
     Sentry.captureException(err, {
