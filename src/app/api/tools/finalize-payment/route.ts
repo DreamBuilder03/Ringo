@@ -6,6 +6,7 @@ import { sendFounderAlert, reportToolFailure } from '@/lib/alerts';
 import { validateRetellBody } from '@/lib/with-retell-validation';
 import { finalizePaymentSchema } from '@/lib/schemas/tools';
 import { createOrder as toastCreateOrder, getToastMode } from '@/lib/toast/toast-client';
+import { toCloverLineItems, cloverApiBase } from '@/lib/clover/payment-utils';
 
 interface OrderItemModifier {
   name: string;
@@ -723,22 +724,18 @@ async function finalizePaymentClover(args: FinalizePaymentCloverArgs): Promise<R
   const t0 = new Date().toISOString();
   const supabase = await createServiceRoleClient();
 
-  // Clover Ecommerce / Hosted Checkout base URL.
-  const apiBase =
-    restaurant.cloverEnvironment === 'production'
-      ? 'https://api.clover.com'
-      : 'https://apisandbox.dev.clover.com';
+  // Clover Ecommerce / Hosted Checkout base URL. cloverApiBase() is
+  // tested in src/__tests__/lib/clover-payment-utils.test.ts.
+  const apiBase = cloverApiBase(restaurant.cloverEnvironment);
 
   // Step 1: create a Clover checkout session.
   // Clover's Ecommerce API uses /v1/checkouts with the merchant's OAuth
   // access token. The shoppingCart carries line items; Clover returns a
-  // checkout URL the customer pays at.
-  const lineItems = (order.items as Array<{ name: string; quantity: number; price: number }>).map(
-    (it) => ({
-      name: it.name,
-      unitQty: Math.max(1, Math.floor(it.quantity || 1)),
-      price: Math.round((it.price || 0) * 100), // Clover uses cents
-    })
+  // checkout URL the customer pays at. toCloverLineItems() does the
+  // dollars-to-cents conversion + defensive defaults — see tests for
+  // the full edge-case matrix (NaN price, empty name, qty <= 0, etc).
+  const lineItems = toCloverLineItems(
+    order.items as Array<{ name: string; quantity: number; price: number }>
   );
 
   let checkoutUrl: string | null = null;
