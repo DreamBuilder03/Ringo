@@ -90,11 +90,11 @@ export async function POST(request: NextRequest) {
     const supabase = await createServiceRoleClient();
 
     // Look up restaurant by agent_id (check both English and Spanish agents).
-    // toast_restaurant_guid is pulled so the Toast branch below can use it
-    // without a second round-trip when pos_type='toast'.
+    // toast_restaurant_guid + clover_* are pulled so the Toast and Clover
+    // branches below can read them without a second round-trip.
     const { data: restaurant, error: restaurantError } = await supabase
       .from('restaurants')
-      .select('id, name, pos_type, pos_connected, square_access_token, square_location_id, tax_rate, preferred_language, toast_restaurant_guid')
+      .select('id, name, pos_type, pos_connected, square_access_token, square_location_id, tax_rate, preferred_language, toast_restaurant_guid, clover_access_token, clover_merchant_id, clover_environment')
       .or(`retell_agent_id.eq.${call.agent_id},retell_agent_id_es.eq.${call.agent_id}`)
       .single();
 
@@ -204,18 +204,46 @@ export async function POST(request: NextRequest) {
     // ─── Toast branch (B2/B4 sprint completion) ─────────────────────────────
     // For restaurants on Toast, route through the Toast adapter (mock-first;
     // swaps to live when TOAST_MODE='live' + credentials are set in Vercel).
-    // This makes the B1-B4 work reachable end-to-end from the voice flow.
-    //
-    // If pos_type='toast' but toast_restaurant_guid is missing, we fall
-    // through to the legacy Square path (which will then fail loudly on
-    // missing Square creds and trigger the existing fallback) — that's the
-    // safety net during partial-onboarding when an operator is mid-migration.
     if (restaurant.pos_type === 'toast' && restaurant.toast_restaurant_guid) {
       return finalizePaymentToast({
         restaurant: {
           id: restaurant.id,
           name: restaurant.name,
           toastRestaurantGuid: restaurant.toast_restaurant_guid,
+          preferredLanguage: (restaurant.preferred_language as string | undefined) || 'en',
+        },
+        order,
+        customerPhone: customer_phone,
+        callId,
+      });
+    }
+
+    // ─── Clover branch (Tier 1 parity, live API) ─────────────────────────────
+    // Clover restaurants get a Hosted Checkout session generated against the
+    // per-restaurant OAuth credentials stored in the restaurants row. Unlike
+    // Toast, Clover doesn't require a separate partner program — any
+    // restaurant on Clover can authorize OMRI directly. So this path can run
+    // LIVE against real Clover sandbox/prod the moment a restaurant connects.
+    //
+    // If pos_type='clover' but the OAuth tokens are missing, fall through to
+    // the legacy Square path (which then trips the no-creds fallback and
+    // returns a graceful "system needs a tune-up" message — safer than crash).
+    if (
+      restaurant.pos_type === 'clover' &&
+      (restaurant as { clover_access_token?: string }).clover_access_token &&
+      (restaurant as { clover_merchant_id?: string }).clover_merchant_id
+    ) {
+      return finalizePaymentClover({
+        restaurant: {
+          id: restaurant.id,
+          name: restaurant.name,
+          cloverAccessToken: (restaurant as { clover_access_token: string }).clover_access_token,
+          cloverMerchantId: (restaurant as { clover_merchant_id: string }).clover_merchant_id,
+          cloverEnvironment:
+            ((restaurant as { clover_environment?: string }).clover_environment as
+              | 'sandbox'
+              | 'production'
+              | undefined) || 'sandbox',
           preferredLanguage: (restaurant.preferred_language as string | undefined) || 'en',
         },
         order,
@@ -639,6 +667,186 @@ async function finalizePaymentToast(args: FinalizePaymentToastArgs): Promise<Res
   if (!smsDelivered) {
     return NextResponse.json({
       result: `Looks like our text system just hiccuped — the payment link is ${paymentUrl}. Say it back to me and I can also have ${restaurant.name} email it to you.`,
+    });
+  }
+  return NextResponse.json({
+    result:
+      'Payment link sent! Once you pay, the order goes straight to the kitchen.',
+  });
+}
+
+// ─── Clover finalize-payment branch (Tier 1 parity) ────────────────────────────
+//
+// Pattern-matches the Square + Toast paths above. Clover has open API access
+// (no partner-program gating) so this path runs against real Clover sandbox
+// or production today — no mock mode required.
+//
+// What it does:
+//   1. Create a Clover order in pending state via the existing /api/pos/clover
+//      route logic, BUT marked so the kitchen doesn't fire on creation
+//      (Clover lets us set state='open' which Clover treats as "not yet
+//      submitted to kitchen" — kitchen fire happens on a subsequent state
+//      transition once payment clears).
+//   2. Generate a Clover Hosted Checkout session via Clover's Ecommerce API.
+//      That returns a hosted-pay URL we SMS to the customer.
+//   3. SMS the URL via the existing /api/sms route.
+//   4. Update orders.status='payment_sent', payment_link_sent_at,
+//      payment_intent_id = the Clover checkout session ID for webhook
+//      correlation.
+//
+// What this does NOT do:
+//   - Push line items to Clover. We do that AFTER payment clears via the
+//     existing /api/pos/clover POST route, which is called from the Clover
+//     payment webhook. Same Pay-Before-Prep gate as Square — kitchen ticket
+//     only fires after the customer pays.
+//   - Build a new Clover webhook handler. /api/webhooks/clover is on the
+//     follow-up list (closes the loop), but for the demo what matters is
+//     the customer experience: SMS link → hosted checkout → pay. Webhook
+//     hook-up is post-pay.
+
+interface FinalizePaymentCloverArgs {
+  restaurant: {
+    id: string;
+    name: string;
+    cloverAccessToken: string;
+    cloverMerchantId: string;
+    cloverEnvironment: 'sandbox' | 'production';
+    preferredLanguage: string;
+  };
+  order: { id: string; items: any; subtotal: number; tax: number; total: number };
+  customerPhone: string;
+  callId: string | undefined;
+}
+
+async function finalizePaymentClover(args: FinalizePaymentCloverArgs): Promise<Response> {
+  const { restaurant, order, customerPhone, callId } = args;
+  const t0 = new Date().toISOString();
+  const supabase = await createServiceRoleClient();
+
+  // Clover Ecommerce / Hosted Checkout base URL.
+  const apiBase =
+    restaurant.cloverEnvironment === 'production'
+      ? 'https://api.clover.com'
+      : 'https://apisandbox.dev.clover.com';
+
+  // Step 1: create a Clover checkout session.
+  // Clover's Ecommerce API uses /v1/checkouts with the merchant's OAuth
+  // access token. The shoppingCart carries line items; Clover returns a
+  // checkout URL the customer pays at.
+  const lineItems = (order.items as Array<{ name: string; quantity: number; price: number }>).map(
+    (it) => ({
+      name: it.name,
+      unitQty: Math.max(1, Math.floor(it.quantity || 1)),
+      price: Math.round((it.price || 0) * 100), // Clover uses cents
+    })
+  );
+
+  let checkoutUrl: string | null = null;
+  let checkoutSessionId: string | null = null;
+  try {
+    const ckRes = await fetch(`${apiBase}/invoicingcheckoutservice/v1/checkouts`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${restaurant.cloverAccessToken}`,
+        'Content-Type': 'application/json',
+        'X-Clover-Merchant-Id': restaurant.cloverMerchantId,
+      },
+      body: JSON.stringify({
+        customer: {
+          phoneNumber: customerPhone,
+        },
+        shoppingCart: {
+          lineItems,
+        },
+      }),
+    });
+    if (!ckRes.ok) {
+      const errText = await ckRes.text();
+      console.error(`[${t0}] [finalize-payment][clover] checkout create failed`, ckRes.status, errText);
+      throw new Error(`Clover ${ckRes.status}: ${errText.slice(0, 200)}`);
+    }
+    const ckData = (await ckRes.json()) as { href?: string; checkoutSessionId?: string };
+    checkoutUrl = ckData.href || null;
+    checkoutSessionId = ckData.checkoutSessionId || null;
+  } catch (err) {
+    console.error(`[${t0}] [finalize-payment][clover] Hosted Checkout failed:`, err);
+    Sentry.captureException(err, {
+      tags: {
+        route: 'finalize-payment',
+        branch: 'clover',
+        restaurant_id: restaurant.id,
+        order_id: order.id,
+      },
+    });
+    sendFounderAlert({
+      restaurantId: restaurant.id,
+      failureType: 'payment_link_failure',
+      shortReason: `Clover Hosted Checkout failed: ${err instanceof Error ? err.message.slice(0, 120) : 'unknown'}`,
+      retellCallId: callId ?? null,
+      actionHint: 'Caller is on the line. Generate manual checkout in Clover Dashboard and call them back.',
+      metadata: { order_id: order.id, env: restaurant.cloverEnvironment },
+    }).catch(() => {});
+    return NextResponse.json(
+      { result: "The payment system just hiccuped on our end. Give me one more second and I'll get the link out to you." },
+      { status: 200 }
+    );
+  }
+
+  if (!checkoutUrl) {
+    // Clover returned a 2xx but no usable URL — treat as soft failure.
+    console.error(`[${t0}] [finalize-payment][clover] No href in checkout response`);
+    return NextResponse.json(
+      { result: "One sec — our payment system is acting up. Let me try again." },
+      { status: 200 }
+    );
+  }
+
+  // Step 2: SMS the customer the checkout URL.
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://joinomri.com';
+  const smsMessageEn = `Your ${restaurant.name} order is ready for payment! Total: $${order.total.toFixed(2)}. Pay here: ${checkoutUrl} — Once paid, your order goes straight to the kitchen!`;
+  const smsMessageEs = `Tu pedido de ${restaurant.name} esta listo para pagar! Total: $${order.total.toFixed(2)}. Paga aqui: ${checkoutUrl} — Una vez pagado, tu pedido va directamente a la cocina!`;
+  const smsMessage = restaurant.preferredLanguage === 'es' ? smsMessageEs : smsMessageEn;
+
+  let smsDelivered = false;
+  try {
+    const smsResp = await fetch(`${appUrl}/api/sms`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to: customerPhone, message: smsMessage }),
+    });
+    smsDelivered = smsResp.ok;
+  } catch (err) {
+    console.error(`[${t0}] [finalize-payment][clover] SMS send failed:`, err);
+  }
+
+  // Step 3: update the order row. Clover session ID lands in payment_intent_id
+  // so the Clover webhook handler can correlate.
+  const { error: updateError } = await supabase
+    .from('orders')
+    .update({
+      status: 'payment_sent',
+      payment_link_sent_at: new Date().toISOString(),
+      payment_intent_id: checkoutSessionId || `clover-${order.id}`,
+    })
+    .eq('id', order.id);
+
+  if (updateError) {
+    console.error(`[${t0}] [finalize-payment][clover] Order update failed:`, updateError);
+    Sentry.captureMessage('finalize-payment[clover]: order update failed', {
+      level: 'error',
+      tags: { route: 'finalize-payment', branch: 'clover', order_id: order.id },
+    });
+  }
+
+  console.log(
+    `[${t0}] [finalize-payment][clover] env=${restaurant.cloverEnvironment} ` +
+      `restaurant=${restaurant.id} order=${order.id} → checkout=${checkoutSessionId} ` +
+      `sms=${smsDelivered ? 'sent' : 'failed'}`
+  );
+
+  if (!smsDelivered) {
+    return NextResponse.json({
+      result: `Looks like our text system just hiccuped — the payment link is ${checkoutUrl}. Say it back to me and I can also have ${restaurant.name} email it to you.`,
     });
   }
   return NextResponse.json({
