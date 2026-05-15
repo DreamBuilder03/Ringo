@@ -91,11 +91,12 @@ export async function POST(request: NextRequest) {
     const supabase = await createServiceRoleClient();
 
     // Look up restaurant by agent_id (check both English and Spanish agents).
-    // toast_restaurant_guid + clover_* are pulled so the Toast and Clover
-    // branches below can read them without a second round-trip.
+    // toast_restaurant_guid + clover_* + spoton_* are pulled so the
+    // Toast/Clover/SpotOn branches below can read them without a second
+    // round-trip.
     const { data: restaurant, error: restaurantError } = await supabase
       .from('restaurants')
-      .select('id, name, pos_type, pos_connected, square_access_token, square_location_id, tax_rate, preferred_language, toast_restaurant_guid, clover_access_token, clover_merchant_id, clover_environment')
+      .select('id, name, pos_type, pos_connected, square_access_token, square_location_id, tax_rate, preferred_language, toast_restaurant_guid, clover_access_token, clover_merchant_id, clover_environment, spoton_api_key, spoton_location_id')
       .or(`retell_agent_id.eq.${call.agent_id},retell_agent_id_es.eq.${call.agent_id}`)
       .single();
 
@@ -245,6 +246,32 @@ export async function POST(request: NextRequest) {
               | 'sandbox'
               | 'production'
               | undefined) || 'sandbox',
+          preferredLanguage: (restaurant.preferred_language as string | undefined) || 'en',
+        },
+        order,
+        customerPhone: customer_phone,
+        callId,
+      });
+    }
+
+    // ─── SpotOn branch (Tier 1 parity) ───────────────────────────────────────
+    // SpotOn uses direct API key + location ID (not OAuth). Same Pay-Before-
+    // Prep architecture as Toast/Clover: push order in pending state,
+    // generate a customer payment link, SMS it, flip status='payment_sent'.
+    //
+    // Falls through to Square path if SpotOn credentials missing — the
+    // safety net during partial onboarding.
+    if (
+      restaurant.pos_type === 'spoton' &&
+      (restaurant as { spoton_api_key?: string }).spoton_api_key &&
+      (restaurant as { spoton_location_id?: string }).spoton_location_id
+    ) {
+      return finalizePaymentSpotOn({
+        restaurant: {
+          id: restaurant.id,
+          name: restaurant.name,
+          spotonApiKey: (restaurant as { spoton_api_key: string }).spoton_api_key,
+          spotonLocationId: (restaurant as { spoton_location_id: string }).spoton_location_id,
           preferredLanguage: (restaurant.preferred_language as string | undefined) || 'en',
         },
         order,
@@ -839,6 +866,195 @@ async function finalizePaymentClover(args: FinalizePaymentCloverArgs): Promise<R
     `[${t0}] [finalize-payment][clover] env=${restaurant.cloverEnvironment} ` +
       `restaurant=${restaurant.id} order=${order.id} → checkout=${checkoutSessionId} ` +
       `sms=${smsDelivered ? 'sent' : 'failed'}`
+  );
+
+  if (!smsDelivered) {
+    return NextResponse.json({
+      result: `Looks like our text system just hiccuped — the payment link is ${checkoutUrl}. Say it back to me and I can also have ${restaurant.name} email it to you.`,
+    });
+  }
+  return NextResponse.json({
+    result:
+      'Payment link sent! Once you pay, the order goes straight to the kitchen.',
+  });
+}
+
+// ─── SpotOn finalize-payment branch (Tier 1 parity) ────────────────────────────
+//
+// SpotOn uses direct API key + location ID auth (no OAuth). Architecture
+// matches Toast/Clover: push order in pending state, generate customer
+// payment link, SMS it, flip status='payment_sent'. SpotOn's webhook
+// (TODO: /api/webhooks/spoton) fires payment-cleared → order push completes.
+//
+// SpotOn's customer-payment-link API surface isn't 100% nailed down in code
+// without doc access. The endpoint URL + payload shape below are based on
+// the publicly documented v1 Orders API + reasonable inference. Mark TODO
+// for the bits that need verification against SpotOn's partner sandbox
+// when credentials arrive. Until then, this branch fails LOUD with a P0
+// founder alert on any non-2xx — better than silently degrading.
+
+interface FinalizePaymentSpotOnArgs {
+  restaurant: {
+    id: string;
+    name: string;
+    spotonApiKey: string;
+    spotonLocationId: string;
+    preferredLanguage: string;
+  };
+  order: { id: string; items: any; subtotal: number; tax: number; total: number };
+  customerPhone: string;
+  callId: string | undefined;
+}
+
+async function finalizePaymentSpotOn(args: FinalizePaymentSpotOnArgs): Promise<Response> {
+  const { restaurant, order, customerPhone, callId } = args;
+  const t0 = new Date().toISOString();
+  const supabase = await createServiceRoleClient();
+
+  // SpotOn API base URL.
+  const apiBase = 'https://api.spoton.com';
+
+  // Step 1: create a SpotOn order in pending/unpaid state.
+  // TODO(spoton-sandbox): verify the exact endpoint + payload shape against
+  // SpotOn partner docs when sandbox credentials arrive. The structure below
+  // mirrors the v1 Orders API as documented publicly + reasonable inference.
+  let checkoutUrl: string | null = null;
+  let spotonOrderId: string | null = null;
+  try {
+    const orderRes = await fetch(`${apiBase}/v1/orders`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${restaurant.spotonApiKey}`,
+        'X-Location-Id': restaurant.spotonLocationId,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        externalId: order.id,
+        type: 'TAKEOUT',
+        items: (order.items as Array<{ name: string; quantity: number; price: number }>).map(
+          (it) => ({
+            name: it.name,
+            quantity: it.quantity,
+            price: Math.round((it.price || 0) * 100), // cents
+          })
+        ),
+        total: Math.round((order.total || 0) * 100),
+        customer: {
+          phone: customerPhone,
+        },
+        paymentStatus: 'PENDING', // SpotOn convention — order exists but not fired until paid
+        metadata: {
+          source: 'omri',
+          ringoOrderId: order.id,
+        },
+      }),
+    });
+
+    if (!orderRes.ok) {
+      const errText = await orderRes.text();
+      console.error(
+        `[${t0}] [finalize-payment][spoton] order create failed`,
+        orderRes.status,
+        errText
+      );
+      throw new Error(`SpotOn ${orderRes.status}: ${errText.slice(0, 200)}`);
+    }
+
+    const orderData = (await orderRes.json()) as {
+      id?: string;
+      externalId?: string;
+      checkoutUrl?: string;
+      paymentUrl?: string;
+    };
+    spotonOrderId = orderData.id || orderData.externalId || null;
+    // TODO(spoton-sandbox): confirm the actual field name SpotOn returns
+    // for the customer-payment-link URL — could be checkoutUrl, paymentUrl,
+    // or something else. Until verified, accept either.
+    checkoutUrl = orderData.checkoutUrl || orderData.paymentUrl || null;
+  } catch (err) {
+    console.error(`[${t0}] [finalize-payment][spoton] order create threw:`, err);
+    Sentry.captureException(err, {
+      tags: {
+        route: 'finalize-payment',
+        branch: 'spoton',
+        restaurant_id: restaurant.id,
+        order_id: order.id,
+      },
+    });
+    sendFounderAlert({
+      restaurantId: restaurant.id,
+      failureType: 'payment_link_failure',
+      shortReason: `SpotOn order create failed: ${err instanceof Error ? err.message.slice(0, 120) : 'unknown'}`,
+      retellCallId: callId ?? null,
+      actionHint: 'Caller is on the line. Generate manual checkout in SpotOn Dashboard and call them back.',
+      metadata: { order_id: order.id },
+    }).catch(() => {});
+    return NextResponse.json(
+      { result: "The payment system just hiccuped on our end. Give me one more second and I'll get the link out to you." },
+      { status: 200 }
+    );
+  }
+
+  if (!checkoutUrl) {
+    // SpotOn returned a 2xx but no usable payment URL. Treat as soft fail —
+    // this is the "endpoint shape is wrong, fix the integration" case.
+    console.error(
+      `[${t0}] [finalize-payment][spoton] No checkout URL in response — likely an endpoint-shape mismatch`
+    );
+    sendFounderAlert({
+      restaurantId: restaurant.id,
+      failureType: 'payment_link_failure',
+      shortReason: 'SpotOn order created but response had no payment URL — check API contract',
+      retellCallId: callId ?? null,
+      actionHint: 'Likely a SpotOn API field-name change. Check src/app/api/tools/finalize-payment route SpotOn branch.',
+      metadata: { order_id: order.id, spoton_order_id: spotonOrderId },
+    }).catch(() => {});
+    return NextResponse.json(
+      { result: "One sec — our payment system is acting up. Let me try again." },
+      { status: 200 }
+    );
+  }
+
+  // Step 2: SMS the customer the checkout URL.
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://joinomri.com';
+  const smsMessageEn = `Your ${restaurant.name} order is ready for payment! Total: $${order.total.toFixed(2)}. Pay here: ${checkoutUrl} — Once paid, your order goes straight to the kitchen!`;
+  const smsMessageEs = `Tu pedido de ${restaurant.name} esta listo para pagar! Total: $${order.total.toFixed(2)}. Paga aqui: ${checkoutUrl} — Una vez pagado, tu pedido va directamente a la cocina!`;
+  const smsMessage = restaurant.preferredLanguage === 'es' ? smsMessageEs : smsMessageEn;
+
+  let smsDelivered = false;
+  try {
+    const smsResp = await fetch(`${appUrl}/api/sms`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to: customerPhone, message: smsMessage }),
+    });
+    smsDelivered = smsResp.ok;
+  } catch (err) {
+    console.error(`[${t0}] [finalize-payment][spoton] SMS send failed:`, err);
+  }
+
+  // Step 3: update the order row. SpotOn order ID lands in payment_intent_id
+  // so the SpotOn webhook handler can correlate.
+  const { error: updateError } = await supabase
+    .from('orders')
+    .update({
+      status: 'payment_sent',
+      payment_link_sent_at: new Date().toISOString(),
+      payment_intent_id: spotonOrderId || `spoton-${order.id}`,
+    })
+    .eq('id', order.id);
+
+  if (updateError) {
+    console.error(`[${t0}] [finalize-payment][spoton] Order update failed:`, updateError);
+    Sentry.captureMessage('finalize-payment[spoton]: order update failed', {
+      level: 'error',
+      tags: { route: 'finalize-payment', branch: 'spoton', order_id: order.id },
+    });
+  }
+
+  console.log(
+    `[${t0}] [finalize-payment][spoton] restaurant=${restaurant.id} order=${order.id} ` +
+      `→ spoton_order=${spotonOrderId} sms=${smsDelivered ? 'sent' : 'failed'}`
   );
 
   if (!smsDelivered) {
