@@ -1441,6 +1441,7 @@ export default function HomePage() {
         },
       ],
     },
+    { kind: "link", label: "POS coverage", href: "/compare" },
     { kind: "link", label: "Pricing", href: "#pricing" },
   ];
 
@@ -2396,6 +2397,7 @@ export default function HomePage() {
                     { label: "How it works", href: "#how-it-works" },
                     { label: "Features", href: "#features" },
                     { label: "Integrations", href: "#integrations" },
+                    { label: "POS coverage", href: "/compare" },
                     { label: "Pricing", href: "#pricing" },
                     { label: "Live Demo", href: "#demo" },
                   ].map((l) => (
