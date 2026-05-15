@@ -26,14 +26,16 @@
 --   placeholders matching the mock Toast menu so the fallback delivers
 --   a consistent experience.
 --
--- Retell agent: set to NULL initially. After running this seed:
---   1. In Retell dashboard, clone the production agent
---      (agent_2a06fef4b4adf81ffd9b8a72e2) → name "Ryno's Pizza Demo"
---   2. Update this restaurant row's retell_agent_id with the new agent ID
---   3. Provision a Twilio number OR point an existing demo number at the
---      new agent via Retell's phone-number panel
---   4. Test-call → voice agent should answer as "Ryno's Pizza" and
---      respond from the Toast mock menu
+-- Retell agent: agent_b886224682b6bd7c1e3117ecf4 (Ryno's Pizza Demo,
+--   cloned from production V24 and identity-rewritten on 2026-05-15).
+--   This row's retell_agent_id is now baked in so re-running the seed
+--   re-asserts the binding. If you ever publish a fresh agent, update
+--   the constant below AND in the ON CONFLICT block.
+--
+-- Remaining manual step:
+--   - Provision a Twilio number and attach it to the new agent via
+--     Retell's phone-number panel, then update `phone` on this row.
+--     Until that's done, only Retell web-call testing works.
 -- =====================================================================
 
 -- ---------------------------------------------------------------------
@@ -68,7 +70,7 @@ INSERT INTO public.restaurants (
   '+15555550100', -- Placeholder (555-0100 reserved per NANP for demo). Replace with real Twilio number once provisioned.
   'toast',
   true,
-  NULL, -- Retell agent created post-seed, then update this row
+  'agent_b886224682b6bd7c1e3117ecf4', -- Ryno's Pizza Demo (cloned 2026-05-15, V1)
   NULL,
   'en',
   NULL, NULL, NULL,
@@ -83,6 +85,7 @@ INSERT INTO public.restaurants (
   address                    = EXCLUDED.address,
   pos_type                   = EXCLUDED.pos_type,
   pos_connected              = EXCLUDED.pos_connected,
+  retell_agent_id            = EXCLUDED.retell_agent_id,
   preferred_language         = EXCLUDED.preferred_language,
   toast_restaurant_guid      = EXCLUDED.toast_restaurant_guid,
   toast_management_group_guid = EXCLUDED.toast_management_group_guid,
@@ -136,13 +139,15 @@ INSERT INTO public.store_status (
 
 -- =====================================================================
 -- Post-seed manual steps (Misael):
---   1. Clone the production Retell agent → "Ryno's Pizza Demo"
---   2. UPDATE this row:
+--   1. [DONE 2026-05-15] Retell agent agent_b886224682b6bd7c1e3117ecf4
+--      cloned from prod V24, identity rewritten to Ryno's Pizza, published
+--      as V1. Bound to this row via the INSERT above.
+--   2. Provision a Twilio number and attach it to agent
+--      agent_b886224682b6bd7c1e3117ecf4 via Retell's phone-number panel,
+--      then UPDATE this row:
 --        UPDATE public.restaurants
---        SET retell_agent_id = '<new agent ID from Retell>',
---            phone           = '<+1xxxxxxxxxx Twilio number>'
+--        SET phone = '<+1xxxxxxxxxx Twilio number>'
 --        WHERE id = 'a0000000-0000-0000-0000-000000007890';
---   3. In Retell, attach the Twilio number to the new agent
---   4. Test-call the Twilio number → voice flow should run end-to-end
---      against the mock Toast adapter
+--   3. Test-call the Twilio number → voice flow should run end-to-end
+--      against the mock Toast adapter. Hailey should greet as Ryno's Pizza.
 -- =====================================================================
