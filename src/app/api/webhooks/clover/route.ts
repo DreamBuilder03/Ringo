@@ -41,21 +41,11 @@ import crypto from 'crypto';
 import { createServiceRoleClient } from '@/lib/supabase/server';
 import { checkRateLimit } from '@/lib/rate-limit-upstash';
 import { sendFounderAlert } from '@/lib/alerts';
-
-// Loose envelope — Clover's exact field names vary between checkout-event
-// flavors. Type just what we need and treat the rest as unknown.
-interface CloverWebhookEnvelope {
-  type?: string;
-  // Some flavors put it at top level, others under `data` or `payment`.
-  checkoutSessionId?: string;
-  paymentId?: string;
-  merchantId?: string;
-  data?: Record<string, unknown>;
-  payment?: Record<string, unknown>;
-  // Idempotency: Clover may retry on non-2xx. We rely on our own order-status
-  // guard ('paid' status already → skip) since Clover doesn't send a stable
-  // eventId across the various Hosted Checkout flavors.
-}
+import {
+  isPaymentClearedEvent,
+  extractCheckoutSessionId,
+  type CloverWebhookEnvelope,
+} from '@/lib/clover/webhook-utils';
 
 function verifyCloverSignature(rawBody: string, signature: string | null): boolean {
   const secret = process.env.CLOVER_WEBHOOK_SECRET;
@@ -73,32 +63,6 @@ function verifyCloverSignature(rawBody: string, signature: string | null): boole
   } catch {
     return false;
   }
-}
-
-function extractCheckoutSessionId(event: CloverWebhookEnvelope): string | null {
-  // Try the obvious places first, then dig into nested data/payment objects.
-  if (event.checkoutSessionId) return event.checkoutSessionId;
-  if (event.paymentId) return event.paymentId;
-  const fromData = event.data?.checkoutSessionId as string | undefined;
-  if (fromData) return fromData;
-  const fromPayment =
-    (event.payment?.checkoutSessionId as string | undefined) ||
-    (event.payment?.id as string | undefined);
-  if (fromPayment) return fromPayment;
-  return null;
-}
-
-function isPaymentClearedEvent(type: string | undefined): boolean {
-  if (!type) return false;
-  const t = type.toUpperCase();
-  return (
-    t === 'CHECKOUT.COMPLETED' ||
-    t === 'PAYMENT.SUCCEEDED' ||
-    t === 'PAYMENT.COMPLETED' ||
-    // The plain-lowercase variants Clover sometimes uses on Ecommerce events
-    t === 'CHECKOUT_COMPLETED' ||
-    t === 'PAYMENT_SUCCEEDED'
-  );
 }
 
 export async function POST(request: NextRequest) {
