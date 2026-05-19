@@ -5,7 +5,7 @@ import { validateRetellBody } from '@/lib/with-retell-validation';
 import { lookupItemSchema } from '@/lib/schemas/tools';
 import { getRestaurantByAgentId, getMenuForRestaurant, getToastMenuSnapshot } from '@/lib/restaurant-cache';
 import { createServiceRoleClient } from '@/lib/supabase/server';
-import { isOpenNow, findItem } from '@/lib/toast/toast-availability';
+import { isOpenNow, findItem, extractSizeInches } from '@/lib/toast/toast-availability';
 
 // 1-hour staleness window. If store_status hasn't been updated in 60+ min, we
 // treat the flag as unknown and default to "available" — prevents a stale
@@ -297,18 +297,36 @@ async function lookupItemToast(
     });
   }
 
-  // Available — return name + price + modifier hint.
+  // Available — return name + price + minimal modifier hint.
+  //
+  // The response is conversational ("Got it — X for $Y. Want me to add it?")
+  // so the agent's next step is unambiguous: add_to_order. The terse
+  // "Name: $X" format we used before could be re-read by the LLM as data
+  // that still needed a follow-up question, which caused the agent to
+  // narrate "pulling up sizes" and then freeze on single-size matches
+  // during the Ryno demo dry-run (call_xx 2026-05-17).
+  //
+  // Size modifier suppression: if the item name already carries a size
+  // (extractSizeInches finds one), drop the "Size" modifier group from
+  // the response. Otherwise the agent reads "Modifiers available: Size"
+  // and thinks it still needs to ask which size — even though the size
+  // is right there in the name.
   const item = found.matched;
-  const modGroups = snapshot.modifierGroups.filter((g) =>
-    item.modifierGroupGuids.includes(g.guid)
-  );
+  const itemHasSizeInName = extractSizeInches(item.name) !== null;
+  const modGroups = snapshot.modifierGroups
+    .filter((g) => item.modifierGroupGuids.includes(g.guid))
+    .filter((g) => !(itemHasSizeInName && /size/i.test(g.name)));
+
+  // Only mention modifiers if there's something the customer can actually
+  // pick (toppings, sauce, etc.) — and even then, frame it as optional.
   const modText =
     modGroups.length > 0
-      ? `. Modifiers available: ${modGroups
-          .map((g) => g.name)
-          .join(', ')}`
+      ? ` We can customize with ${modGroups
+          .map((g) => g.name.toLowerCase())
+          .join(' or ')} if you'd like.`
       : '';
+
   return NextResponse.json({
-    result: `${item.name}: $${(item.priceCents / 100).toFixed(2)}${modText}`,
+    result: `Got it — ${item.name} for $${(item.priceCents / 100).toFixed(2)}.${modText} Want me to add it to your order?`,
   });
 }
