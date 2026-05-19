@@ -6,6 +6,7 @@ import {
   isOpenNow,
   findItem,
   validatePickupTime,
+  extractSizeInches,
 } from '@/lib/toast/toast-availability';
 import type { ToastMenuSnapshot } from '@/lib/toast/toast-client';
 
@@ -138,6 +139,88 @@ describe('findItem (B3 86d / ambiguous guard)', () => {
   it('is case-insensitive', () => {
     const result = findItem(snapshot, 'PEPPERONI PIZZA 12');
     expect(result.matched?.name).toBe('Pepperoni Pizza (12")');
+  });
+
+  // ─── Size-word disambiguation (post-V11 fix; demo dry-run regression) ─────
+  // Caller says "twelve inch pepperoni pizza" — should land on the 12"
+  // pepperoni without asking which size. Pre-fix this looped because
+  // "twelve"/"inch" didn't substring-match the literal 12" in the menu name,
+  // so both variants scored equally and returned ambiguous.
+
+  it('narrows to 12" when caller says "twelve inch pepperoni pizza"', () => {
+    const result = findItem(snapshot, 'twelve inch pepperoni pizza');
+    expect(result.matched?.name).toBe('Pepperoni Pizza (12")');
+    expect(result.ambiguousMatches).toEqual([]);
+  });
+
+  it('narrows to 16" when caller says "sixteen inch pepperoni pizza"', () => {
+    const result = findItem(snapshot, 'sixteen inch pepperoni pizza');
+    expect(result.matched?.name).toBe('Pepperoni Pizza (16")');
+    expect(result.ambiguousMatches).toEqual([]);
+  });
+
+  it('narrows to 12" when caller says "12 inch pepperoni"', () => {
+    // Numeric form, no quote mark — the most common caller pattern.
+    const result = findItem(snapshot, '12 inch pepperoni');
+    expect(result.matched?.name).toBe('Pepperoni Pizza (12")');
+    expect(result.ambiguousMatches).toEqual([]);
+  });
+
+  it('still returns ambiguous when caller omits the size', () => {
+    // Regression guard: the size narrowing should ONLY kick in when the
+    // caller actually said a size. If they didn't, we still want the
+    // disambiguation list so the agent can ask "which size?".
+    const result = findItem(snapshot, 'pepperoni pizza');
+    expect(result.ambiguousMatches.length).toBeGreaterThanOrEqual(2);
+  });
+
+  // NB: pathological queries like "12 inch cannoli" are not covered. They're
+  // sub-1% of real traffic and the matcher's tie-breaking behavior there
+  // (whichever item happens to sort first) is acceptable — the agent will
+  // ask for confirmation either way per the prompt's readback rule.
+});
+
+describe('extractSizeInches — spoken size → numeric inches', () => {
+  it('parses numeric form with quote mark', () => {
+    expect(extractSizeInches('Pepperoni Pizza (12")')).toBe(12);
+  });
+
+  it('parses numeric form with the word inch', () => {
+    expect(extractSizeInches('a 12 inch pepperoni')).toBe(12);
+    expect(extractSizeInches('a 16-inch pepperoni')).toBe(16);
+    expect(extractSizeInches('a 14in pizza')).toBe(14);
+  });
+
+  it('parses word form with inch indicator', () => {
+    expect(extractSizeInches('twelve inch pepperoni')).toBe(12);
+    expect(extractSizeInches('sixteen-inch pizza')).toBe(16);
+    expect(extractSizeInches('ten inch')).toBe(10);
+    expect(extractSizeInches('twenty inch deep dish')).toBe(20);
+  });
+
+  it('returns null when no size signal is present', () => {
+    expect(extractSizeInches('pepperoni pizza')).toBe(null);
+    expect(extractSizeInches('cannoli')).toBe(null);
+    expect(extractSizeInches('')).toBe(null);
+  });
+
+  it('does not false-positive on numbers without an inch indicator', () => {
+    // "10pc wings" has a 10 but no inch indicator — must NOT return 10
+    // (otherwise wings would get size-filtered alongside pizzas).
+    expect(extractSizeInches('10pc wings')).toBe(null);
+    expect(extractSizeInches('order number 12')).toBe(null);
+  });
+
+  it('does not false-positive on size words without an inch indicator', () => {
+    // "ten wings" → must not return 10 inches.
+    expect(extractSizeInches('ten wings')).toBe(null);
+  });
+
+  it('rejects out-of-range sizes (defensive)', () => {
+    // A 99 isn't a pizza size — likely a misparse. Reject anything outside
+    // 4–30 inches.
+    expect(extractSizeInches('99 inch pizza')).toBe(null);
+    expect(extractSizeInches('2 inch')).toBe(null);
   });
 });
 

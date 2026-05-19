@@ -153,9 +153,80 @@ export interface ItemAvailability {
 }
 
 /**
+ * Spoken size-word → inches map. Callers say "twelve inch pepperoni" but
+ * menu names usually carry numeric form ("Pepperoni Pizza (12\")"). We need
+ * both forms to compare. See extractSizeInches.
+ */
+const SIZE_WORD_TO_INCHES: Record<string, number> = {
+  six: 6,
+  eight: 8,
+  ten: 10,
+  twelve: 12,
+  fourteen: 14,
+  sixteen: 16,
+  eighteen: 18,
+  twenty: 20,
+  'twenty-four': 24,
+  // Spoken qualitative sizes that map to a specific inch — set these per
+  // restaurant if you want them to work. For Ryno's mock menu the numeric
+  // sizes dominate, so we leave small/medium/large unmapped (matcher falls
+  // back to token-overlap, which works fine when the menu has those words).
+};
+
+/**
+ * Pull a size-in-inches signal out of a free-text item name / caller query.
+ *
+ * Recognizes:
+ *   - Number forms: "12", "12\"", "12 inch", "12-inch", "12in"
+ *   - Word forms:   "twelve inch", "sixteen-inch", "twelve\""
+ *   - Menu-style parenthetical: "Pepperoni Pizza (12\")"
+ *
+ * Returns null when no size can be extracted.
+ *
+ * Critical for size-word disambiguation: prior to this helper, the matcher
+ * tokenized "twelve inch pepperoni pizza" into ["twelve","inch","pepperoni",
+ * "pizza"], none of which substring-match the literal `12"` in the menu
+ * name, so both the 12" and 16" pepperonis scored equally and the lookup
+ * returned an ambiguous result — even though the caller clearly named a
+ * size. This helper closes that gap. Logged as a follow-up after the V11
+ * call_afb45c1f regression; finally fixed for the Ryno demo dry-run.
+ */
+export function extractSizeInches(text: string): number | null {
+  if (!text) return null;
+  const t = text.toLowerCase();
+
+  // Number form first — fast path, no false positives.
+  // Matches: 12, 12", 12 inch, 12-inch, 12in. Inside parens too.
+  const numMatch = t.match(/\b(\d{1,2})\s*(?:"|''|inch(?:es)?|-inch|in\b)/);
+  if (numMatch) {
+    const n = parseInt(numMatch[1], 10);
+    if (n >= 4 && n <= 30) return n;
+  }
+
+  // Word form: "twelve inch", "twelve-inch", "twelve\"".
+  for (const [word, inches] of Object.entries(SIZE_WORD_TO_INCHES)) {
+    // Require the word to be followed by an inch indicator so we don't
+    // match e.g. "ten wings" as a size of 10 inches.
+    const pattern = new RegExp(
+      `\\b${word}\\b\\s*(?:"|''|inch(?:es)?|-inch|in\\b)`,
+      'i'
+    );
+    if (pattern.test(t)) return inches;
+  }
+
+  return null;
+}
+
+/**
  * Fuzzy-match an item name against the snapshot. Same loose token-matching
  * vibe as src/lib/menu-search.ts for Supabase menus, but operates on Toast
  * item names directly. Case-insensitive substring + token-overlap scoring.
+ *
+ * Size-word handling (post-V11 fix): when the caller's query carries a
+ * detectable size (e.g. "twelve inch"), and one or more candidates carry
+ * the same size in their name, we narrow to those candidates BEFORE
+ * returning ambiguous. This prevents the "12 inch pepperoni" → 12"/16"
+ * disambiguation loop that surfaced during Ryno demo dry-run testing.
  */
 export function findItem(snapshot: ToastMenuSnapshot, itemName: string): ItemAvailability {
   const needle = itemName.trim().toLowerCase();
@@ -174,12 +245,32 @@ export function findItem(snapshot: ToastMenuSnapshot, itemName: string): ItemAva
     return { item, score: overlap > 0 ? overlap * 10 : 0 };
   });
 
-  const candidates = scored
+  let candidates = scored
     .filter((s) => s.score > 0)
     .sort((a, b) => b.score - a.score);
 
   if (candidates.length === 0) {
     return { matched: null, available: false, alternatives: [], ambiguousMatches: [] };
+  }
+
+  // Size-word narrowing. If the caller named a size AND multiple top
+  // candidates differ by size, drop the candidates whose extractable size
+  // doesn't match the caller's. Only apply when the narrowing leaves at
+  // least one candidate — otherwise fall back to the unfiltered list
+  // (better to ask "which size?" than to return zero matches when the
+  // caller said something close but not exact).
+  const needleSize = extractSizeInches(needle);
+  if (needleSize !== null) {
+    const sizeFiltered = candidates.filter((c) => {
+      const itemSize = extractSizeInches(c.item.name);
+      // Keep items with no size signal (e.g. "Cannoli") — they're not
+      // size-variants and shouldn't be filtered by size.
+      // Keep items whose size matches.
+      return itemSize === null || itemSize === needleSize;
+    });
+    if (sizeFiltered.length > 0) {
+      candidates = sizeFiltered;
+    }
   }
 
   const top = candidates[0].item;
