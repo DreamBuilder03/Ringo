@@ -238,7 +238,7 @@ export async function POST(request: NextRequest) {
     // spoken form ('12 inch') and drop trailing punctuation/parens before
     // building the response.
     const speakableName = item.name
-      .replace(/\((\d+)\s*["'])/g, '$1 inch')
+      .replace(/\((\d+)\s*["']\)/g, '$1 inch')
       .replace(/(\d+)\s*["']/g, '$1 inch')
       .replace(/[()]/g, ' ')
       .replace(/\s+/g, ' ')
