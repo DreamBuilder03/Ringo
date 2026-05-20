@@ -104,9 +104,9 @@ export async function POST(request: NextRequest) {
         .slice(0, 5)
         .map((m) => toSpeakable(m.name))
         .join(', ') || 'Please check the menu';
-      // Also drop the quoted-back item_name so the spoken response is clean.
+      // Restored original wording. Only the name conversion is new.
       return NextResponse.json({
-        result: `Sorry, we don't have that. We do have: ${suggestions}. What sounds good?`,
+        result: `Sorry, we don't have "${item_name}" on our menu. We do have: ${suggestions}`,
       });
     }
 
@@ -141,9 +141,13 @@ export async function POST(request: NextRequest) {
       const options = menuItems
         .slice(0, 5)
         .map((m) => `${toSpeakable(m.name)} for $${m.price.toFixed(2)}`)
-        .join(', or ');
+        .join(', ');
+      // Restored original wording "We have a few options:" — the production
+      // V24 prompt expects this exact wording for disambiguation responses.
+      // ONLY the TTS-friendly name conversion above is new; the rest matches
+      // the contract that was working before the May 19 changes.
       return NextResponse.json({
-        result: `We have a few: ${options}. Which one would you like?`,
+        result: `We have a few options: ${options}. Which one would you like?`,
       });
     }
 
@@ -210,33 +214,41 @@ export async function POST(request: NextRequest) {
       const modifierStrings = item.modifiers
         .map((mod: any) => `${mod.name} (+$${(mod.price || 0).toFixed(2)})`)
         .join(', ');
-      modifiersText = ` We can add ${modifierStrings} if you'd like.`;
+      modifiersText = `. Available modifiers: ${modifierStrings}`;
     }
 
-    if (item.available === false) {
-      return NextResponse.json({
-        result: `Sorry, we're out of ${item.name} right now. What else can I get you?`,
-      });
-    }
+    const availabilityText = item.available === false ? ' (Currently unavailable)' : '';
 
-    // TTS-friendly response.
+    // REVERTED 2026-05-20 — restoring the terse "Name: $price" shape the
+    // production V24 prompt expects. The earlier "Got it — X for $Y. Want
+    // me to add it?" wording broke the production agent: the prompt logic
+    // didn't know how to handle a pre-formed conversational response in
+    // the tool result, and the LLM froze mid-turn. Cardinal lesson: never
+    // change a tool's response contract without updating the prompt that
+    // consumes it. Keep ONLY the quote-stripping (TTS hates literal "),
+    // not the conversational rewrite.
+    //
+    // (Earlier comment about TTS-friendly format retained below for ref.)
+    //
     // Why this matters: menu names like 'Pepperoni Pizza (12")' contain a
     // literal quote character. When Retell's TTS reads that verbatim, it
     // either pronounces 'quote' aloud, pauses oddly, or silently fails
     // (the agent goes mute mid-turn — exactly the symptom we hit during
     // the Ryno demo dry-run, May 19 transcript). Convert quoted sizes to
     // spoken form ('12 inch') and drop trailing punctuation/parens before
-    // building the response. Also: conversational shape ('Got it — X for
-    // $Y. Want me to add it?') gives the agent an unambiguous next step,
-    // matching the Toast-path fix.
+    // building the response.
     const speakableName = item.name
-      .replace(/\((\d+)\s*[""'']\)/g, '$1 inch')
-      .replace(/(\d+)\s*[""'']/g, '$1 inch')
+      .replace(/\((\d+)\s*["'])/g, '$1 inch')
+      .replace(/(\d+)\s*["']/g, '$1 inch')
+      .replace(/[()]/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
 
+    // Terse "Name: $price" — matches the contract production V24 prompt was
+    // built around. Do NOT change this shape without coordinating with the
+    // agent prompt.
     return NextResponse.json({
-      result: `Got it — ${speakableName} for $${item.price.toFixed(2)}.${modifiersText} Want me to add it to your order?`,
+      result: `${speakableName}: $${item.price.toFixed(2)}${availabilityText}${modifiersText}`,
     });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Lookup-item error:`, error);
