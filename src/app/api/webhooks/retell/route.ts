@@ -246,6 +246,83 @@ export async function POST(request: NextRequest) {
           // any alert path to fail a webhook response.
           console.error(`[${new Date().toISOString()}] founder-alert dispatch failed:`, alertErr);
         }
+
+        // ─── Post-call review-request SMS ──────────────────────────────────
+        // When a call ends with a paid order on file, and the restaurant has
+        // a google_review_url configured, text the customer a short review
+        // request. Fires IMMEDIATELY (no delay) — demo-mode behavior. v2
+        // will schedule this 30-60 min out so customers receive it after
+        // they actually got the food. For demo this is intentional: the
+        // sales motion is showing Ryno the feature live.
+        //
+        // Guards in order: customer phone on file, paid order exists for
+        // this call, restaurant has a review URL. ANY missing → silently
+        // skip (no alert noise; review SMS is a nice-to-have, not P0).
+        try {
+          // Re-fetch the restaurant to pick up google_review_url + preferred_language
+          // (the outer `restaurant` lookup uses a narrower SELECT). One extra
+          // query at end-of-call is fine — non-hot path.
+          const { data: restaurantFull } = await supabase
+            .from('restaurants')
+            .select('id, name, google_review_url, preferred_language')
+            .eq('id', restaurant.id)
+            .maybeSingle();
+
+          const reviewUrl = restaurantFull?.google_review_url as string | null | undefined;
+          if (!reviewUrl) {
+            // No review URL configured for this restaurant — skip.
+          } else {
+            const { data: callRow } = await supabase
+              .from('calls')
+              .select('id')
+              .eq('retell_call_id', event.call.call_id)
+              .maybeSingle();
+
+            if (callRow?.id) {
+              const { data: paidOrder } = await supabase
+                .from('orders')
+                .select('id, customer_phone, status')
+                .eq('call_id', callRow.id)
+                .in('status', ['paid', 'preparing', 'ready', 'payment_sent'])
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+              if (paidOrder?.customer_phone) {
+                const lang = restaurantFull?.preferred_language === 'es' ? 'es' : 'en';
+                const message =
+                  lang === 'es'
+                    ? `Gracias por pedir de ${restaurant.name}! Esperamos que todo estuvo delicioso. Nos haria un gran favor con una resena rapida de Google: ${reviewUrl}`
+                    : `Hey, thanks for ordering from ${restaurant.name}! Hope everything was great. Would you take 30 seconds to drop us a quick Google review? ${reviewUrl}`;
+
+                const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://joinomri.com';
+                const smsRes = await fetch(`${baseUrl}/api/sms`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    to: paidOrder.customer_phone,
+                    message,
+                    type: 'review_request',
+                  }),
+                });
+
+                if (smsRes.ok) {
+                  console.log(
+                    `[${new Date().toISOString()}] Review SMS sent for call ${event.call.call_id}`
+                  );
+                } else {
+                  console.warn(
+                    `[${new Date().toISOString()}] Review SMS HTTP ${smsRes.status} for call ${event.call.call_id}`
+                  );
+                }
+              }
+            }
+          }
+        } catch (reviewErr) {
+          // Review SMS is non-fatal. Log and move on — never break the
+          // webhook over a marketing-flavor follow-up.
+          console.error(`[${new Date().toISOString()}] review SMS dispatch failed:`, reviewErr);
+        }
         break;
       }
 

@@ -108,7 +108,16 @@ function collapseRepeats(token: string): string {
 export function tokenizeMenuName(s: string): string[] {
   let normalized = s
     .toLowerCase()
+    // Menu-name shorthand: "(12\")" \u2192 "12inch" BEFORE the quote-strip so we
+    // don't lose the size signal. Common with seeded mock menus from
+    // Toast-style "Pepperoni Pizza (12\")" rows. Without this, the
+    // tokenizer drops the size entirely and "twelve inch pepperoni" can't
+    // distinguish 12" from 16". Added 2026-05-19 after Ryno demo dry-run.
+    .replace(/(\d+)\s*["'\u2018\u2019]/g, '$1inch')
     .replace(/[\u2018\u2019'"']/g, '')
+    // Strip parens too \u2014 they otherwise wrap the size token like "(12inch)"
+    // which the splitter then treats as one wonky token.
+    .replace(/[()]/g, ' ')
     .replace(/[-_/]/g, ' ');
 
   // Word-number pass happens FIRST so that "ten wings" feeds into the
