@@ -133,17 +133,29 @@ export function getToastBaseUrl(): string {
 
 // ─── MOCK data — deterministic, pizza-shop themed for Ryno demo ────────────────
 
+// Demo-friendly hours: open 6am-1:59am every day. Wide window so dry-run
+// testing works regardless of when Misael picks up the phone. The actual
+// SPOKEN hours in the agent prompt ("Mon-Thu 11am-10pm, Fri-Sat 11am-11pm,
+// Sun noon-9pm") are unchanged — those are what Hailey TELLS callers. The
+// hours below only gate the closed-shop decline path inside lookup_item /
+// confirm_order. Once we have a real Toast restaurant, this gets replaced
+// by the actual Toast snapshot's hours.
+//
+// 1199 = 19h59m past midnight = 7:59pm? wait that's wrong. We want a wide
+// window. Use 6:00 (360min) → 25:59 (next day 1:59am, 1559min). isOpenNow
+// treats closeMinutes > 24*60 properly because comparison is `minutes <
+// closeMinutes` with `minutes` in [0, 1440). We instead use 23:59 (1439)
+// so all of 6am-11:59pm passes, and the early-AM hours fall through to
+// "closed before opening" with `nextOpenSpoken: today at 6 AM`. Good
+// enough for demo.
 const MOCK_HOURS: ToastMenuSnapshot['hours'] = [
-  // Mon-Thu 11am-10pm
-  { dayOfWeek: 1, openMinutes: 11 * 60, closeMinutes: 22 * 60 },
-  { dayOfWeek: 2, openMinutes: 11 * 60, closeMinutes: 22 * 60 },
-  { dayOfWeek: 3, openMinutes: 11 * 60, closeMinutes: 22 * 60 },
-  { dayOfWeek: 4, openMinutes: 11 * 60, closeMinutes: 22 * 60 },
-  // Fri-Sat 11am-11pm
-  { dayOfWeek: 5, openMinutes: 11 * 60, closeMinutes: 23 * 60 },
-  { dayOfWeek: 6, openMinutes: 11 * 60, closeMinutes: 23 * 60 },
-  // Sun noon-9pm
-  { dayOfWeek: 0, openMinutes: 12 * 60, closeMinutes: 21 * 60 },
+  { dayOfWeek: 0, openMinutes: 6 * 60, closeMinutes: 23 * 60 + 59 },
+  { dayOfWeek: 1, openMinutes: 6 * 60, closeMinutes: 23 * 60 + 59 },
+  { dayOfWeek: 2, openMinutes: 6 * 60, closeMinutes: 23 * 60 + 59 },
+  { dayOfWeek: 3, openMinutes: 6 * 60, closeMinutes: 23 * 60 + 59 },
+  { dayOfWeek: 4, openMinutes: 6 * 60, closeMinutes: 23 * 60 + 59 },
+  { dayOfWeek: 5, openMinutes: 6 * 60, closeMinutes: 23 * 60 + 59 },
+  { dayOfWeek: 6, openMinutes: 6 * 60, closeMinutes: 23 * 60 + 59 },
 ];
 
 const MOCK_MENU: ToastMenuSnapshot = {
