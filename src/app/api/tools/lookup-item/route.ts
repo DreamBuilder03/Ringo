@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
       // choke on quote-mark sizes in the suggestions.
       const toSpeakable = (n: string) =>
         n
-          .replace(/\((\d+)\s*["'])/g, '$1 inch')
+          .replace(/\((\d+)\s*["']\)/g, '$1 inch')
           .replace(/(\d+)\s*["']/g, '$1 inch')
           .replace(/[()]/g, ' ')
           .replace(/\s+/g, ' ')
@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
       // single-match path got the fix, multi-match was missed.
       const toSpeakable = (n: string) =>
         n
-          .replace(/\((\d+)\s*["'])/g, '$1 inch')
+          .replace(/\((\d+)\s*["']\)/g, '$1 inch')
           .replace(/(\d+)\s*["']/g, '$1 inch')
           .replace(/[()]/g, ' ')
           .replace(/\s+/g, ' ')
