@@ -188,13 +188,33 @@ export async function POST(request: NextRequest) {
       const modifierStrings = item.modifiers
         .map((mod: any) => `${mod.name} (+$${(mod.price || 0).toFixed(2)})`)
         .join(', ');
-      modifiersText = `. Available modifiers: ${modifierStrings}`;
+      modifiersText = ` We can add ${modifierStrings} if you'd like.`;
     }
 
-    const availabilityText = item.available === false ? ' (Currently unavailable)' : '';
+    if (item.available === false) {
+      return NextResponse.json({
+        result: `Sorry, we're out of ${item.name} right now. What else can I get you?`,
+      });
+    }
+
+    // TTS-friendly response.
+    // Why this matters: menu names like 'Pepperoni Pizza (12")' contain a
+    // literal quote character. When Retell's TTS reads that verbatim, it
+    // either pronounces 'quote' aloud, pauses oddly, or silently fails
+    // (the agent goes mute mid-turn — exactly the symptom we hit during
+    // the Ryno demo dry-run, May 19 transcript). Convert quoted sizes to
+    // spoken form ('12 inch') and drop trailing punctuation/parens before
+    // building the response. Also: conversational shape ('Got it — X for
+    // $Y. Want me to add it?') gives the agent an unambiguous next step,
+    // matching the Toast-path fix.
+    const speakableName = item.name
+      .replace(/\((\d+)\s*[""'']\)/g, '$1 inch')
+      .replace(/(\d+)\s*[""'']/g, '$1 inch')
+      .replace(/\s+/g, ' ')
+      .trim();
 
     return NextResponse.json({
-      result: `${item.name}: $${item.price.toFixed(2)}${availabilityText}${modifiersText}`,
+      result: `Got it — ${speakableName} for $${item.price.toFixed(2)}.${modifiersText} Want me to add it to your order?`,
     });
   } catch (error) {
     console.error(`[${new Date().toISOString()}] Lookup-item error:`, error);
