@@ -13,7 +13,7 @@ export const lookupItemSchema = z.object({
     query: shortText.optional(),
   }).passthrough(), // Retell may add unrelated fields; tolerate them in args
   call: retellCall,
-}).strict();
+}).passthrough();
 
 // ─── add-to-order ─────────────────────────────────────────────────────────────
 export const addToOrderSchema = z.object({
@@ -25,7 +25,7 @@ export const addToOrderSchema = z.object({
     is_upsell: z.boolean().optional(),
   }).passthrough(),
   call: retellCall,
-}).strict();
+}).passthrough();
 
 // ─── remove-from-order ────────────────────────────────────────────────────────
 export const removeFromOrderSchema = z.object({
@@ -34,7 +34,7 @@ export const removeFromOrderSchema = z.object({
     quantity: quantity.optional(),
   }).passthrough(),
   call: retellCall,
-}).strict();
+}).passthrough();
 
 // ─── get-modifiers ────────────────────────────────────────────────────────────
 export const getModifiersSchema = z.object({
@@ -42,7 +42,7 @@ export const getModifiersSchema = z.object({
     item_name: shortText,
   }).passthrough(),
   call: retellCall,
-}).strict();
+}).passthrough();
 
 // ─── confirm-order ────────────────────────────────────────────────────────────
 export const confirmOrderSchema = z.object({
@@ -54,7 +54,7 @@ export const confirmOrderSchema = z.object({
     eta_minutes: z.number().int().min(0).max(180).optional(),
   }).passthrough(),
   call: retellCall,
-}).strict();
+}).passthrough();
 
 // ─── finalize-payment ─────────────────────────────────────────────────────────
 export const finalizePaymentSchema = z.object({
@@ -67,7 +67,7 @@ export const finalizePaymentSchema = z.object({
     items: z.array(orderItem).max(50).optional(),
   }).passthrough(),
   call: retellCall,
-}).strict();
+}).passthrough();
 
 // ─── cancel-order (closes Multi-Test scenario 8) ─────────────────────────────
 // Caller says "actually never mind" / "cancel that" / "forget it" before
@@ -77,7 +77,7 @@ export const cancelOrderSchema = z.object({
     reason: z.string().min(1).max(200).optional(),
   }).passthrough(),
   call: retellCall,
-}).strict();
+}).passthrough();
 
 // ─── request-handoff (C-4) ────────────────────────────────────────────────────
 // Agent escalation. Reasons are an enum drawn from the migration.
@@ -102,4 +102,4 @@ export const requestHandoffSchema = z.object({
     callback_phone: phone.optional(),
   }).passthrough(),
   call: retellCall,
-}).strict();
+}).passthrough();
