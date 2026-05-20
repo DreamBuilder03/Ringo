@@ -55,9 +55,61 @@ function minutesToSpokenTime(minutes: number): string {
   return `${h12}:${m.toString().padStart(2, '0')} ${period}`;
 }
 
-export function isOpenNow(snapshot: ToastMenuSnapshot, now: Date = new Date()): HoursStatus {
-  const day = now.getDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6;
-  const minutes = now.getHours() * 60 + now.getMinutes();
+/**
+ * Restaurant timezone for hours interpretation.
+ *
+ * Mock Toast snapshots store hours as integer minutes from midnight in
+ * restaurant-local time (e.g. openMinutes: 11*60 = 11 AM local). The server
+ * runs in UTC on Vercel, so reading now.getHours() in the wrong timezone
+ * produces the bug we hit during dry-run on 2026-05-19: at 8:41 PM Pacific
+ * (3:41 AM UTC), isOpenNow saw 03:41 and reported "we open today at 11 AM"
+ * — declining every order between roughly midnight and 4 AM Pacific.
+ *
+ * For now this is hardcoded to America/Los_Angeles since every OMRI pilot
+ * + the Ryno demo restaurant is in California. When we expand to other
+ * timezones, this needs to come from the snapshot (Toast does expose
+ * restaurant timezone in its location API — surface it during B1 sync).
+ */
+const DEFAULT_RESTAURANT_TZ = 'America/Los_Angeles';
+
+/**
+ * Read day-of-week + minutes-from-midnight in the restaurant's local time,
+ * regardless of what timezone the server is running in. Uses Intl to do
+ * the timezone conversion in pure JS so no extra deps.
+ */
+function getLocalDayAndMinutes(now: Date, timeZone: string): { day: 0 | 1 | 2 | 3 | 4 | 5 | 6; minutes: number } {
+  // Format the same instant in the target timezone, then parse the parts.
+  // 'short' weekday gives Sun/Mon/Tue/etc. — map back to numeric.
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone,
+    weekday: 'short',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(now);
+
+  const get = (type: string) => parts.find((p) => p.type === type)?.value || '';
+  const wd = get('weekday'); // "Sun", "Mon", ...
+  const hour = parseInt(get('hour'), 10);
+  const minute = parseInt(get('minute'), 10);
+
+  const dayMap: Record<string, 0 | 1 | 2 | 3 | 4 | 5 | 6> = {
+    Sun: 0, Mon: 1, Tue: 2, Wed: 3, Thu: 4, Fri: 5, Sat: 6,
+  };
+  const day = dayMap[wd] ?? 0;
+
+  // Intl returns "24" for midnight in some locales (hourCycle quirk).
+  // Normalize to 0 so minutes-from-midnight stays in [0, 1440).
+  const normalizedHour = hour === 24 ? 0 : hour;
+  return { day, minutes: normalizedHour * 60 + minute };
+}
+
+export function isOpenNow(
+  snapshot: ToastMenuSnapshot,
+  now: Date = new Date(),
+  timeZone: string = DEFAULT_RESTAURANT_TZ
+): HoursStatus {
+  const { day, minutes } = getLocalDayAndMinutes(now, timeZone);
   const todays = snapshot.hours.find((h) => h.dayOfWeek === day);
 
   if (!todays) {
@@ -322,7 +374,8 @@ export interface PickupValidity {
 export function validatePickupTime(
   snapshot: ToastMenuSnapshot,
   pickupAt: Date,
-  now: Date = new Date()
+  now: Date = new Date(),
+  timeZone: string = DEFAULT_RESTAURANT_TZ
 ): PickupValidity {
   const MIN_LEAD_MIN = 5;
   const MAX_LEAD_DAYS = 14;
@@ -343,8 +396,9 @@ export function validatePickupTime(
     };
   }
 
-  const day = pickupAt.getDay() as 0 | 1 | 2 | 3 | 4 | 5 | 6;
-  const minutes = pickupAt.getHours() * 60 + pickupAt.getMinutes();
+  // Same timezone fix as isOpenNow — interpret pickupAt in restaurant-local
+  // time, not server UTC.
+  const { day, minutes } = getLocalDayAndMinutes(pickupAt, timeZone);
   const todays = snapshot.hours.find((h) => h.dayOfWeek === day);
 
   if (!todays) {

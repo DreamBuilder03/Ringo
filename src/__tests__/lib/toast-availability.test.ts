@@ -49,16 +49,21 @@ function buildSnapshot(): ToastMenuSnapshot {
   };
 }
 
-// Helper to construct a Date at a specific local time on a specific day of
-// week — using a known anchor (2026-05-13 was a Wednesday).
+// Helper to construct a Date at a specific PACIFIC time on a specific day
+// of week — using a known anchor (2026-05-13 was a Wednesday during DST).
+// We anchor in Pacific because isOpenNow/validatePickupTime interpret
+// instants in restaurant-local time (default America/Los_Angeles); tying
+// the test helper to Pacific keeps assertions stable regardless of where
+// the test runs (CI in UTC, dev laptop in PT, etc.).
 function dateForDayAndTime(dayOfWeek: 0 | 1 | 2 | 3 | 4 | 5 | 6, hour: number, minute = 0): Date {
+  // May 2026 is DST so Pacific is UTC-7. Build the Date by emitting an
+  // ISO string with an explicit -07:00 offset and letting Date parse it.
   // 2026-05-13 = Wednesday (day 3). Offset from there.
-  const anchorWed = new Date('2026-05-13T12:00:00.000');
-  const dayDiff = dayOfWeek - 3; // 3 = Wed
-  const d = new Date(anchorWed);
-  d.setDate(d.getDate() + dayDiff);
-  d.setHours(hour, minute, 0, 0);
-  return d;
+  const baseDay = 13 + (dayOfWeek - 3); // shift from Wed
+  const hh = String(hour).padStart(2, '0');
+  const mm = String(minute).padStart(2, '0');
+  const dd = String(baseDay).padStart(2, '0');
+  return new Date(`2026-05-${dd}T${hh}:${mm}:00.000-07:00`);
 }
 
 describe('isOpenNow (B3 hours-guard)', () => {
