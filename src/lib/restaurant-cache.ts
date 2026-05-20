@@ -81,7 +81,11 @@ export interface CachedMenuItem {
 
 // ─── Restaurant lookup by Retell agent_id (English or Spanish) ───────────────
 
-const RESTAURANT_BY_AGENT_KEY = (agentId: string) => `omri:restaurant:agent:${agentId}`;
+// Cache-key version bumped 2026-05-20 to invalidate stale entries that survived
+// a pos_type change for Ryno's Pizza Demo (cached as 'toast' but DB updated to
+// 'square'). Bumping the key prefix forces a cold lookup on the next request
+// for every restaurant — small one-time cost, prevents the demo freeze pattern.
+const RESTAURANT_BY_AGENT_KEY = (agentId: string) => `omri:restaurant:agent:v2:${agentId}`;
 
 export async function getRestaurantByAgentId(agentId: string): Promise<CachedRestaurant | null> {
   const redis = getRedis();
