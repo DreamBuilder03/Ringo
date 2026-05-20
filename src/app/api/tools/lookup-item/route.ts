@@ -90,13 +90,23 @@ export async function POST(request: NextRequest) {
 
     if (!menuItems || menuItems.length === 0) {
       // Suggestion fallback — pull 5 available items from the cached menu.
+      // Same speakable conversion as multi-match path so the agent doesn't
+      // choke on quote-mark sizes in the suggestions.
+      const toSpeakable = (n: string) =>
+        n
+          .replace(/\((\d+)\s*["'])/g, '$1 inch')
+          .replace(/(\d+)\s*["']/g, '$1 inch')
+          .replace(/[()]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
       const suggestions = allMenu
         .filter((m) => m.available !== false)
         .slice(0, 5)
-        .map((m) => m.name)
+        .map((m) => toSpeakable(m.name))
         .join(', ') || 'Please check the menu';
+      // Also drop the quoted-back item_name so the spoken response is clean.
       return NextResponse.json({
-        result: `Sorry, we don't have "${item_name}" on our menu. We do have: ${suggestions}`,
+        result: `Sorry, we don't have that. We do have: ${suggestions}. What sounds good?`,
       });
     }
 
@@ -116,12 +126,24 @@ export async function POST(request: NextRequest) {
     // Safety cap at 5 to keep the spoken response short. Ordered by
     // rankMenuMatches' hit-count sort, so best matches speak first.
     if (menuItems.length > 1) {
+      // TTS-friendly name conversion same as single-match path: strip quote
+      // characters and unwrap parens around sizes, so Hailey doesn't choke
+      // on `Pepperoni Pizza (12")` and go silent mid-disambiguation.
+      // This was the smoking-gun bug from the Ryno dry-run 2026-05-20 —
+      // single-match path got the fix, multi-match was missed.
+      const toSpeakable = (n: string) =>
+        n
+          .replace(/\((\d+)\s*["'])/g, '$1 inch')
+          .replace(/(\d+)\s*["']/g, '$1 inch')
+          .replace(/[()]/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim();
       const options = menuItems
         .slice(0, 5)
-        .map((m) => `${m.name} for $${m.price.toFixed(2)}`)
-        .join(', ');
+        .map((m) => `${toSpeakable(m.name)} for $${m.price.toFixed(2)}`)
+        .join(', or ');
       return NextResponse.json({
-        result: `We have a few options: ${options}. Which one would you like?`,
+        result: `We have a few: ${options}. Which one would you like?`,
       });
     }
 
